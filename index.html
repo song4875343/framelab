@@ -653,10 +653,39 @@
   function rgb(c) { return "rgb(" + Math.round(c[0] * 255) + "," + Math.round(c[1] * 255) + "," + Math.round(c[2] * 255) + ")"; }
 
   var T = { ox: 0, oy: 0, scale: 1 };
+  var gSX = null, gSY = null;   // 变形后各分析节点的屏幕坐标（供标注/荷载随变形移动）
   function toX(x) { return T.ox + x * T.scale; }
   function toY(y) { return T.oy - y * T.scale; }
   function fromX(px) { return (px - T.ox) / T.scale; }
   function fromY(py) { return (T.oy - py) / T.scale; }
+
+  // 杆件上某个截面位置（杆件坐标 x，单位 m）在“变形后”图面上的屏幕坐标
+  function memScreenPoint(m, x) {
+    x = clamp(x, 0, m.L);
+    var els = ana && ana.byMember ? ana.byMember[m.id] : null;
+    if (els && gSX) {
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        if (x >= el.xa - 1e-9 && x <= el.xa + el.Lsub + 1e-9) {
+          var t = clamp((x - el.xa) / el.Lsub, 0, 1);
+          return [gSX[el.a] + (gSX[el.b] - gSX[el.a]) * t, gSY[el.a] + (gSY[el.b] - gSY[el.a]) * t];
+        }
+      }
+    }
+    return [toX(m.x1 + m.ux * x), toY(m.y1 + m.uy * x)];
+  }
+  // 杆件变形后弦向的屏幕法向（即局部 -y 的荷载正方向）
+  function memDirNormal(m) {
+    var ia = ana ? ana.idx[m.a] : null, ib = ana ? ana.idx[m.b] : null;
+    var ax, ay, bx, by;
+    if (gSX && ia != null) {
+      ax = gSX[ia]; ay = gSY[ia]; bx = gSX[ib]; by = gSY[ib];
+    } else {
+      ax = toX(m.x1); ay = toY(m.y1); bx = toX(m.x1 + m.ux * m.L); by = toY(m.y1 + m.uy * m.L);
+    }
+    var ex = bx - ax, ey = by - ay, Ls = Math.hypot(ex, ey) || 1;
+    return { x: -ey / Ls, y: ex / Ls };
+  }
 
   function draw() {
     var cv = $("cv"), wrap = $("cvwrap");
@@ -690,6 +719,7 @@
     var dyn = all.map(function (p, i) { return p[1] + u[3 * i + 1] * amp; });
     var sx = all.map(function (p, i) { return toX(dxn[i]); });
     var sy = all.map(function (p, i) { return toY(dyn[i]); });
+    gSX = sx; gSY = sy;
     var mags = all.map(function (p, i) { return Math.hypot(u[3 * i], u[3 * i + 1]); });
     var vals = mags.map(function (m) { return m * 1000; });
     var vmax = Math.max.apply(null, vals.concat([1e-9]));
@@ -758,7 +788,7 @@
     // 支座
     nodes.forEach(function (n) {
       if (!(n.bc.ux || n.bc.uy || n.bc.rz)) { return; }
-      drawSupport(ctx, toX(n.x), toY(n.y), n.bc, Math.max(9, cw * 0.012));
+      drawSupport(ctx, sx[idx[n.id]], sy[idx[n.id]], n.bc, Math.max(9, cw * 0.012));
     });
 
     // 荷载
@@ -782,8 +812,8 @@
     if ($("showIds").checked) {
       ctx.fillStyle = "#7f97c9"; ctx.font = (small - 1) + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
       model.members.forEach(function (m) {
-        var ax = toX(nodes[idx[m.a]].x), ay = toY(nodes[idx[m.a]].y), bx = toX(nodes[idx[m.b]].x), by = toY(nodes[idx[m.b]].y);
-        ctx.fillText("M" + m.id, (ax + bx) / 2, (ay + by) / 2 - 3);
+        var mid = memScreenPoint(m, m.L / 2);
+        ctx.fillText("M" + m.id, mid[0], mid[1] - 3);
       });
     }
 
@@ -902,8 +932,8 @@
 
     model.members.forEach(function (m) {
       var loads = memLoads[m.id]; if (!loads || !loads.length) { return; }
-      var dx = m.uy, dy = m.ux; // 局部 -y 的屏幕方向（荷载正方向）
-      function P(x) { return [toX(m.x1 + m.ux * x), toY(m.y1 + m.uy * x)]; }
+      var nd = memDirNormal(m), dx = nd.x, dy = nd.y; // 变形后局部 -y 的屏幕方向（荷载正方向）
+      function P(x) { return memScreenPoint(m, x); }
 
       loads.forEach(function (ld) {
         if (ld.type === "point") {
@@ -966,7 +996,7 @@
     if (stationM === null) { return; }
     var m = memberById(stationM); if (!m || m.L == null) { return; }
     var x = clamp(D.station, 0, 1) * m.L;
-    var px = toX(m.x1 + m.ux * x), py = toY(m.y1 + m.uy * x);
+    var ps = memScreenPoint(m, x), px = ps[0], py = ps[1];
     var v = sampleMember(stationM, x);
     ctx.fillStyle = "#ffe066"; ctx.strokeStyle = "#ff9f43"; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -982,11 +1012,9 @@
     model.members.forEach(function (m) {
       var els = ana.byMember[m.id];
       if (!els || !els.length || m.L == null) { return; }
-      var ax = toX(m.x1), ay = toY(m.y1), bx = toX(m.x1 + m.ux * m.L), by = toY(m.y1 + m.uy * m.L);
-      var ex = bx - ax, ey = by - ay, Len = Math.hypot(ex, ey) || 1;
-      var nX = -ey / Len, nY = ex / Len;
+      var nd = memDirNormal(m), nX = nd.x, nY = nd.y;
       function place(xm, val, label, color, off) {
-        var px = toX(m.x1 + m.ux * xm), py = toY(m.y1 + m.uy * xm);
+        var ps = memScreenPoint(m, xm), px = ps[0], py = ps[1];
         tag(ctx, label + "=" + val.toFixed(1), px + nX * off, py + nY * off, small, color);
       }
       if (D.showMoment) {
@@ -1024,11 +1052,8 @@
       if (D.showMat && mat) { parts.push(MATERIALS[mat.label] ? MATERIALS[mat.label].short : (mat.label || "自定义")); }
       if (D.showSec && sec) { parts.push(secShort(sec)); }
       if (!parts.length) { return; }
-      var ax = toX(m.x1), ay = toY(m.y1), bx = toX(m.x1 + m.ux * m.L), by = toY(m.y1 + m.uy * m.L);
-      var ex = bx - ax, ey = by - ay, Ls = Math.hypot(ex, ey) || 1;
-      var nX = -ey / Ls, nY = ex / Ls;
-      var mx = (ax + bx) / 2, my = (ay + by) / 2, off = fs2 * 1.3;
-      ctx.fillText(parts.join(" "), mx + nX * off, my + nY * off);
+      var mid = memScreenPoint(m, m.L / 2), nd = memDirNormal(m), off = fs2 * 1.3;
+      ctx.fillText(parts.join(" "), mid[0] + nd.x * off, mid[1] + nd.y * off);
     });
     ctx.restore();
     ctx.textBaseline = "alphabetic";
