@@ -69,8 +69,8 @@
   .pp-head span { cursor: pointer; color: #7f8db3; padding: 0 4px; }
   .pp-head span:hover { color: #fff; }
   .pp-sel { font-size: 10.5px; color: #9fb0d6; margin-bottom: 7px; }
-  .pp-tabs { display: flex; gap: 5px; margin-bottom: 8px; }
-  .pp-tabs button { flex: 1; padding: 5px 0; font-size: 11.5px; cursor: pointer; border-radius: 6px; border: 1px solid rgba(90, 120, 190, .45); background: rgba(30, 40, 70, .5); color: #9fb0d6; font-family: inherit; }
+  .pp-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .pp-tabs button { flex: 1 1 0; min-width: 44px; padding: 5px 0; font-size: 10.5px; cursor: pointer; border-radius: 6px; border: 1px solid rgba(90, 120, 190, .45); background: rgba(30, 40, 70, .5); color: #9fb0d6; font-family: inherit; }
   .pp-tabs button.active { background: rgba(47, 123, 255, .25); border-color: #6ee7ff; color: #cdefff; }
   .pp-tabpane.hidden { display: none; }
   .pp-sec { border-top: 1px solid rgba(90, 120, 190, .25); padding-top: 7px; margin-top: 7px; }
@@ -145,6 +145,7 @@
         <button class="btn" id="fitview">适应窗口</button>
         <button class="btn" id="reset">恢复默认模型</button>
       </div>
+      <button class="btn" id="demo">载入示例（2跨3层 + 荷载）</button>
 
       <div class="note">
         <b style="color:#9fd0ff">操作：</b>“新增节点”后在图面点击放置节点；“新增杆件”后依次点两个节点生成杆件（右键/Esc 退出）。
@@ -164,6 +165,8 @@
           <button type="button" data-tab="unit" class="active">单元</button>
           <button type="button" data-tab="load">荷载</button>
           <button type="button" data-tab="force">内力</button>
+          <button type="button" data-tab="mat">材料</button>
+          <button type="button" data-tab="sec">截面</button>
         </div>
 
         <!-- 单元 -->
@@ -268,6 +271,53 @@
           </div>
         </div>
 
+        <!-- 材料 -->
+        <div class="pp-tabpane hidden" id="tab-mat">
+          <div class="pp-sec">
+            <div class="pp-title">材料（应用到选中杆件）</div>
+            <select id="mt-key"></select>
+            <div class="pp-grid2" style="margin-top:6px">
+              <label>弹性模量 E (kN/m²)<input type="number" id="mt-E" /></label>
+              <label>泊松比 ν<input type="number" id="mt-nu" step="0.01" /></label>
+            </div>
+            <button class="btn" id="mt-apply">应用材料</button>
+          </div>
+          <div class="pp-sec">
+            <div class="pp-title">说明</div>
+            <div class="pp-sel">材料与截面共同决定单元刚度：EA = E·A，EI = E·I，GA = G·A_s（G = E / 2(1+ν)）。应用后可用「单元」页 EA/EI/GA 手动覆盖。</div>
+          </div>
+        </div>
+
+        <!-- 截面 -->
+        <div class="pp-tabpane hidden" id="tab-sec">
+          <div class="pp-sec">
+            <div class="pp-title">截面（应用到选中杆件）</div>
+            <select id="sc-type">
+              <option value="rect">矩形</option>
+              <option value="circle">圆形</option>
+              <option value="I">工字形</option>
+            </select>
+            <div id="sc-rect" class="pp-grid2" style="margin-top:6px">
+              <label>宽 b (m)<input type="number" id="sc-b" value="0.3" step="0.05" /></label>
+              <label>高 h (m)<input type="number" id="sc-h" value="0.5" step="0.05" /></label>
+            </div>
+            <div id="sc-circle" class="pp-grid2 hidden" style="margin-top:6px">
+              <label>直径 d (m)<input type="number" id="sc-d" value="0.4" step="0.05" /></label>
+            </div>
+            <div id="sc-I" class="pp-grid2 hidden" style="margin-top:6px">
+              <label>高 h (m)<input type="number" id="sc-Ih" value="0.4" step="0.05" /></label>
+              <label>翼缘宽 b (m)<input type="number" id="sc-Ib" value="0.2" step="0.05" /></label>
+              <label>腹板厚 tw (m)<input type="number" id="sc-Itw" value="0.008" step="0.002" /></label>
+              <label>翼缘厚 tf (m)<input type="number" id="sc-Itf" value="0.012" step="0.002" /></label>
+            </div>
+            <button class="btn" id="sc-apply">应用截面</button>
+          </div>
+          <div class="pp-sec">
+            <div class="pp-title">截面特性 / 单元刚度</div>
+            <div class="pp-sel" id="sc-info">—</div>
+          </div>
+        </div>
+
         <div class="pp-sec">
           <div class="inline2">
             <button class="btn" id="pp-clear">清除选择</button>
@@ -292,8 +342,40 @@
             station: 0.5, zoom: 1, px: 0, py: 0 };
   var DEF_STIFF = { col: { EA: 4.5e6, EI: 93750, GA: 1.0e9 }, beam: { EA: 4.5e6, EI: 150000, GA: 1.0e9 }, user: { EA: 4.5e6, EI: 150000, GA: 1.0e9 } };
 
+  // 常见材料（E 单位 kN/m²，即 kPa）
+  var MATERIALS = {
+    "Q235":   { label: "钢材 Q235",   E: 2.06e8, nu: 0.30 },
+    "Q345":   { label: "钢材 Q345",   E: 2.06e8, nu: 0.30 },
+    "C30":    { label: "混凝土 C30",  E: 3.00e7, nu: 0.20 },
+    "C40":    { label: "混凝土 C40",  E: 3.25e7, nu: 0.20 },
+    "AL6061": { label: "铝 6061",     E: 6.90e7, nu: 0.33 },
+    "CUSTOM": { label: "自定义",      E: 2.06e8, nu: 0.30 }
+  };
+
+  // 截面几何特性：A 面积、I 抗弯惯性矩、As 抗剪面积
+  function sectionProps(sec) {
+    if (!sec) { return null; }
+    if (sec.type === "rect") {
+      var A = sec.b * sec.h;
+      return { A: A, I: sec.b * Math.pow(sec.h, 3) / 12, As: 5 / 6 * A };
+    }
+    if (sec.type === "circle") {
+      var d = sec.d, A2 = Math.PI * d * d / 4;
+      return { A: A2, I: Math.PI * Math.pow(d, 4) / 64, As: 0.9 * A2 };
+    }
+    if (sec.type === "I") {
+      var h = sec.h, b = sec.b, tw = sec.tw, tf = sec.tf;
+      var A3 = 2 * b * tf + (h - 2 * tf) * tw;
+      var I3 = (b * Math.pow(h, 3) - (b - tw) * Math.pow(h - 2 * tf, 3)) / 12;
+      return { A: A3, I: I3, As: h * tw };
+    }
+    return null;
+  }
+
   var model = null;              // { nodes:[{id,x,y,bc}], members:[{id,a,b,type}], nextNode, nextMember }
-  var memStiff = {};             // member id -> {EA,EI,GA}
+  var memStiff = {};             // member id -> {EA,EI,GA} 手动覆盖
+  var memMat = {};               // member id -> {label,E,nu}
+  var memSec = {};               // member id -> {type,...}
   var memLoads = {};             // member id -> [loads]
   var nodeLoads = {};            // node id -> {fx,fy,mz}
   var selNodes = {};             // node id -> true
@@ -410,7 +492,18 @@
     if (Math.abs(A.y - B.y) < 1e-6) { return "beam"; }
     return "user";
   }
-  function stiffOf(m) { return memStiff[m.id] || DEF_STIFF[m.type] || DEF_STIFF.user; }
+  function stiffOf(m) {
+    if (memStiff[m.id]) { return memStiff[m.id]; }
+    var mat = memMat[m.id], sec = memSec[m.id];
+    if (mat && sec) {
+      var p = sectionProps(sec);
+      if (p && p.A > 0) {
+        var G = mat.E / (2 * (1 + (mat.nu || 0.3)));
+        return { EA: mat.E * p.A, EI: mat.E * p.I, GA: G * p.As };
+      }
+    }
+    return DEF_STIFF[m.type] || DEF_STIFF.user;
+  }
 
   function generateModel() {
     newModel();
@@ -419,7 +512,27 @@
     for (r = 0; r <= S; r++) { g[r] = []; for (c = 0; c <= B; c++) { g[r][c] = addNode(c * W, r * h, r === 0 ? { ux: true, uy: true, rz: true } : null).id; } }
     for (r = 0; r < S; r++) { for (c = 0; c <= B; c++) { addMemberById(g[r][c], g[r + 1][c], "col"); } }
     for (r = 1; r <= S; r++) { for (c = 0; c < B; c++) { addMemberById(g[r][c], g[r][c + 1], "beam"); } }
-    memStiff = {}; memLoads = {}; nodeLoads = {}; selNodes = {}; selMembers = {}; pendingMember = null;
+    memStiff = {}; memMat = {}; memSec = {}; memLoads = {}; nodeLoads = {}; selNodes = {}; selMembers = {}; pendingMember = null;
+  }
+
+  // 载入演示：2 跨 3 层框架 + 各层水平节点荷载 + 顶层梁均布荷载
+  function seedDemo() {
+    D.bays = 2; D.stories = 3; D.W = 6; D.h = 4; D.NSUB = 6;
+    $("in-bays").value = 2; $("in-stories").value = 3; $("in-W").value = 6; $("in-h").value = 4; $("in-NSUB").value = 6;
+    generateModel();
+    var maxY = 0;
+    model.nodes.forEach(function (n) { maxY = Math.max(maxY, n.y); });
+    model.nodes.forEach(function (n) {
+      if (n.y <= 1e-9) { return; }
+      nodeLoads[n.id] = { fx: 6 + 8 * (n.y / D.h), fy: 0, mz: 0 };
+    });
+    model.members.forEach(function (m) {
+      if (m.type !== "beam") { return; }
+      var A = nodeById(m.a);
+      if (A && Math.abs(A.y - maxY) < 1e-6) { memLoads[m.id] = [{ type: "udl", q: 12 }]; }
+    });
+    selNodes = {}; selMembers = {};
+    rebuild();
   }
 
   /* ================= 分析 ================= */
@@ -614,7 +727,7 @@
 
       ctx.lineJoin = "round";
       var diagram = function (peak, fillStyle, strokeStyle, getV) {
-        var dsc = (0.17 * Math.min(cw, ch)) / (peak || 1) * D.dscale;
+        var dsc = (0.11 * Math.min(cw, ch)) / (peak || 1) * D.dscale;
         elems.forEach(function (e) {
           var ax = sx[e.a], ay = sy[e.a], bx = sx[e.b], by = sy[e.b];
           var ex = bx - ax, ey = by - ay, L = Math.hypot(ex, ey) || 1;
@@ -1112,6 +1225,19 @@
     if (mid !== undefined) {
       var m = memberById(+mid), st = stiffOf(m);
       $("st-EA").value = Math.round(st.EA); $("st-EI").value = Math.round(st.EI); $("st-GA").value = Math.round(st.GA);
+      var mm = memMat[+mid];
+      if (mm) { $("mt-key").value = (mm.label && MATERIALS[mm.label]) ? mm.label : "CUSTOM"; $("mt-E").value = mm.E; $("mt-nu").value = mm.nu; }
+      var ss = memSec[+mid];
+      if (ss) {
+        $("sc-type").value = ss.type;
+        if (ss.type === "rect") { $("sc-b").value = ss.b; $("sc-h").value = ss.h; }
+        else if (ss.type === "circle") { $("sc-d").value = ss.d; }
+        else { $("sc-Ih").value = ss.h; $("sc-Ib").value = ss.b; $("sc-Itw").value = ss.tw; $("sc-Itf").value = ss.tf; }
+        $("sc-rect").classList.toggle("hidden", ss.type !== "rect");
+        $("sc-circle").classList.toggle("hidden", ss.type !== "circle");
+        $("sc-I").classList.toggle("hidden", ss.type !== "I");
+      }
+      updateSecInfo();
     }
   }
 
@@ -1133,7 +1259,10 @@
     $("tab-unit").classList.toggle("hidden", t !== "unit");
     $("tab-load").classList.toggle("hidden", t !== "load");
     $("tab-force").classList.toggle("hidden", t !== "force");
+    $("tab-mat").classList.toggle("hidden", t !== "mat");
+    $("tab-sec").classList.toggle("hidden", t !== "sec");
     if (t === "force") { drawForceCharts(); }
+    if (t === "sec") { updateSecInfo(); }
   }
   $("pp-tabs").addEventListener("click", function (ev) { var b = ev.target; while (b && b.tagName !== "BUTTON") { b = b.parentNode; } if (b) { showTab(b.getAttribute("data-tab")); } });
 
@@ -1182,7 +1311,12 @@
       var m = memberById(+k); if (!m) { return; }
       var na = dup(m.a), nb = dup(m.b); if (na === null || nb === null) { return; }
       var nm = addMemberById(na, nb, m.type);
-      if (nm) { if (memStiff[m.id]) { memStiff[nm.id] = { EA: stiffOf(m).EA, EI: stiffOf(m).EI, GA: stiffOf(m).GA }; } newMembers[nm.id] = true; }
+      if (nm) {
+        if (memStiff[m.id]) { memStiff[nm.id] = { EA: stiffOf(m).EA, EI: stiffOf(m).EI, GA: stiffOf(m).GA }; }
+        if (memMat[m.id]) { memMat[nm.id] = JSON.parse(JSON.stringify(memMat[m.id])); }
+        if (memSec[m.id]) { memSec[nm.id] = JSON.parse(JSON.stringify(memSec[m.id])); }
+        newMembers[nm.id] = true;
+      }
     });
     selNodes = {}; selMembers = newMembers;
     Object.keys(map).forEach(function (k) { selNodes[k] = true; });
@@ -1191,7 +1325,7 @@
   $("pp-del").addEventListener("click", function () {
     // 删除杆件
     var delM = Object.keys(selMembers).map(Number);
-    delM.forEach(function (id) { delete memStiff[id]; delete memLoads[id]; });
+    delM.forEach(function (id) { delete memStiff[id]; delete memLoads[id]; delete memMat[id]; delete memSec[id]; });
     model.members = model.members.filter(function (m) { return delM.indexOf(m.id) === -1; });
     // 删除节点及其相连杆件
     var delN = Object.keys(selNodes).map(Number);
@@ -1199,7 +1333,7 @@
     if (delN.length) {
       model.members = model.members.filter(function (m) {
         var drop = delN.indexOf(m.a) !== -1 || delN.indexOf(m.b) !== -1;
-        if (drop) { delete memStiff[m.id]; delete memLoads[m.id]; }
+        if (drop) { delete memStiff[m.id]; delete memLoads[m.id]; delete memMat[m.id]; delete memSec[m.id]; }
         return !drop;
       });
       model.nodes = model.nodes.filter(function (n) { return delN.indexOf(n.id) === -1; });
@@ -1212,6 +1346,7 @@
     Object.keys(selMembers).forEach(function (k) {
       var m = memberById(+k), base = m ? (DEF_STIFF[m.type] || DEF_STIFF.user) : DEF_STIFF.user;
       memStiff[+k] = { EA: isFinite(EA) && EA > 0 ? EA : base.EA, EI: isFinite(EI) && EI > 0 ? EI : base.EI, GA: isFinite(GA) && GA > 0 ? GA : base.GA };
+      delete memMat[+k]; delete memSec[+k];
     });
     rebuild();
   });
@@ -1238,6 +1373,59 @@
     rebuild();
   });
   $("ml-clear").addEventListener("click", function () { Object.keys(selMembers).forEach(function (k) { delete memLoads[+k]; }); rebuild(); });
+
+  // 材料
+  (function initMaterialOptions() {
+    var sel = $("mt-key");
+    sel.innerHTML = Object.keys(MATERIALS).map(function (k) { return '<option value="' + k + '">' + MATERIALS[k].label + '</option>'; }).join("");
+    sel.value = "Q235";
+    $("mt-E").value = MATERIALS.Q235.E; $("mt-nu").value = MATERIALS.Q235.nu;
+  })();
+  $("mt-key").addEventListener("change", function () {
+    var m = MATERIALS[$("mt-key").value];
+    if (m) { $("mt-E").value = m.E; $("mt-nu").value = m.nu; }
+  });
+  $("mt-apply").addEventListener("click", function () {
+    var key = $("mt-key").value, E = parseFloat($("mt-E").value), nu = parseFloat($("mt-nu").value);
+    if (!isFinite(E) || E <= 0) { E = MATERIALS[key].E; }
+    if (!isFinite(nu)) { nu = 0.3; }
+    Object.keys(selMembers).forEach(function (k) {
+      memMat[+k] = { label: key, E: E, nu: nu };
+      delete memStiff[+k];
+    });
+    rebuild();
+  });
+
+  // 截面
+  function readSec() {
+    var t = $("sc-type").value;
+    if (t === "rect") { return { type: "rect", b: parseFloat($("sc-b").value) || 0.3, h: parseFloat($("sc-h").value) || 0.5 }; }
+    if (t === "circle") { return { type: "circle", d: parseFloat($("sc-d").value) || 0.4 }; }
+    return { type: "I", h: parseFloat($("sc-Ih").value) || 0.4, b: parseFloat($("sc-Ib").value) || 0.2, tw: parseFloat($("sc-Itw").value) || 0.008, tf: parseFloat($("sc-Itf").value) || 0.012 };
+  }
+  function updateSecInfo() {
+    var sec = readSec(), p = sectionProps(sec), el = $("sc-info");
+    if (!p) { el.textContent = "—"; return; }
+    var mid = Object.keys(selMembers)[0];
+    var mat = mid !== undefined ? memMat[+mid] : null;
+    var E = mat ? mat.E : MATERIALS.Q235.E, nu = mat ? (mat.nu || 0.3) : 0.3, G = E / (2 * (1 + nu));
+    el.textContent = "A=" + p.A.toExponential(3) + " m² ｜ I=" + p.I.toExponential(3) + " m⁴ ｜ As=" + p.As.toExponential(3) + " m²" +
+      "\nEA=" + (E * p.A).toExponential(3) + " ｜ EI=" + (E * p.I).toExponential(3) + " ｜ GA=" + (G * p.As).toExponential(3);
+  }
+  $("sc-type").addEventListener("change", function () {
+    var t = $("sc-type").value;
+    $("sc-rect").classList.toggle("hidden", t !== "rect");
+    $("sc-circle").classList.toggle("hidden", t !== "circle");
+    $("sc-I").classList.toggle("hidden", t !== "I");
+    updateSecInfo();
+  });
+  ["sc-b", "sc-h", "sc-d", "sc-Ih", "sc-Ib", "sc-Itw", "sc-Itf"].forEach(function (id) { $(id).addEventListener("input", updateSecInfo); });
+  $("sc-apply").addEventListener("click", function () {
+    var sec = readSec();
+    Object.keys(selMembers).forEach(function (k) { memSec[+k] = JSON.parse(JSON.stringify(sec)); delete memStiff[+k]; });
+    rebuild();
+  });
+  updateSecInfo();
 
   /* ================= 左侧参数 ================= */
 
@@ -1284,6 +1472,7 @@
   }
   $("st-pos").addEventListener("input", function () { D.station = parseFloat($("st-pos").value) / 100; updateStation(); draw(); });
   $("fitview").addEventListener("click", function () { D.zoom = 1; D.px = 0; D.py = 0; draw(); });
+  $("demo").addEventListener("click", seedDemo);
 
   $("reset").addEventListener("click", function () {
     D.bays = 1; D.stories = 2; D.W = 6; D.h = 4; D.NSUB = 5; D.mag = 1; D.dscale = 1; D.loadScale = 1; D.view = "disp";
@@ -1304,6 +1493,33 @@
   function scheduleDraw() { if (rafId) { cancelAnimationFrame(rafId); } rafId = requestAnimationFrame(function () { if (ana) { draw(); } }); }
   window.addEventListener("resize", scheduleDraw);
   if (window.ResizeObserver) { new ResizeObserver(scheduleDraw).observe($("cvwrap")); }
+
+  // 对外脚本接口（便于嵌入 / 自动化截图）
+  window.FrameLab = {
+    demo: seedDemo,
+    setView: function (v) {
+      D.view = v;
+      var btns = $("viewseg").getElementsByTagName("button");
+      for (var i = 0; i < btns.length; i++) { btns[i].className = btns[i].getAttribute("data-view") === v ? "active" : ""; }
+      syncViewOpts(); draw(); drawForceCharts();
+    },
+    selectMember: function (id) {
+      selNodes = {}; selMembers = {};
+      var m = (id === undefined || id === null) ? model.members[0] : memberById(+id);
+      if (m) { selMembers[m.id] = true; }
+      draw(); updatePopup();
+      return m ? m.id : null;
+    },
+    selectLoaded: function () {
+      for (var i = 0; i < model.members.length; i++) {
+        if (memLoads[model.members[i].id]) { return window.FrameLab.selectMember(model.members[i].id); }
+      }
+      return window.FrameLab.selectMember(null);
+    },
+    openTab: function (t) { showTab(t); },
+    setStation: function (s) { D.station = s; $("st-pos").value = Math.round(s * 100); updateStation(); draw(); },
+    state: function () { return { D: D, model: model, ana: ana, memStiff: memStiff, memMat: memMat, memSec: memSec, memLoads: memLoads, nodeLoads: nodeLoads }; }
+  };
 
   generateModel();
   syncViewOpts();
