@@ -623,7 +623,7 @@
         var R2 = loadResultants(el.member, el.xa, el.xa + t);
         var J = (el.xa + t) * R2.A - R2.Bb;
         var S = fe[1] + R2.A;
-        var Mo = fe[2] - fe[1] * t - J;
+        var Mo = -(fe[2] - fe[1] * t - J);   // 取受拉侧约定（下缘受拉为正）
         pts.push({ t: t, S: S, M: Mo });
         maxM = Math.max(maxM, Math.abs(Mo)); maxV = Math.max(maxV, Math.abs(S));
       }
@@ -763,7 +763,7 @@
 
     // 荷载
     if ($("showLoads").checked) { drawNodeLoads(ctx, nodes, idx, sx, sy, small); }
-    if ($("showLoads").checked || view === "force") { drawMemberLoads(ctx, small); }
+    if ($("showLoads").checked) { drawMemberLoads(ctx, small); }
 
     // 定位点
     if (view === "force") { drawStation(ctx); }
