@@ -13,9 +13,9 @@
     background: radial-gradient(circle at 20% 0%, #16203c 0%, #080b16 55%, #05070e 100%);
     color: #dbe4f5; display: flex; flex-direction: column;
   }
-  header { padding: 8px 18px 2px; display: flex; align-items: baseline; gap: 12px; flex: 0 0 auto; }
-  header h1 { margin: 0; font-size: 15.5px; letter-spacing: .4px; }
-  header span { color: #7f8db3; font-size: 11.5px; }
+  header { padding: 8px 16px 2px; min-height: 54px; display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+  header .brand { flex: 0 0 286px; width: 286px; min-width: 0; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .layout { flex: 1 1 auto; min-height: 0; display: flex; gap: 12px; padding: 8px 16px 12px; align-items: stretch; }
   .panel { background: rgba(18, 25, 45, .82); border: 1px solid rgba(90, 120, 190, .28); border-radius: 12px; box-shadow: 0 10px 28px rgba(0, 0, 0, .45); }
 
@@ -94,6 +94,22 @@
   .toptools .tb:hover { background: rgba(35, 211, 196, .26); }
   .toptools .tb.on { background: rgba(255, 200, 80, .22); border-color: #ffcf33; color: #ffe9a8; }
 
+  /* 多文档标签页（右侧主操作图上方） */
+  .doctabs { flex: 1 1 auto; min-width: 0; align-self: flex-end; margin-bottom: -10px; display: flex; align-items: center; gap: 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -ms-overflow-style: none; }
+  .doctabs::-webkit-scrollbar { height: 0; display: none; }
+  .doctabs .dt { display: inline-flex; align-items: center; gap: 6px; padding: 3px 7px 3px 11px; font-size: 11px; color: #9fb0d6; background: rgba(30, 40, 70, .5); border: 1px solid rgba(90, 120, 190, .4); border-radius: 7px 7px 0 0; cursor: pointer; white-space: nowrap; font-family: inherit; max-width: 200px; transition: background .15s; }
+  .doctabs .dt:hover { background: rgba(47, 123, 255, .16); }
+  .doctabs .dt.active { color: #cdefff; background: rgba(47, 123, 255, .24); border-color: #6ee7ff; }
+  .doctabs .dt .nm { overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+  .doctabs .dt .x { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 4px; color: #7f8db3; font-size: 12px; line-height: 1; flex: 0 0 auto; }
+  .doctabs .dt .x:hover { background: rgba(255, 90, 90, .3); color: #ffd0d0; }
+  .doctabs .dt-new { flex: 0 0 auto; padding: 2px 9px 3px; font-size: 14px; line-height: 1; color: #a9f4ec; background: rgba(35, 211, 196, .12); border: 1px solid rgba(110, 231, 255, .4); border-radius: 7px; cursor: pointer; font-family: inherit; }
+  .doctabs .dt-new:hover { background: rgba(35, 211, 196, .28); }
+  body.light .doctabs .dt { color: #41527a; background: rgba(226, 232, 248, .85); border-color: rgba(90, 120, 190, .4); }
+  body.light .doctabs .dt.active { color: #1b4fb0; background: rgba(47, 123, 255, .18); border-color: #2f7bff; }
+  body.light .doctabs .dt .x:hover { background: rgba(220, 70, 70, .25); color: #c0392b; }
+  body.light .doctabs .dt-new { color: #0a7a6c; border-color: rgba(20, 150, 140, .5); }
+
   /* 底部状态栏 */
   .statusbar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 3px 16px 7px; font-size: 11px; color: #8fa6d6; }
   .statusbar .sb-unit { display: flex; align-items: center; gap: 5px; color: #9fb0d6; white-space: nowrap; }
@@ -163,8 +179,8 @@
 </head>
 <body>
   <header>
-    <h1>FrameLab · 平面结构分析器</h1>
-    <span>框架 / 平面 / 壳单元 · 直接刚度法 · 建模图 / 位移云图 / 内力图 / 应力云图 · 可增删节点、杆件与面单元</span>
+    <div class="brand"><h1>FrameLab · 分析器</h1></div>
+    <div class="doctabs" id="docTabs"></div>
     <div class="toptools">
       <button class="tb" id="btnSave" type="button">保存</button>
       <button class="tb" id="btnOpen" type="button">打开</button>
@@ -3188,14 +3204,17 @@
   $("fileInput").addEventListener("change", function (ev) {
     var f = ev.target.files && ev.target.files[0]; if (!f) { return; }
     var r = new FileReader();
-    r.onload = function () { loadModelFromText(String(r.result)); };
+    r.onload = function () { loadModelFromText(String(r.result), (f.name || "").replace(/\.[^.]+$/, "")); };
     r.readAsText(f);
     ev.target.value = "";
   });
 
-  function saveModelToFile() {
-    var snap = {
-      app: "FrameLab", ver: 1, savedAt: new Date().toISOString(),
+  /* ================= 多文档（标签页） ================= */
+  var docs = [], activeDocId = null, docSeq = 0;
+
+  // 构建当前完整状态快照（与保存文件格式一致）
+  function buildSnapshot() {
+    return {
       D: {
         bays: D.bays, stories: D.stories, W: D.W, h: D.h, NSUB: D.NSUB, AMESH: D.AMESH,
         mag: D.mag, dscale: D.dscale, loadScale: D.loadScale, view: D.view,
@@ -3211,19 +3230,11 @@
       nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads,
       memDiv: memDiv, areaDiv: areaDiv
     };
-    var blob = new Blob([JSON.stringify(snap, null, 1)], { type: "application/json" });
-    var a = document.createElement("a");
-    var ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-    a.href = URL.createObjectURL(blob);
-    a.download = "framelab-" + ts + ".json";
-    document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 200);
   }
+  function cloneSnap(s) { return JSON.parse(JSON.stringify(s)); }
 
-  function loadModelFromText(txt) {
-    var s;
-    try { s = JSON.parse(txt); } catch (e) { alert("无法解析文件：" + e.message); return; }
-    if (!s || !s.model || !s.model.nodes) { alert("文件格式不正确（缺少模型数据）"); return; }
+  // 将快照应用到当前工作状态
+  function applySnapshot(s) {
     var m = s.model;
     m.nodes = m.nodes || []; m.members = m.members || []; m.areas = m.areas || [];
     m.nextNode = m.nextNode != null ? m.nextNode : (m.nodes.reduce(function (a, n) { return Math.max(a, n.id + 1); }, 0));
@@ -3244,7 +3255,125 @@
     if (!D.view) { D.view = "disp"; }
     applyDToUI();
     rebuild();
+    drawForceCharts();
     setMode("select");
+  }
+
+  function docById(id) { for (var i = 0; i < docs.length; i++) { if (docs[i].id === id) { return docs[i]; } } return null; }
+  function captureActive() { var d = docById(activeDocId); if (d) { d.snap = cloneSnap(buildSnapshot()); } }
+
+  function switchToDoc(id) {
+    if (id === activeDocId) { return; }
+    var d = docById(id); if (!d) { return; }
+    captureActive();
+    activeDocId = d.id;
+    applySnapshot(cloneSnap(d.snap));
+    renderDocTabs();
+  }
+
+  // 新建空白计算文件（默认单跨两层模型）
+  function newDocument() {
+    captureActive();
+    D.bays = 1; D.stories = 2; D.W = 6; D.h = 4; D.NSUB = 5; D.AMESH = 2; D.mag = 1; D.dscale = 1; D.loadScale = 1; D.view = "disp";
+    D.showAxial = false; D.showMoment = true; D.showShear = false; D.showLoadVals = false; D.showForceVals = false; D.showExtreme = false;
+    D.showMat = false; D.showSec = false; D.showAreaMesh = true; D.showAreaCloud = true; D.cloudVar = "vm"; D.showAreaShrink = false;
+    D.cloudLo = null; D.cloudHi = null; D.dispLo = null; D.dispHi = null;
+    D.station = 0.5; D.zoom = 1; D.px = 0; D.py = 0;
+    memStiff = {}; memMat = {}; memSec = {}; memLoads = {}; nodeLoads = {}; areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {};
+    applyDToUI();
+    generateModel();
+    selNodes = {}; selMembers = {}; selAreas = {}; pendingMember = null; pendingArea = []; stationM = null;
+    rebuild(); setMode("select");
+    docSeq++;
+    var d = { id: "doc" + docSeq, name: "计算文件 " + docSeq, snap: cloneSnap(buildSnapshot()) };
+    docs.push(d);
+    activeDocId = d.id;
+    renderDocTabs();
+  }
+
+  // 打开外部文件为一个新的计算文件
+  function openDocument(name, snap) {
+    captureActive();
+    docSeq++;
+    var d = { id: "doc" + docSeq, name: name || ("计算文件 " + docSeq), snap: cloneSnap(snap) };
+    docs.push(d);
+    activeDocId = d.id;
+    applySnapshot(cloneSnap(d.snap));
+    renderDocTabs();
+  }
+
+  function closeDoc(id) {
+    var idx = -1, i;
+    for (i = 0; i < docs.length; i++) { if (docs[i].id === id) { idx = i; } }
+    if (idx < 0) { return; }
+    if (docs.length === 1) {
+      // 仅剩一个时重置为新的空白文件，始终保留至少一个标签
+      newDocument();
+      docs.splice(0, 1);
+      activeDocId = docs[0].id;
+      renderDocTabs();
+      return;
+    }
+    var wasActive = (id === activeDocId);
+    docs.splice(idx, 1);
+    if (wasActive) {
+      var next = docs[Math.min(idx, docs.length - 1)];
+      activeDocId = next.id;
+      applySnapshot(cloneSnap(next.snap));
+    }
+    renderDocTabs();
+  }
+
+  function renderDocTabs() {
+    var wrap = $("docTabs"); if (!wrap) { return; }
+    wrap.innerHTML = "";
+    docs.forEach(function (d) {
+      var t = document.createElement("div");
+      t.className = "dt" + (d.id === activeDocId ? " active" : "");
+      t.title = d.name + "（双击重命名）";
+      var nm = document.createElement("span"); nm.className = "nm"; nm.textContent = d.name;
+      var x = document.createElement("span"); x.className = "x"; x.textContent = "×"; x.title = "关闭";
+      t.appendChild(nm); t.appendChild(x);
+      t.addEventListener("click", function (e) { if (e.target === x) { return; } switchToDoc(d.id); });
+      x.addEventListener("click", function (e) { e.stopPropagation(); closeDoc(d.id); });
+      t.addEventListener("dblclick", function (e) {
+        e.stopPropagation();
+        var n = prompt("重命名计算文件", d.name);
+        if (n != null && n.trim()) { d.name = n.trim(); renderDocTabs(); }
+      });
+      wrap.appendChild(t);
+    });
+    var add = document.createElement("button");
+    add.type = "button"; add.className = "dt-new"; add.textContent = "+"; add.title = "新建计算文件";
+    add.addEventListener("click", newDocument);
+    wrap.appendChild(add);
+  }
+
+  function initDocs() {
+    docs = []; docSeq = 0;
+    docSeq++;
+    docs.push({ id: "doc" + docSeq, name: "计算文件 " + docSeq, snap: cloneSnap(buildSnapshot()) });
+    activeDocId = docs[0].id;
+    renderDocTabs();
+  }
+
+  function saveModelToFile() {
+    var snap = buildSnapshot();
+    snap.app = "FrameLab"; snap.ver = 1; snap.savedAt = new Date().toISOString();
+    var blob = new Blob([JSON.stringify(snap, null, 1)], { type: "application/json" });
+    var a = document.createElement("a");
+    var ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    a.href = URL.createObjectURL(blob);
+    a.download = "framelab-" + ts + ".json";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 200);
+  }
+
+  function loadModelFromText(txt, name) {
+    var s;
+    try { s = JSON.parse(txt); } catch (e) { alert("无法解析文件：" + e.message); return; }
+    if (!s || !s.model || !s.model.nodes) { alert("文件格式不正确（缺少模型数据）"); return; }
+    openDocument(name || "导入的模型", s);
   }
 
   // 鼠标悬停：坐标 + 云图数值
@@ -3302,6 +3431,9 @@
     },
     openTab: function (t) { showTab(t); },
     setStation: function (s) { D.station = s; $("st-pos").value = Math.round(s * 100); updateStation(); draw(); },
+    newDoc: newDocument,
+    listDocs: function () { return docs.map(function (d) { return { id: d.id, name: d.name, active: d.id === activeDocId }; }); },
+    switchDoc: switchToDoc,
     state: function () { return { D: D, model: model, ana: ana, memStiff: memStiff, memMat: memMat, memSec: memSec, memLoads: memLoads, nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads, memDiv: memDiv, areaDiv: areaDiv }; }
   };
 
@@ -3311,6 +3443,7 @@
   syncViewOpts();
   setLight(D.light);
   rebuild();
+  initDocs();
 })();
 </script>
 </body>
