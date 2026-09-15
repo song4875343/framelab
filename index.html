@@ -16,7 +16,7 @@
   header { padding: 8px 16px 2px; min-height: 54px; display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
   header .brand { flex: 0 0 286px; width: 286px; min-width: 0; }
   header h1 { margin: 0; font-size: 28px; letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .layout { flex: 1 1 auto; min-height: 0; display: flex; gap: 12px; padding: 8px 16px 12px; align-items: stretch; }
+  .layout { flex: 1 1 auto; min-height: 0; display: flex; gap: 12px; padding: 8px 16px 2px; align-items: stretch; }
   .panel { background: rgba(18, 25, 45, .82); border: 1px solid rgba(90, 120, 190, .28); border-radius: 12px; box-shadow: 0 10px 28px rgba(0, 0, 0, .45); }
 
   .controls { width: 286px; flex: 0 0 auto; padding: 11px 13px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
@@ -89,7 +89,7 @@
   .modebar button { margin-left: 8px; padding: 2px 10px; font-size: 11px; cursor: pointer; border-radius: 12px; border: 1px solid rgba(255,255,255,.5); background: rgba(0,0,0,.3); color: #fff; font-family: inherit; }
 
   /* 右上角工具条（保存 / 打开 / 主题） */
-  .toptools { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+  .toptools { margin-left: auto; align-self: flex-end; margin-bottom: -10px; display: flex; gap: 6px; align-items: center; }
   .toptools .tb { padding: 4px 11px; font-size: 11px; cursor: pointer; border: 1px solid rgba(110, 231, 255, .45); border-radius: 7px; background: rgba(35, 211, 196, .12); color: #a9f4ec; font-family: inherit; transition: background .16s; }
   .toptools .tb:hover { background: rgba(35, 211, 196, .26); }
   .toptools .tb.on { background: rgba(255, 200, 80, .22); border-color: #ffcf33; color: #ffe9a8; }
@@ -425,7 +425,7 @@
           </div>
 
           <div class="pp-sec">
-            <div class="pp-title">杆件荷载（垂直杆件，向下为正）</div>
+            <div class="pp-title">杆件荷载（垂直杆件；沿局部 +y 为正，水平杆向上）</div>
             <select id="ml-type">
               <option value="udl">均布荷载 q</option>
               <option value="point">集中荷载 P</option>
@@ -879,8 +879,8 @@
   function hermiteShapes(x, L) { var t = x / L, t2 = t * t, t3 = t2 * t; return [1 - 3 * t2 + 2 * t3, L * (t - 2 * t2 + t3), 3 * t2 - 2 * t3, L * (-t2 + t3)]; }
   function hermiteTrans(x, L, p) { var N = hermiteShapes(x, L); return [0, N[0] * p, N[1] * p, 0, N[2] * p, N[3] * p]; }
   function intensity(ld, x) {
-    if (ld.type === "udl") { return -ld.q; }
-    if (ld.type === "trap") { if (x < ld.c || x > ld.d) { return 0; } return -(ld.q1 + (ld.q2 - ld.q1) * (x - ld.c) / ((ld.d - ld.c) || 1)); }
+    if (ld.type === "udl") { return ld.q; }
+    if (ld.type === "trap") { if (x < ld.c || x > ld.d) { return 0; } return (ld.q1 + (ld.q2 - ld.q1) * (x - ld.c) / ((ld.d - ld.c) || 1)); }
     return 0;
   }
   var GP = [-0.8611363116, -0.3399810436, 0.3399810436, 0.8611363116];
@@ -891,7 +891,7 @@
     loads.forEach(function (ld) {
       if (ld.type === "point") {
         if ((ld.a >= xa - 1e-9) && (ld.a < xa + Ls - 1e-9 || xa + Ls >= el.member.L - 1e-9)) {
-          var hp = hermiteTrans(clamp(ld.a - xa, 0, Ls), Ls, -ld.P);
+          var hp = hermiteTrans(clamp(ld.a - xa, 0, Ls), Ls, ld.P);
           for (var i = 0; i < 6; i++) { p[i] += hp[i]; }
         }
       } else {
@@ -911,7 +911,7 @@
   function loadResultants(mem, x0, x1) {
     var A = 0, Bb = 0, loads = memLoads[mem.id] || [];
     loads.forEach(function (ld) {
-      if (ld.type === "point") { if (ld.a > x0 && ld.a <= x1) { A += -ld.P; Bb += -ld.P * ld.a; } return; }
+      if (ld.type === "point") { if (ld.a > x0 && ld.a <= x1) { A += ld.P; Bb += ld.P * ld.a; } return; }
       var s0, s1;
       if (ld.type === "udl") { s0 = Math.max(0, x0); s1 = Math.min(mem.L, x1); } else { s0 = Math.max(ld.c, x0); s1 = Math.min(ld.d, x1); }
       if (s1 <= s0) { return; }
@@ -1151,7 +1151,7 @@
     model.members.forEach(function (m) {
       if (m.type !== "beam") { return; }
       var A = nodeById(m.a);
-      if (A && Math.abs(A.y - maxY) < 1e-6) { memLoads[m.id] = [{ type: "udl", q: 12 }]; }
+      if (A && Math.abs(A.y - maxY) < 1e-6) { memLoads[m.id] = [{ type: "udl", q: -12 }]; }
     });
     selNodes = {}; selMembers = {};
     areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {}; selAreas = {}; pendingArea = [];
@@ -1509,10 +1509,9 @@
     }
     if (CB.hi - CB.lo < 1e-9) { CB.hi = CB.lo + Math.max(1e-9, Math.abs(CB.lo) * 1e-3); }
   }
-  // 云图着色：范围外屏蔽为灰色，范围内按 jet 映射（范围由底部色标条控制）
+  // 云图着色：低于下限取最深蓝、高于上限取最深红（jet 自动截断），范围内按 jet 映射
   function cloudColor(v) {
     if (!CB.show) { return rgb(jet(0)); }
-    if (v < CB.lo || v > CB.hi) { return TH().mask; }
     return rgb(jet((v - CB.lo) / (CB.hi - CB.lo)));
   }
   function toX(x) { return T.ox + x * T.scale; }
@@ -1944,18 +1943,19 @@
 
     model.members.forEach(function (m) {
       var loads = memLoads[m.id]; if (!loads || !loads.length) { return; }
-      var nd = memDirNormal(m), dx = nd.x, dy = nd.y; // 变形后局部 -y 的屏幕方向（荷载正方向）
+      var nd = memDirNormal(m), dx = -nd.x, dy = -nd.y; // 局部 +y 的屏幕方向（荷载正方向）
       function P(x) { return memScreenPoint(m, x); }
 
       loads.forEach(function (ld) {
         if (ld.type === "point") {
           var a = clamp(ld.a, 0, m.L), p0 = P(a);
-          var len = Math.max(42, 0.14 * dim) * D.loadScale;
+          var sgn = ld.P >= 0 ? 1 : -1;
+          var len = Math.max(42, 0.14 * dim) * D.loadScale * sgn;
           var tx = p0[0] + dx * len, ty = p0[1] + dy * len;
           ctx.strokeStyle = "#ffd166"; ctx.fillStyle = "#ffd166"; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(tx, ty); ctx.stroke();
           arrowHead(ctx, p0[0], p0[1], tx, ty, 10);
-          if (D.showLoadVals) { tag(ctx, "P=" + roundN(fO(ld.P), 3), tx + dx * 12, ty + dy * 12, small, "#ffd166"); }
+          if (D.showLoadVals) { tag(ctx, "P=" + roundN(fO(ld.P), 3), tx + dx * 12 * sgn, ty + dy * 12 * sgn, small, "#ffd166"); }
           return;
         }
         // 分布荷载：箭头 + 外轮廓线
@@ -2168,7 +2168,18 @@
       loads.forEach(function (ld) { if (ld.type !== "point") { q += memberLoadValue(ld, x); } });
       loadPts.push({ x: x, q: q });
     }
-    return { L: L, pts: pts, loadPts: loadPts, loads: loads };
+    // 两端节点荷载（用于荷载小图显示）
+    var mem = els[0].member, endLoads = [];
+    var mux = mem.ux, muy = mem.uy;
+    if (mux == null) { mux = 1; muy = 0; }
+    [[mem.a, 0], [mem.b, L]].forEach(function (e) {
+      var nl = nodeLoads[e[0]]; if (!nl) { return; }
+      var fx = nl.fx || 0, fy = nl.fy || 0, mz = nl.mz || 0;
+      if (Math.abs(fx) < 1e-9 && Math.abs(fy) < 1e-9 && Math.abs(mz) < 1e-9) { return; }
+      var trans = fx * (-muy) + fy * mux;   // 节点力的横向分量（局部 +y 为正）
+      endLoads.push({ x: e[1], fx: fx, fy: fy, mz: mz, val: trans });
+    });
+    return { L: L, pts: pts, loadPts: loadPts, loads: loads, member: mem, endLoads: endLoads };
   }
 
   function drawForceCharts() {
@@ -2195,7 +2206,7 @@
     (ser.loads || []).forEach(function (ld) { if (ld.type !== "point") { loadVal += memberLoadValue(ld, stationX); } });
     var gap = 6, chH = (H - gap * 5) / 4, ypos = gap;
 
-    function mini(y0, title, series, Yv, value, color, isLoad, dispFactor) {
+    function mini(y0, title, series, Yv, value, color, isLoad, dispFactor, flip) {
       var x0 = 0, w = W, h = chH;
       var padL = 6, padR = 8, padT = 15, padB = 6;
       var ax0 = x0 + padL, ax1 = x0 + w - padR, ay0 = y0 + padT, ay1 = y0 + h - padB;
@@ -2206,14 +2217,17 @@
 
       var maxAbs = 0;
       series.forEach(function (s) { maxAbs = Math.max(maxAbs, Math.abs(Yv(s))); });
-      if (isLoad) { (ser.loads || []).forEach(function (ld) { if (ld.type === "point") { maxAbs = Math.max(maxAbs, Math.abs(ld.P)); } }); }
-      var zeroY = isLoad ? ay1 : (ay0 + ay1) / 2;
-      var span = isLoad ? (ay1 - ay0) : (ay1 - zeroY);
+      if (isLoad) {
+        (ser.loads || []).forEach(function (ld) { if (ld.type === "point") { maxAbs = Math.max(maxAbs, Math.abs(ld.P)); } });
+        (ser.endLoads || []).forEach(function (nl) { maxAbs = Math.max(maxAbs, Math.abs(nl.val)); });
+      }
+      var zeroY = (ay0 + ay1) / 2;
+      var span = ay1 - zeroY;
       var unitY = maxAbs > 0 ? span / maxAbs : 0;
 
       ctx.strokeStyle = TH().chartGrid; ctx.beginPath(); ctx.moveTo(ax0, zeroY); ctx.lineTo(ax1, zeroY); ctx.stroke();
       function sxOf(x) { return ax0 + (ax1 - ax0) * (x / L); }
-      function syOf(v) { return zeroY - v * unitY; }
+      function syOf(v) { return zeroY - (flip ? -v : v) * unitY; }
 
       ctx.beginPath(); ctx.moveTo(sxOf(series[0].x), zeroY);
       series.forEach(function (s) { ctx.lineTo(sxOf(s.x), syOf(Yv(s))); });
@@ -2225,11 +2239,31 @@
       ctx.strokeStyle = color; ctx.lineWidth = 1.4; ctx.stroke();
 
       if (isLoad) {
+        // 杆间集中荷载
         (ser.loads || []).forEach(function (ld) {
           if (ld.type !== "point") { return; }
-          var X = sxOf(clamp(ld.a, 0, L)), Y = syOf(Math.abs(ld.P));
+          var X = sxOf(clamp(ld.a, 0, L)), Y = syOf(ld.P);
           ctx.strokeStyle = "#ffd166"; ctx.beginPath(); ctx.moveTo(X, zeroY); ctx.lineTo(X, Y); ctx.stroke();
           ctx.fillStyle = "#ffd166"; ctx.beginPath(); ctx.arc(X, Y, 2.4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#ffd166"; ctx.font = "600 9px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
+          ctx.fillText(roundN(fO(ld.P), 2) + "", X, Y - 4);
+        });
+        // 两端节点荷载（Fx / Fy / M）
+        (ser.endLoads || []).forEach(function (nl) {
+          var X = sxOf(nl.x), Y = syOf(nl.val);
+          ctx.strokeStyle = "#ff9f43"; ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.moveTo(X, zeroY); ctx.lineTo(X, Y); ctx.stroke();
+          ctx.fillStyle = "#ff9f43"; ctx.beginPath(); ctx.moveTo(X, Y); ctx.lineTo(X - 3, Y + (nl.val >= 0 ? 6 : -6)); ctx.lineTo(X + 3, Y + (nl.val >= 0 ? 6 : -6)); ctx.closePath(); ctx.fill();
+          var parts = [];
+          if (Math.abs(nl.fx) > 1e-9) { parts.push("Fx=" + roundN(fO(nl.fx), 2)); }
+          if (Math.abs(nl.fy) > 1e-9) { parts.push("Fy=" + roundN(fO(nl.fy), 2)); }
+          if (Math.abs(nl.mz) > 1e-9) { parts.push("M=" + roundN(momO(nl.mz), 2)); }
+          if (parts.length) {
+            var left = nl.x <= L / 2;
+            ctx.fillStyle = "#ff9f43"; ctx.font = "600 9px Segoe UI, Microsoft YaHei";
+            ctx.textAlign = left ? "left" : "right";
+            ctx.fillText("节点 " + parts.join(" "), left ? ax0 + 1 : ax1 - 1, ay0 + 9);
+          }
         });
       }
 
@@ -2244,8 +2278,8 @@
 
     mini(ypos, "荷载 (" + lineU() + ")", ser.loadPts, function (p) { return p.q; }, loadVal, "#7bf7c9", true, FU() / LU()); ypos += chH + gap;
     mini(ypos, "轴力 N (" + forceU() + ")", ser.pts, function (p) { return p.N; }, st.N, "#63e06a", false, FU()); ypos += chH + gap;
-    mini(ypos, "剪力 V (" + forceU() + ")", ser.pts, function (p) { return p.S; }, st.V, "#4fd1ff", false, FU()); ypos += chH + gap;
-    mini(ypos, "弯矩 M (" + momU() + ")", ser.pts, function (p) { return p.M; }, st.M, "#ff8080", false, FU());
+    mini(ypos, "剪力 V (" + forceU() + ")", ser.pts, function (p) { return p.V; }, st.V, "#4fd1ff", false, FU()); ypos += chH + gap;
+    mini(ypos, "弯矩 M (" + momU() + ")", ser.pts, function (p) { return p.M; }, st.M, "#ff8080", false, FU(), true);
   }
 
   function zoomAt(cx, cy, factor) {
@@ -2308,7 +2342,7 @@
     var rng = CB.rng, span = (rng.max - rng.min) || 1;
     for (var x = 0; x < W; x++) {
       var v = rng.min + (x + 0.5) / W * span;
-      ctx.fillStyle = (v < CB.lo || v > CB.hi) ? TH().mask : rgb(jet((v - CB.lo) / (CB.hi - CB.lo)));
+      ctx.fillStyle = rgb(jet((v - CB.lo) / (CB.hi - CB.lo)));
       ctx.fillRect(x, 0, 1, H);
     }
     // 句柄位置（百分比）
