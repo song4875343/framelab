@@ -305,6 +305,29 @@
           <label class="chk"><input type="checkbox" id="showShellBeam" /> 显示壳梁（矩形壳X向中线）</label>
           <label class="chk"><input type="checkbox" id="showShellCol" /> 显示壳柱（矩形壳Y向中线）</label>
         </div>
+        <div id="xaraSection">
+          <button class="collapse-head" id="xaraToggle" type="button"><span class="caret">▸</span>OpenSees 分析</button>
+          <div id="xaraPanel" class="hidden">
+              <div class="note" id="xaraWrap" style="margin-top:8px;">
+              默认使用内置求解器；点击下面按钮可将模型导出为 xara 格式并调用 OpenSees 求解，结果自动回填显示。
+              也可直接读取 OpenSees 模型文件（OpenSeesPy .py / Tcl .tcl）导入为新计算文件。
+              <div id="xara-status" style="font-size:10.5px; color:#9fd0ff; line-height:1.6; margin-top:4px;">正在探测求解服务器…</div>
+              <div class="inline2" style="margin-top:6px;">
+                <button class="btn" id="btn-xara-run" type="button">用 OpenSees 分析</button>
+                <button class="btn" id="btn-xara-back" type="button">回到内置求解器</button>
+              </div>
+              <div class="inline2">
+                <button class="btn" id="btn-os-import" type="button">读取 OpenSees 文件</button>
+                <button class="btn" id="btn-xara-copy" type="button">复制脚本</button>
+              </div>
+              <div class="inline2">
+                <button class="btn" id="btn-os-demo-py" type="button">载入 Py 示例</button>
+                <button class="btn" id="btn-os-demo-tcl" type="button">载入 Tcl 示例</button>
+              </div>
+              <input type="file" id="osFileInput" accept=".py,.tcl,.txt" style="display:none" />
+            </div>
+          </div>
+        </div>
         <div class="note" id="geoNote">
           <b style="color:#9fd0ff">操作：</b>“新增节点”后点击放置；“新增杆件”依次点两节点；“新增平面/壳”依次点 3~4 个节点后点“完成”（或第 4 点自动闭合）。
           选择模式左键多选、右键取消。选中后在右上角窗口分「单元 / 细分 / 荷载 / 内力 / 材料 / 截面 / 设计」编辑。细分页对杆件按等分、对面按 nx×ny 分别处理。
@@ -793,6 +816,7 @@
 
 <div id="printArea"></div>
 <script src="design.js"></script>
+<script src="solver.js"></script>
 <script>
 (function () {
   "use strict";
@@ -807,7 +831,7 @@
             dispVar: "mag",
             showShellBeam: false, showShellCol: false, showShellBeamF: false, showShellColF: false,
             cutSnap: true, cutVar: "sx", showCutPanel: true, cutPos: 0.5, showCuts: true,
-            light: false, lenUnit: "m", forceUnit: "kN", cloudLo: null, cloudHi: null, dispLo: null, dispHi: null,
+            light: true, lenUnit: "m", forceUnit: "kN", cloudLo: null, cloudHi: null, dispLo: null, dispHi: null,
             station: 0.5, zoom: 1, px: 0, py: 0,
             designSteel: "GB50017-2017", designConc: "GB50010-2010", designMode: "rebar" };
   var DEF_STIFF = { col: { EA: 4.5e6, EI: 93750, GA: 1.0e9 }, beam: { EA: 4.5e6, EI: 150000, GA: 1.0e9 }, user: { EA: 4.5e6, EI: 150000, GA: 1.0e9 } };
@@ -1001,7 +1025,7 @@
     var det = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1), A = Math.abs(det) / 2;
     if (A < 1e-12) { return { ke: zeros(6, 6), B: zeros(3, 6), area: 0 }; }
     var b1 = y2 - y3, b2 = y3 - y1, b3 = y1 - y2, c1 = x3 - x2, c2 = x1 - x3, c3 = x2 - x1;
-    var B = [[b1, 0, b2, 0, b3, 0], [0, c1, 0, c2, 0, c3], [c1, b1, c2, b2, c3, b3]].map(function (row) { return row.map(function (v) { return v / (2 * det); }); });
+    var B = [[b1, 0, b2, 0, b3, 0], [0, c1, 0, c2, 0, c3], [c1, b1, c2, b2, c3, b3]].map(function (row) { return row.map(function (v) { return v / det; }); });
     var DB = zeros(3, 6), r, c;
     for (r = 0; r < 3; r++) { for (c = 0; c < 6; c++) { DB[r][c] = Dmat[r][0] * B[0][c] + Dmat[r][1] * B[1][c] + Dmat[r][2] * B[2][c]; } }
     var ke = zeros(6, 6);
@@ -1401,6 +1425,8 @@
   var pendingArea = [];          // node ids while adding plane/shell
   var stationM = null;           // member id for station readout
   var ana = null;
+  var anaSource = "builtin";   // 当前结果来源：builtin | xara
+  var anaXaraMeta = null;         // xara 路径的附加信息
   var hit = { nodes: [], members: [], areas: [] };
 
   /* ================= 主题 / 长度单位 / 数值格式 ================= */
@@ -1636,20 +1662,49 @@
     });
     targets.forEach(function (m) { splitMemberAtNodes(m, edgeSeq); });
   }
-  // 物理分割杆件（按有效细分数等分）
-  function physicalMeshMember(m) {
-    var n = effFrameDiv(m), a = nodeById(m.a), b = nodeById(m.b);
-    if (!a || !b || n <= 1) { return []; }
+  // 物理分割杆件：divOpt（面板 等分数n/最大段长）优先；缺省时退化为有效细分数（兼容旧调用）。
+  // 注意子段会记 memDiv n=1（分析时不再临时再分），但面板参数仍可对其再次物理分割。
+  function physicalMeshMember(m, divOpt) {
+    var a = nodeById(m.a), b = nodeById(m.b);
+    if (!a || !b) { return []; }
+    var L = Math.hypot(b.x - a.x, b.y - a.y);
+    if (!(L > 1e-9)) { return []; }
+    var n;
+    if (divOpt) {
+      n = clampInt(divOpt.n || D.NSUB, 1, 50);
+      if (divOpt.lmax > 0) { n = Math.max(n, Math.ceil(L / divOpt.lmax)); }
+      n = clampInt(n, 1, 50);
+    } else {
+      n = effFrameDiv(m);
+    }
+    if (n <= 1) { return []; }
     var seq = [m.a];
     for (var s = 1; s < n; s++) { var t = s / n; seq.push(ensureModelNode(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)); }
     seq.push(m.b);
     return splitMemberAtNodes(m, seq);
   }
-  // 物理分割面单元（nx×ny），并把周边重合的框架按面边缘节点一并分割
-  function physicalMeshArea(a) {
+  // 物理分割面单元（nx×ny），并把周边重合的框架按面边缘节点一并分割。
+  // divOpt（面板 nx/ny/最大尺寸）优先；缺省时退化为有效细分（兼容旧调用）。
+  function physicalMeshArea(a, divOpt) {
     var corners = a.nodes.map(nodeById).filter(Boolean);
     if (corners.length < 3) { return []; }
-    var dv = effAreaDiv(a), nx = dv.nx, ny = dv.ny, etype = a.etype;
+    var dv, nx, ny;
+    if (divOpt) {
+      nx = clampInt(divOpt.nx || D.AMESH, 1, 50); ny = clampInt(divOpt.ny || D.AMESH, 1, 50);
+      if (divOpt.hmax > 0) {
+        var Lmax = 0, i;
+        for (i = 0; i < corners.length; i++) {
+          var p = corners[i], q = corners[(i + 1) % corners.length];
+          Lmax = Math.max(Lmax, Math.hypot(q.x - p.x, q.y - p.y));
+        }
+        if (Lmax > 0) { var k = Math.min(50, Math.ceil(Lmax / divOpt.hmax)); nx = Math.max(nx, k); ny = Math.max(ny, k); }
+      }
+      dv = { nx: nx, ny: ny };
+    } else {
+      dv = effAreaDiv(a);
+    }
+    nx = dv.nx; ny = dv.ny;
+    var etype = a.etype;
     var mat = areaMat[a.id], sec = areaSec[a.id], ld = areaLoads[a.id], rbr = areaRebar[a.id];
     delete areaMat[a.id]; delete areaSec[a.id]; delete areaLoads[a.id]; delete areaDiv[a.id]; delete areaRebar[a.id];
     model.areas = model.areas.filter(function (aa) { return aa.id !== a.id; });
@@ -1824,295 +1879,23 @@
 
   /* ================= 分析 ================= */
 
-  function analyze() {
-    var nodes = model.nodes;
-    var all = [];                 // 分析节点坐标（框架与面单元共用，按坐标合并）
-    var reg = {};                 // 坐标键 -> 分析节点索引
-    function ensureNode(x, y) {
-      var k = (Math.round(x * 1e6) / 1e6) + "," + (Math.round(y * 1e6) / 1e6);
-      if (reg[k] !== undefined) { return reg[k]; }
-      reg[k] = all.length; all.push([x, y]); return reg[k];
-    }
-    var idx = {};                 // 模型节点 id -> 分析节点索引
-    nodes.forEach(function (n) { idx[n.id] = ensureNode(n.x, n.y); });
-    var elems = [];
-    var areaElems = [];          // 面子单元：{aid, etype, kind:'q4'|'cst', g:[全局分析节点], B, Dmat, t}
-    var areaGrid = {};           // 面 id -> {nx, ny, P:[[x,y]x4], t}（四边形结构化网格，供壳梁/壳柱积分）
-    var areaNodal = [];          // 每分析节点的应力累加（云图用）
-    function nodalAcc(i) {
-      if (!areaNodal[i]) { areaNodal[i] = { sx: 0, sy: 0, txy: 0, vm: 0, s1: 0, nx: 0, n: 0 }; }
-      return areaNodal[i];
-    }
-
-    // 预置杆件几何（供细分计算长度）
-    model.members.forEach(function (m) {
-      var ia = idx[m.a], ib = idx[m.b];
-      if (ia === undefined || ib === undefined) { return; }
-      var A = all[ia], Bp = all[ib];
-      var Lm = Math.hypot(Bp[0] - A[0], Bp[1] - A[1]);
-      if (Lm > 1e-9) { m.L = Lm; m.ux = (Bp[0] - A[0]) / Lm; m.uy = (Bp[1] - A[1]) / Lm; m.x1 = A[0]; m.y1 = A[1]; }
-    });
-
-    // ---- 共边细分数统一：框架杆件与面单元共边时取相同细分，使共边节点重合、变形协调 ----
-    var areaDivUse = {}, memTarget = {};
-    (model.areas || []).forEach(function (a) { var d = effAreaDiv(a); areaDivUse[a.id] = { nx: d.nx, ny: d.ny }; });
-    model.members.forEach(function (m) { memTarget[m.id] = effFrameDiv(m); });
-    function edgeSameMember(p, q, m) {
-      var mp = nodeById(m.a), mq = nodeById(m.b);
-      if (!mp || !mq) { return false; }
-      return (Math.hypot(mp.x - p.x, mp.y - p.y) < 1e-6 && Math.hypot(mq.x - q.x, mq.y - q.y) < 1e-6) ||
-             (Math.hypot(mp.x - q.x, mp.y - q.y) < 1e-6 && Math.hypot(mq.x - p.x, mq.y - p.y) < 1e-6);
-    }
-    (model.areas || []).forEach(function (a) {
-      var ids = a.nodes, cn = ids.length;
-      for (var e = 0; e < cn; e++) {
-        var p = nodeById(ids[e]), q = nodeById(ids[(e + 1) % cn]);
-        if (!p || !q) { continue; }
-        var isU = cn < 4 || e === 0 || e === 2;
-        model.members.forEach(function (m) {
-          if (!edgeSameMember(p, q, m)) { return; }
-          var n = Math.max(isU ? areaDivUse[a.id].nx : areaDivUse[a.id].ny, memTarget[m.id] || effFrameDiv(m));
-          if (isU) { areaDivUse[a.id].nx = n; } else { areaDivUse[a.id].ny = n; }
-          memTarget[m.id] = n;
-        });
-      }
-    });
-
-    // ---- 面单元剖分（Plane / Shell，SAP2000 风格：四边形 nx×ny，三角形每边等分） ----
-    (model.areas || []).forEach(function (a) {
-      var corners = a.nodes.map(nodeById).filter(Boolean);
-      if (corners.length < 3) { return; }
-      var mat = areaMatOf(a.id), sec = areaSecOf(a.id);
-      var Dmat = planeD(mat.E, mat.nu, sec.kind === "strain" || sec.kind === "shell-thick" ? "strain" : "stress");
-      var t = Math.max(1e-6, sec.t || 0.2);
-      var dv = areaDivUse[a.id] || effAreaDiv(a), nx = dv.nx, ny = dv.ny;
-      if (corners.length >= 4) {
-        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, n.y]; });
-        areaGrid[a.id] = { nx: nx, ny: ny, P: P, t: t };
-        var sub = quadSubCells(P, nx, ny), gid = [], r, c;
-        for (r = 0; r <= ny; r++) {
-          gid[r] = [];
-          for (c = 0; c <= nx; c++) {
-            var onCorner = (r === 0 && c === 0) ? 0 : (r === 0 && c === nx) ? 1 : (r === ny && c === nx) ? 2 : (r === ny && c === 0) ? 3 : -1;
-            if (onCorner >= 0) { gid[r][c] = idx[a.nodes[onCorner]]; }
-            else { gid[r][c] = ensureNode(sub.grid[r][c][0], sub.grid[r][c][1]); }
-          }
-        }
-        // 网格点按坐标全局合并（面内共用；与杆件共边时自动重合，变形协调）
-        sub.cells.forEach(function (cell) {
-          var g = [gid[Math.floor(cell[0] / (nx + 1))][cell[0] % (nx + 1)], gid[Math.floor(cell[1] / (nx + 1))][cell[1] % (nx + 1)], gid[Math.floor(cell[2] / (nx + 1))][cell[2] % (nx + 1)], gid[Math.floor(cell[3] / (nx + 1))][cell[3] % (nx + 1)]];
-          var coords = g.map(function (gi) { return all[gi]; });
-          var q = q4Stiffness(coords, Dmat, t);
-          areaElems.push({ aid: a.id, etype: a.etype, kind: "q4", g: g, B: q.B0, Dmat: Dmat, t: t });
-        });
-      } else {
-        var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, n.y]; });
-        var sub3 = triSubCells(P3, nx), gmap = [];
-        sub3.pts.forEach(function (p) {
-          var gi = -1, k;
-          for (k = 0; k < 3; k++) {
-            if (Math.hypot(p[0] - P3[k][0], p[1] - P3[k][1]) < 1e-9) { gi = idx[a.nodes[k]]; break; }
-          }
-          gmap.push(gi >= 0 ? gi : ensureNode(p[0], p[1]));
-        });
-        sub3.tris.forEach(function (tr) {
-          var g = [gmap[tr[0]], gmap[tr[1]], gmap[tr[2]]];
-          var coords = g.map(function (gi) { return all[gi]; });
-          var cs = cstStiffness(coords, Dmat, t);
-          areaElems.push({ aid: a.id, etype: a.etype, kind: "cst", g: g, B: cs.B, Dmat: Dmat, t: t });
-        });
-      }
-    });
-
-    // ---- 框架杆件离散化：等分 + 落在杆件上的面网格节点（投影），共边节点自动合并 ----
-    model.members.forEach(function (m) {
-      var ia = idx[m.a], ib = idx[m.b];
-      if (ia === undefined || ib === undefined) { return; }
-      var A = all[ia], Bp = all[ib];
-      var Lm = Math.hypot(Bp[0] - A[0], Bp[1] - A[1]);
-      if (Lm < 1e-9) { return; }
-      m.L = Lm; m.ux = (Bp[0] - A[0]) / Lm; m.uy = (Bp[1] - A[1]) / Lm; m.x1 = A[0]; m.y1 = A[1];
-      var n = clampInt(memTarget[m.id] || effFrameDiv(m), 1, 60);
-      var ts = [], s;
-      for (s = 0; s <= n; s++) { ts.push(s / n); }
-      for (var gi = 0; gi < all.length; gi++) {
-        var px = all[gi][0] - A[0], py = all[gi][1] - A[1];
-        var proj = px * m.ux + py * m.uy;
-        if (proj <= 1e-7 || proj >= Lm - 1e-7) { continue; }
-        if (Math.abs(px * (-m.uy) + py * m.ux) < 1e-6) { ts.push(proj / Lm); }
-      }
-      ts.sort(function (x, y) { return x - y; });
-      var tsU = [];
-      for (s = 0; s < ts.length; s++) { if (!tsU.length || ts[s] - tsU[tsU.length - 1] > 1e-7) { tsU.push(ts[s]); } }
-      if (tsU[0] > 1e-9) { tsU.unshift(0); }
-      tsU[0] = 0;
-      if (tsU[tsU.length - 1] < 1 - 1e-9) { tsU.push(1); }
-      tsU[tsU.length - 1] = 1;
-      var ids2 = tsU.map(function (tt) { return ensureNode(A[0] + (Bp[0] - A[0]) * tt, A[1] + (Bp[1] - A[1]) * tt); });
-      for (var k = 0; k + 1 < ids2.length; k++) {
-        if (ids2[k] === ids2[k + 1]) { continue; }
-        elems.push({ key: m.id, member: m, a: ids2[k], b: ids2[k + 1], xa: tsU[k] * Lm, Lsub: (tsU[k + 1] - tsU[k]) * Lm });
-      }
-    });
-
-    var ndof = all.length * 3;
-    var K = zeros(ndof, ndof);
-    elems.forEach(function (el) {
-      var p1 = all[el.a], p2 = all[el.b];
-      var st = stiffOf(el.member);
-      var mm = elemMatrices(p1[0], p1[1], p2[0], p2[1], st.EA, st.EI, st.GA);
-      el.kl = mm.kl; el.T = mm.T;
-      el.p = elemLoadVector(el);
-      var map = [3 * el.a, 3 * el.a + 1, 3 * el.a + 2, 3 * el.b, 3 * el.b + 1, 3 * el.b + 2];
-      for (var i = 0; i < 6; i++) { for (var j = 0; j < 6; j++) { K[map[i]][map[j]] += mm.kg[i][j]; } }
-    });
-
-    // 面单元刚度组装（仅 ux、uy 自由度；rz 无贡献，零刚度钻孔自由度见下文自动约束）
-    areaElems.forEach(function (ae) {
-      var coords = ae.g.map(function (gi) { return all[gi]; });
-      var ke;
-      if (ae.kind === "q4") { ke = q4Stiffness(coords, ae.Dmat, ae.t).ke; }
-      else { ke = cstStiffness(coords, ae.Dmat, ae.t).ke; }
-      ae.ke = ke;
-      var nn = ae.g.length, map2 = [];
-      for (var a2 = 0; a2 < nn; a2++) { map2.push(3 * ae.g[a2], 3 * ae.g[a2] + 1); }
-      for (var i2 = 0; i2 < 2 * nn; i2++) { for (var j2 = 0; j2 < 2 * nn; j2++) { K[map2[i2]][map2[j2]] += ke[i2][j2]; } }
-    });
-
-    var F = new Array(ndof).fill(0);
-    nodes.forEach(function (n) {
-      var nl = nodeLoads[n.id], ni = idx[n.id];
-      if (nl) { F[3 * ni] += nl.fx || 0; F[3 * ni + 1] += nl.fy || 0; F[3 * ni + 2] += nl.mz || 0; }
-    });
-    elems.forEach(function (el) {
-      var pg = matVec(transpose(el.T), el.p);
-      var map = [3 * el.a, 3 * el.a + 1, 3 * el.a + 2, 3 * el.b, 3 * el.b + 1, 3 * el.b + 2];
-      for (var i = 0; i < 6; i++) { F[map[i]] += pg[i]; }
-    });
-
-    // 面均布荷载 qx、qy（kN/m²）→ 一致等效节点力
-    areaElems.forEach(function (ae) {
-      var ld = areaLoads[ae.aid];
-      if (!ld || (!ld.qx && !ld.qy)) { return; }
-      var qx = ld.qx || 0, qy = ld.qy || 0, nn = ae.g.length;
-      if (ae.kind === "q4") {
-        var coords = ae.g.map(function (gi) { return all[gi]; });
-        var g = 1 / Math.sqrt(3);
-        [[-g, -g, 1], [g, -g, 1], [g, g, 1], [-g, g, 1]].forEach(function (gp) {
-          var xi = gp[0], et = gp[1], w = gp[2], N = q4N(xi, et);
-          var J = [[0, 0], [0, 0]], a;
-          for (a = 0; a < 4; a++) {
-            var dNx = [-(1 - et) / 4, (1 - et) / 4, (1 + et) / 4, -(1 + et) / 4][a];
-            var dNe = [-(1 - xi) / 4, -(1 + xi) / 4, (1 + xi) / 4, (1 - xi) / 4][a];
-            J[0][0] += dNx * coords[a][0]; J[0][1] += dNx * coords[a][1];
-            J[1][0] += dNe * coords[a][0]; J[1][1] += dNe * coords[a][1];
-          }
-          var det = Math.abs(J[0][0] * J[1][1] - J[0][1] * J[1][0]);
-          for (a = 0; a < 4; a++) {
-            F[3 * ae.g[a]] += N[a] * qx * ae.t * det * w;
-            F[3 * ae.g[a] + 1] += N[a] * qy * ae.t * det * w;
-          }
-        });
-      } else {
-        var p1 = all[ae.g[0]], p2 = all[ae.g[1]], p3 = all[ae.g[2]];
-        var A3 = Math.abs((p2[0] - p1[0]) * (p3[1] - p1[1]) - (p3[0] - p1[0]) * (p2[1] - p1[1])) / 2;
-        for (var a3 = 0; a3 < 3; a3++) {
-          F[3 * ae.g[a3]] += qx * ae.t * A3 / 3;
-          F[3 * ae.g[a3] + 1] += qy * ae.t * A3 / 3;
-        }
-      }
-    });
-
-    var fixed = {}, free = [];
-    nodes.forEach(function (n) {
-      var ni = idx[n.id];
-      if (n.bc.ux) { fixed[3 * ni] = true; }
-      if (n.bc.uy) { fixed[3 * ni + 1] = true; }
-      if (n.bc.rz) { fixed[3 * ni + 2] = true; }
-    });
-    // 自动约束零刚度钻孔自由度（面内部 Steiner 点的 rz 等）：对角元≈0 且无约束 → 固定为 0，
-    // 避免整体刚度矩阵奇异；真实机构仍由求解奇异检出（ok=false）。
-    (function () {
-      var md = 0, d;
-      for (d = 0; d < ndof; d++) { md = Math.max(md, Math.abs(K[d][d])); }
-      var eps = md * 1e-12;
-      for (d = 0; d < ndof; d++) { if (!fixed[d] && Math.abs(K[d][d]) <= eps) { fixed[d] = true; } }
-    })();
-    for (var d = 0; d < ndof; d++) { if (!fixed[d]) { free.push(d); } }
-
-    var Kr = zeros(free.length, free.length);
-    for (var r = 0; r < free.length; r++) { for (var cc = 0; cc < free.length; cc++) { Kr[r][cc] = K[free[r]][free[cc]]; } }
-    var ur = solve(Kr, free.map(function (d) { return F[d]; }));
-    var u = new Array(ndof).fill(0);
-    free.forEach(function (d, k) { u[d] = ur[k]; });
-    var ok = u.every(function (v) { return isFinite(v); });
-
-    var maxM = 0, maxV = 0, maxN = 0, byMember = {};
-    elems.forEach(function (el) {
-      var ue = [u[3 * el.a], u[3 * el.a + 1], u[3 * el.a + 2], u[3 * el.b], u[3 * el.b + 1], u[3 * el.b + 2]];
-      var f = matVec(el.kl, matVec(el.T, ue));
-      var fe = [f[0] - el.p[0], f[1] - el.p[1], f[2] - el.p[2], f[3] - el.p[3], f[4] - el.p[4], f[5] - el.p[5]];
-      el.axial = -fe[0];
-      maxN = Math.max(maxN, Math.abs(el.axial));
-      var N = 12, pts = [];
-      for (var k = 0; k <= N; k++) {
-        var t = el.Lsub * k / N;
-        var R2 = loadResultants(el.member, el.xa, el.xa + t);
-        var J = (el.xa + t) * R2.A - R2.Bb;
-        var S = fe[1] + R2.A;
-        var Mo = -(fe[2] - fe[1] * t - J);   // 取受拉侧约定（下缘受拉为正）
-        pts.push({ t: t, S: S, M: Mo });
-        maxM = Math.max(maxM, Math.abs(Mo)); maxV = Math.max(maxV, Math.abs(S));
-      }
-      el.forces = pts;
-      if (!byMember[el.key]) { byMember[el.key] = []; }
-      byMember[el.key].push(el);
-    });
-
-    // ---- 面单元应力恢复（SAP2000 风格：σx、σy、τxy → 主应力 → von Mises；壳另计膜内力 N=σ·t） ----
-    var maxVM = 0, maxSX = 0;
-    areaElems.forEach(function (ae) {
-      var nn = ae.g.length, ue = [];
-      for (var a4 = 0; a4 < nn; a4++) { ue.push(u[3 * ae.g[a4]], u[3 * ae.g[a4] + 1]); }
-      var eps = [0, 0, 0], r3, c3;
-      for (r3 = 0; r3 < 3; r3++) { var s3 = 0; for (c3 = 0; c3 < 2 * nn; c3++) { s3 += ae.B[r3][c3] * ue[c3]; } eps[r3] = s3; }
-      var st = [0, 0, 0];
-      for (r3 = 0; r3 < 3; r3++) { st[r3] = ae.Dmat[r3][0] * eps[0] + ae.Dmat[r3][1] * eps[1] + ae.Dmat[r3][2] * eps[2]; }
-      var sx = st[0], sy = st[1], txy = st[2];
-      var avg = (sx + sy) / 2, R = Math.hypot((sx - sy) / 2, txy);
-      var s1 = avg + R, s2 = avg - R;
-      var vm = Math.sqrt(sx * sx - sx * sy + sy * sy + 3 * txy * txy);
-      ae.s = { sx: sx, sy: sy, txy: txy, s1: s1, s2: s2, vm: vm, nx: sx * ae.t, ny: sy * ae.t, nxy: txy * ae.t };
-      ae.cx = 0; ae.cy = 0;
-      for (var a5 = 0; a5 < nn; a5++) { ae.cx += all[ae.g[a5]][0]; ae.cy += all[ae.g[a5]][1]; }
-      ae.cx /= nn; ae.cy /= nn;
-      maxVM = Math.max(maxVM, Math.abs(vm)); maxSX = Math.max(maxSX, Math.abs(sx), Math.abs(sy));
-      for (var a6 = 0; a6 < nn; a6++) {
-        var acc = nodalAcc(ae.g[a6]);
-        acc.sx += sx; acc.sy += sy; acc.txy += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * ae.t; acc.n++;
-      }
-    });
-
-    // ---- 壳梁 / 壳柱参考线（仅矩形壳）：母单元中线 + 全部分细分单元积分 ----
-    var shellCuts = buildShellCuts(model.areas || [], areaGrid, areaElems);
-    // ---- 壳剖面（自由切割线）：穿过的全部分细分单元应力积分 ----
-    var cutResults = integrateCuts(model.cuts || [], areaElems, all);
-
-    var maxDisp = 0;
-    for (var i2 = 0; i2 < all.length; i2++) { maxDisp = Math.max(maxDisp, Math.hypot(u[3 * i2], u[3 * i2 + 1])); }
-    // 顶层（y 最大）侧移与逐层位移角：按不同 y 分组
-    var ys = nodes.map(function (n) { return n.y; });
-    var ymax = ys.length ? Math.max.apply(null, ys) : 0;
-    var roof = 0, nr = 0;
-    nodes.forEach(function (n) { if (Math.abs(n.y - ymax) < 1e-6) { roof += u[3 * idx[n.id]]; nr++; } });
-    roof = nr ? roof / nr : 0;
-
+  function collectSolverContext() {
+    // 收集求解器输入（solver.js FrameSolver.solve 的 ctx），均为引用传递
     return {
-      nodes: nodes, all: all, elems: elems, u: u, ok: ok, idx: idx, byMember: byMember,
-      areaElems: areaElems, areaNodal: areaNodal, areaGrid: areaGrid, shellCuts: shellCuts,
-      cutResults: cutResults,
-      res: { roof: roof * 1000, maxDisp: maxDisp * 1000, maxM: maxM, maxV: maxV, maxN: maxN, maxVM: maxVM, maxSX: maxSX, nNode: nodes.length, nMember: model.members.length, nArea: (model.areas || []).length }
+      model: model, NSUB: D.NSUB, AMESH: D.AMESH,
+      memStiff: memStiff, memMat: memMat, memSec: memSec, memLoads: memLoads,
+      nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads,
+      memDiv: memDiv, areaDiv: areaDiv, MATERIALS: MATERIALS, DEF_STIFF: DEF_STIFF
     };
+  }
+
+  /* 求解器入口：实现已拆至 solver.js（FrameSolver.solve），此处仅做适配。
+   * 默认走内置求解器；xara 路径由 xara.js 经 FrameLab.setExternalAna 接入。 */
+  function analyze() {
+    if (typeof FrameSolver !== "undefined" && FrameSolver.solve) {
+      return FrameSolver.solve(collectSolverContext());
+    }
+    throw new Error("FrameSolver 未加载：请确认 solver.js 与 index.html 同目录。");
   }
 
   /* ================= 绘制 ================= */
@@ -3508,6 +3291,7 @@
 
   function rebuild() {
     ana = analyze();
+    anaSource = "builtin"; anaXaraMeta = null;
     if (!designKeep) { designRes = null; if (typeof updateDesignSummary === "function") { updateDesignSummary(); } }
     designKeep = false;
     draw(); updatePopup(); updateCutPanel(false);
@@ -3843,7 +3627,7 @@
       var mdv = memDiv[+mid];
       $("dv-n").value = mdv ? (mdv.n != null ? mdv.n : D.NSUB) : D.NSUB;
       $("dv-lmax").value = mdv && mdv.lmax ? roundN(lenO(mdv.lmax), 4) : 0;
-      $("dv-info").textContent = "全局默认：" + D.NSUB + " 等分；当前有效 " + effFrameDiv(m) + " 段（1 段长约 " + fmtLen((m.L || 0) / effFrameDiv(m)) + " " + D.lenUnit + "）。";
+      $("dv-info").textContent = "全局默认：" + D.NSUB + " 等分；当前有效 " + effFrameDiv(m) + " 段（1 段长约 " + fmtLen((m.L || 0) / effFrameDiv(m)) + " " + D.lenUnit + "）。⚙物理分割按本框参数执行，可重复加密。";
     }
     var aid = Object.keys(selAreas)[0];
     var a = (aid !== undefined) ? areaById(+aid) : null;
@@ -3861,7 +3645,7 @@
       var eff = effAreaDiv(a);
       $("dv-ainfo").textContent = "类型 " + (a.etype === "shell" ? "壳" : "平面") + "～" + (sec.kind) + "，t=" + fmtLen(sec.t) +
         " " + D.lenUnit + "，E=" + fmtSci(mat.E) + " kPa；网格 " + eff.nx + "×" + eff.ny +
-        (a.nodes.length >= 4 ? "（四边形）" : "（三角形，每边 " + eff.nx + " 等分）") + "。";
+        (a.nodes.length >= 4 ? "（四边形）" : "（三角形，每边 " + eff.nx + " 等分）") + "。⚙物理分割按本框参数执行，可重复加密。";
     }
     // 钢筋回填（杆件优先，否则面）
     (function fillRebar() {
@@ -4330,25 +4114,30 @@
     $("dv-hmax").value = 0; rebuild();
   });
 
-  // 物理分割：真正新增模型节点并拆分单元
+  // 物理分割：真正新增模型节点并拆分单元（按本页细分参数执行，可重复执行逐级加密）
   $("dv-mesh").addEventListener("click", function () {
+    var n = clampInt(parseFloat($("dv-n").value) || D.NSUB, 1, 50);
+    var lmax = lenI(parseFloat($("dv-lmax").value) || 0);
     var ids = Object.keys(selMembers).map(Number);
     if (!ids.length) { return; }
     var newSel = {};
     ids.forEach(function (id) {
       var m = memberById(id); if (!m) { return; }
-      physicalMeshMember(m).forEach(function (nid) { newSel[nid] = true; });
+      physicalMeshMember(m, { n: n, lmax: lmax > 0 ? lmax : 0 }).forEach(function (nid) { newSel[nid] = true; });
     });
     selMembers = newSel; selNodes = {}; selAreas = {};
     rebuild();
   });
   $("dv-amesh").addEventListener("click", function () {
+    var nx = clampInt(parseFloat($("dv-nx").value) || D.AMESH, 1, 50);
+    var ny = clampInt(parseFloat($("dv-ny").value) || D.AMESH, 1, 50);
+    var hmax = lenI(parseFloat($("dv-hmax").value) || 0);
     var ids = Object.keys(selAreas).map(Number);
     if (!ids.length) { return; }
     var newSelA = {};
     ids.forEach(function (id) {
       var a = areaById(id); if (!a) { return; }
-      physicalMeshArea(a).forEach(function (nid) { newSelA[nid] = true; });
+      physicalMeshArea(a, { nx: nx, ny: ny, hmax: hmax > 0 ? hmax : 0 }).forEach(function (nid) { newSelA[nid] = true; });
     });
     selAreas = newSelA; selNodes = {}; selMembers = {};
     rebuild();
@@ -4882,12 +4671,29 @@
     var panel = $("modelPanel"), open = panel.classList.toggle("hidden");
     $("modelToggle").classList.toggle("open", !open);
   });
-  // 示例统一从子文件夹 example/ 读取（file:// 下 fetch 不可用时回退到内置生成）
-  function loadExampleFile(file, fallback, name) {
-    fetch("example/" + file).then(function (r) {
+  $("xaraToggle").addEventListener("click", function () {
+    var panel = $("xaraPanel"), open = panel.classList.toggle("hidden");
+    $("xaraToggle").classList.toggle("open", !open);
+  });
+  // 示例统一从子文件夹 example/ 读取：先直连 fetch，file:// 下不可用时
+  // 自动经桥接服务器（/api/file，仅放行 example/ 目录）中转；两者都失败才走回退
+  function fetchLocalText(rel) {
+    return fetch(rel).then(function (r) {
       if (!r.ok) { throw new Error("http " + r.status); }
       return r.text();
-    }).then(function (t) { loadModelFromText(t, name); }).catch(function () { fallback(); });
+    }).catch(function () {
+      var base = (window.FrameXara && window.FrameXara.bridgeUrl) ? window.FrameXara.bridgeUrl() : "http://127.0.0.1:8007";
+      return fetch(base.replace(/\/+$/, "") + "/api/file?path=" + encodeURIComponent(rel)).then(function (r2) {
+        if (!r2.ok) { throw new Error("http " + r2.status); }
+        return r2.json();
+      }).then(function (d) {
+        if (!d || !d.ok) { throw new Error((d && d.error) || "bridge relay failed"); }
+        return d.text;
+      });
+    });
+  }
+  function loadExampleFile(file, fallback, name) {
+    fetchLocalText("example/" + file).then(function (t) { loadModelFromText(t, name); }).catch(function () { fallback(); });
   }
   $("btn-load-frame").addEventListener("click", function () { loadExampleFile("framelab-2026-09-15T07-26-30.json", seedDemo, "框架示例"); });
   $("btn-load-shell").addEventListener("click", function () { loadExampleFile("framelab-2026-09-15T07-28-49.json", seedAreaDemo, "壳示例"); });
@@ -4924,9 +4730,10 @@
       placeSub("meshWrap", "sub-force", null);
       placeSub("extWrap", "sub-force", null);
     } else if (v === "model") {
-      // 几何：折叠菜单 + 显示选项 + 面网格 + 帮助（无拉杆、无面云图分量、无极值位置）
+      // 几何：折叠菜单 + 显示选项 + 面网格 + OpenSees 分析 + 帮助（无拉杆、无面云图分量、无极值位置）
       placeSub("dispOpts", "sub-geo", "geoNote");
       placeSub("meshWrap", "sub-geo", "geoNote");
+      placeSub("xaraSection", "sub-geo", "geoNote");
       placeSub("areaOpts", "park", null);
       placeSub("extWrap", "park", null);
     } else {
@@ -5065,6 +4872,34 @@
     r.readAsText(f);
     ev.target.value = "";
   });
+
+  // 读取 OpenSees 文件（OpenSeesPy .py / Tcl .tcl）→ 解析为快照 → 作为新计算文件打开
+  function importOsText(txt, name) {
+    if (!window.FrameOpenSees) { alert("导入模块未加载（opensees_import.js 缺失）"); return; }
+    var r;
+    try { r = window.FrameOpenSees.parse(txt, name); }
+    catch (e) { alert("读取失败：" + e.message); return; }
+    openDocument(name || "OpenSees 导入", r.snapshot);
+    var msg = "已导入" + (r.format === "tcl" ? " Tcl " : " OpenSeesPy ") + "模型：节点 " + r.summary.nodes +
+      " / 杆件 " + r.summary.members + " / 荷载 " + r.summary.loads + " 条（已用内置求解器求解）。";
+    if (r.warnings.length) { msg += "<br/>注意：" + r.warnings.slice(0, 3).join("<br/>"); }
+    var st = $("xara-status"); if (st) { st.innerHTML = msg; }
+  }
+  function loadOsExample(file, name) {
+    fetchLocalText("example/" + file).then(function (t) { importOsText(t, name); }).catch(function () {
+      alert("示例文件读取失败：直连与桥接（http://127.0.0.1:8007）都不可用。请用 start_server.bat 启动求解服务器后重试，或用 http 方式打开页面。");
+    });
+  }
+  $("btn-os-import").addEventListener("click", function () { $("osFileInput").click(); });
+  $("osFileInput").addEventListener("change", function (ev) {
+    var f = ev.target.files && ev.target.files[0]; if (!f) { return; }
+    var r = new FileReader();
+    r.onload = function () { importOsText(String(r.result), (f.name || "").replace(/\.[^.]+$/, "")); };
+    r.readAsText(f);
+    ev.target.value = "";
+  });
+  $("btn-os-demo-py").addEventListener("click", function () { loadOsExample("openseespy_portal_frame.py", "Py 示例·门式刚架"); });
+  $("btn-os-demo-tcl").addEventListener("click", function () { loadOsExample("tcl_simple_beam.tcl", "Tcl 示例·简支梁"); });
 
   /* ================= 多文档（标签页） ================= */
   var docs = [], activeDocId = null, docSeq = 0;
@@ -5318,7 +5153,25 @@
     newDoc: newDocument,
     listDocs: function () { return docs.map(function (d) { return { id: d.id, name: d.name, active: d.id === activeDocId }; }); },
     switchDoc: switchToDoc,
-    state: function () { return { D: D, model: model, ana: ana, memStiff: memStiff, memMat: memMat, memSec: memSec, memRebar: memRebar, areaRebar: areaRebar, memLoads: memLoads, nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads, memDiv: memDiv, areaDiv: areaDiv, design: designRes }; }
+    state: function () { return { D: D, model: model, ana: ana, memStiff: memStiff, memMat: memMat, memSec: memSec, memRebar: memRebar, areaRebar: areaRebar, memLoads: memLoads, nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads, memDiv: memDiv, areaDiv: areaDiv, design: designRes }; },
+    solverContext: collectSolverContext,
+    solverSource: function () { return anaSource; },
+    recomputeDerived: function () {
+      // 用当前 ana.areaElems/areaGrid 重算壳梁壳柱参考线与壳剖面（供外部求解器回填后调用）
+      if (!ana) { return null; }
+      try { ana.shellCuts = buildShellCuts(model.areas || [], ana.areaGrid || {}, ana.areaElems || []); } catch (e) {}
+      try { ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, ana.all); } catch (e) {}
+      return ana;
+    },
+    setExternalAna: function (extAna, meta) {
+      // 接入外部求解器（如 xara/OpenSees）结果：直接显示，不经过内置 analyze()
+      ana = extAna; anaSource = "xara"; anaXaraMeta = meta || null;
+      try { ana.shellCuts = buildShellCuts(model.areas || [], ana.areaGrid || {}, ana.areaElems || []); } catch (e) {}
+      try { ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, ana.all); } catch (e) {}
+      draw(); updatePopup(); updateCutPanel(false);
+      return ana;
+    },
+    clearExternalAna: function () { anaSource = "builtin"; anaXaraMeta = null; rebuild(); }
   };
 
   initCloudDrag();
@@ -5330,5 +5183,7 @@
   initDocs();
 })();
 </script>
+<script src="xara.js"></script>
+<script src="opensees_import.js"></script>
 </body>
 </html>

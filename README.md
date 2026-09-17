@@ -87,7 +87,7 @@
 - 选中**杆件**后，「细分」页可按 **等分数 n** 或 **最大段长 lmax** 加密（覆盖全局“单元数/杆”）。
 - 选中**面单元**后，「细分」页可按 **nx × ny 结构化网格（1~50）**或 **最大尺寸 hmax** 加密；四边形面用 nx×ny 网格剖分为 Q4，三角形面按每边 nx 等分剖分为 CST。
 - 每个单元的细分覆盖独立存储（`memDiv` / `areaDiv`），「恢复全局」可清除覆盖。
-- **物理分割**（真正新增模型节点并拆分单元）：
+- **物理分割**（真正新增模型节点并拆分单元）**按细分面板当前参数执行，可重复执行逐级加密**：
   - 「⚙ 物理分割杆件」——按等分数在模型层面新增节点并把杆件拆成多段（材料/截面/刚度/荷载自动继承与映射，点/梯形荷载随新分段重新定位）。
   - 「⚙ 物理分割面」——按 nx × ny 在模型层面新增节点并把面拆成 nx×ny 个面单元；**若面周边有重合的框架单元，会按面边缘节点把框架一并分割**，保证网格协调。
   - 分割生成的单元自动记为最小单元（分析时不再临时细分），可在画布上直接看到分割后的单元与框架。
@@ -111,7 +111,7 @@
 
 ### 单位与主题
 - **单位切换**（底部状态栏）：长度可选 **m / mm**，力可选 **kN / N**。切换后所有输入框、标注、结果与图表单位实时换算（应力随之在 kPa / Pa 间切换，位移以 mm 显示）。
-- **亮 / 暗主题**：右上角「亮色主题 / 暗色主题」一键切换，模型与全部面板、图表同步换肤。
+- **亮 / 暗主题**：右上角一键切换（默认**浅色主题**），模型与全部面板、图表同步换肤。
 - **状态栏**：显示当前单位、操作提示与鼠标实时坐标。
 
 ### 分析
@@ -191,7 +191,129 @@ FrameLab.newDoc();            // 新建一个空白计算文件（标签页）
 FrameLab.listDocs();          // 列出所有计算文件标签：[{id,name,active}]
 FrameLab.switchDoc(id);       // 切换到指定计算文件
 FrameLab.state();             // 获取模型 / 结果数据
+FrameLab.solverContext();     // 获取求解器输入 ctx（solver.js 接口）
+FrameLab.solverSource();      // 当前结果来源："builtin" | "xara"
+FrameLab.setExternalAna(ana, meta); // 接入外部求解器结果并显示
+FrameLab.clearExternalAna();  // 回到内置求解器并重算
+FrameLab.recomputeDerived();  // 用当前 ana 重算壳梁壳柱参考线与壳剖面
 ```
+
+---
+
+## 🔌 OpenSees / xara 分析（可选）
+
+内置求解器（`solver.js`，Timoshenko 梁 + Q4/CST，直接刚度法）始终是默认求解器。
+左侧「几何」面板、显示选项之后、「操作」之前有 **OpenSees 分析**折叠区，
+页面打开时会自动探测求解服务器（http://127.0.0.1:8007），连通显示成功、否则提示未开启。
+点击「用 OpenSees 分析」即：
+
+1. `xara.js` 把当前模型导出为 [xara](https://github.com/peer-open-source/xara)（OpenSees Python 接口库）的 `.py` 脚本；
+2. POST 到本地桥接服务（`xara_server.py`，默认 http://127.0.0.1:8007），调用 OpenSees 求解；
+3. 结果读回并映射为 FrameLab 数据结构，位移 / 内力 / 应力云图 / 壳剖面照常显示；「回到内置求解器」一键切回。
+
+```bash
+# 一键启动（仓库根目录双击或执行，Python 3.11~3.13 均可）：
+start_server.bat   # uv sync（按 uv.lock 装 xara/opensees/mkl）+ 启动桥接 http://127.0.0.1:8007
+```
+等价手动流程：`uv sync`，再 `uv run python xara_server.py --port 8007`
+（兼静态托管 `index.html`）。依赖声明在 `pyproject.toml`（含 `uv.lock`
+锁定文件；`requirements-xara.txt` 为同版本对照表）。
+（注：8000 易与其它程序冲突，默认端口已改为 8007。）
+
+> Windows 说明：OpenSeesRT.dll 依赖 `mkl_rt.2.dll` 等 MKL 库；mkl 2026 起只提供
+> `mkl_rt.3.dll`，会导致 `xara.Model()` 初始化失败，故 requirements 中把 mkl 上限定死。
+> MKL DLL 位于 `.venv\Library\bin`，由导出脚本的 `_bootstrap_dll()` 自动加入搜索路径。
+
+也可「复制脚本」离线运行：`.venv\Scripts\python.exe run_xara.py framelab_xara.py -o results.json`。
+
+### 读取 OpenSees 文件（`opensees_import.js`）
+
+左侧「几何」面板 → OpenSees 分析 →「读取 OpenSees 文件」，可把 OpenSees 模型文件
+直接导入为新的计算文件（导入后自动用内置求解器求解，也可再点「用 OpenSees 分析」）。
+按扩展名 + 内容自动判定格式，同时兼容：
+
+- **OpenSeesPy（`.py`）**：`ops./op.` 命令；本页导出的 xara 脚本（`model.` 写法）也可读回；
+  支持变量赋值 (`E = 3.0e7`) 与简单四则表达式；
+- **Tcl（`.tcl`）**：原生 `node/fix/element/load/eleLoad` 命令；
+  支持 `set` 变量、`$var`/`${var}` 替换与 `[expr ...]` 四则运算。
+
+支持的命令子集（2D 线弹性静力）：`node / fix / uniaxialMaterial Elastic / section Elastic /
+geomTransf Linear / element elasticBeamColumn|forceBeamColumn|dispBeamColumn|truss /
+pattern Plain / load / eleLoad -beamUniform|-beamPoint`；求解/输出类命令
+（`analyze/recorder/...`）与面/壳单元会被跳过并在导入后提示，不中断导入。
+
+约定：假定文件单位与 FrameLab 内部一致（m / kN / kN·m），不做换算；
+杆件荷载沿局部 +y 为正（`udl q` 与 `beamUniform Wy` 直接对应）；
+`-beamPoint` 的位置参数按相对长度（0~1）解释（与本页导出一致），落在 (1, L] 内
+则按距首节点绝对距离解释；`truss` 按轴向杆导入（EI 取 EA·1e-9 近似）；
+刚度以 `memStiff {EA, EI}` 精确覆盖（GA 取 1e12，退化为 Euler 梁，与 OpenSees 一致）。
+
+`example/` 下有两个可直接载入的例子（面板上另有「载入 Py 示例 / 载入 Tcl 示例」按钮）：
+
+- `example/openseespy_portal_frame.py` —— 单跨门式刚架（梁均布 + 侧向节点荷载）；
+- `example/tcl_simple_beam.tcl` —— 简支梁（均布 + 跨中集中力，含 `set`/`[expr]` 用法）。
+
+> file:// 方式直接双击打开页面时，浏览器禁 fetch 本地文件，示例会自动经桥接
+> 服务器（`GET /api/file`，仅放行 `example/` 目录）中转读取——只要服务器在运行
+>（`start_server.bat`），示例按钮照常用；服务器也没开时才会报错。
+
+验证：`node tests/verify_osimport.mjs`（解析 + 内置求解 + 简支梁解析值 `Mmax=77.25` +
+xara 导出 roundtrip，一律通过）。
+
+映射关系（均经 xara 0.0.34 真机核对）：纯框架 → `elasticBeamColumn`（ndm=2, ndf=3），
+杆件按 `NSUB` / `memDiv` 等分再加杆上节点投影切分（与内置求解器同规则，逐段下单元
+与荷载、逐段回填 13 站内力）；端力取 `eleResponse 'localForces'`（单元局部坐标；注意 OpenSeesRT 的 `'forces'` 返回的是
+整体坐标端力，竖向/斜杆若误用会导致轴力与剪力互换）；
+纯连续体子单元 → `Quad` / `Tri31`（ndm=2, ndf=2，逆时针节点序），应力取节点值平均；
+节点荷载 → `load`；杆均布 → `beamUniform`；集中力 → `beamPoint(P, a/L)`；
+梯形 → 20 点离散；面荷载 → 与内置求解器同式的一致等效节点力。
+政策：只做线弹性（`ElasticIsotropic` + `elasticBeamColumn` + Linear 算法，不引入非线性）。
+
+### 混合模型（3D 退化平面路径）
+
+框架—连续体混合模型走 ndm=3、ndf=6 的退化平面路径（z=0 平面内建模）：
+框架为 3D `elasticBeamColumn`（定向向量取 +Z，局部 y 落在面内），
+连续体为 `ASDShellQ4` + `ElasticMembranePlateSection` 膜截面；
+全部节点约束面外自由度（uz、rx、ry），只施加面内荷载。
+实测约束（xara 0.0.34 + opensees 0.1.31）：
+
+- `ShellMITC4` 的 stresses/strains 查询返回全零、`ShellDKGQ` 在膜截面下奇异，故选用 `ASDShellQ4`；
+- `ASDShellQ4` 的 `'stresses'` 为每高斯点 8 个截面广义力，前 3 个为 `[Nyy, Nxx, Nxy]`
+ （X/Y 向拉伸标定），膜应力 = N/t；**Nxy 符号与 2D 相反，回填时已取反**；
+- 3D 梁的 `eleLoad`（beamUniform/beamPoint）总量对、分布错（悬臂 UDL 下固端弯矩≈0），
+  故杆件荷载一律转为与内置求解器同式的一致等效节点力（Euler 梁 + 等截面下为精确等效）；
+- 膜壳的 drilling 刚度约等于零：**梁以“点”方式接入墙面时转角基本不传递（相当于铰接）**；
+  共边（逐节点共享）的平动耦合是精确的，框架自身的梁—梁刚接不受影响；
+  连梁等点连接场景的刚域加强另行立项；
+- 混合模型中的三角形面暂不支持（`ASDShellT3` 在细分网格下偏软约 2~3 倍，已实测），
+  会给出明确报错；纯连续体模型的三角形走 2D `Tri31` 路径，不受影响。
+
+### 桥接验证
+
+`node tests/verify_bridge.mjs`（需先装好 `.venv`）自动对比内置求解器与 OpenSees 结果：
+
+| 用例 | 内容 | 结果 |
+| --- | --- | --- |
+| A | 门式框架 Euler 对标（GA 覆盖退化） | 位移/内力相对误差 < 1e-7 |
+| B | 门式框架真实截面（含剪切变形） | 位移 0.7%，内力 2.2%（理论差异：Timoshenko vs 欧拉梁） |
+| C | 矩形板均匀拉伸（解析 σx=2000kPa） | 与解析解一致，应力/位移误差 < 1e-4 |
+| D | 悬臂墙弯曲（整体平衡 Fx/M0 精确） | 位移 9.5%，应力（除固定端奇异区）13%（列式差异，加密后收敛） |
+| E | 三角悬臂 CST | 误差 < 1e-14（与 Tri31 完全一致） |
+| F | 混合模型 | 走 3D 退化平面路径（kind=mixed3d） |
+| G | 纯框架走 3D 路径 | 位移/内力误差 < 1e-7，面外泄漏为 0（验证节点等效荷载 + Mz 映射） |
+| H | 门框 + 内填墙混合 3D | 位移 2.8%，杆件内力 39%（次要弯矩再分配；漂移、轴力、平衡精确），墙应力 5~11%，平衡精确，泄漏为 0 |
+| I | 混合 + 三角形面 | 被明确拒绝（T3 精度不足） |
+| J | 共边重复节点回归（两块板并排 + 支座副本） | 求解成功，应力 25% 内（除固定端奇异区）、位移 15% 内、平衡精确 |
+| K | 杆件细分（NSUB/memDiv 等分 + 杆中节点投影切分 + 缝上集中力） | 位移/内力误差 < 1e-6（逐段 13 站全对齐） |
+
+> 注：验证过程中暴露并已修复的 bug——① 杆端力误用 `'forces'`（整体坐标），
+> 改为 `'localForces'`；② 内置求解器 CST 的 B 矩阵多除以 2（刚度偏小为 1/4，
+> 位移偏大约 4 倍、应力偏小约一半），`solver.js` 与 `index.html` 内遗留副本已同步修正；
+> ③ 3D 路径站内力须扣除分布荷载固端力（节点等效荷载下单元量测 q=k·u 不含此项）；
+> ④ `ASDShellQ4` 的 Nxy 符号与 2D 相反，回填已取反（全场反相关验证）；
+> ⑤ 共边重复节点：约束/关联一律按分析节点合并。逐模型节点下 fix 会在重复约束处
+> 直接报错退出；若按模型节点判孤立，副本节点会被误判孤立而多加全约束，
+> 把共边界面钉死（曾实测 30 米悬臂墙刚度偏大约 84 倍）。另桥接报错现已附带 stderr 尾部。
 
 ---
 
@@ -235,7 +357,24 @@ Q4 取单元中心点 `ξ=η=0` 的 B 矩阵；CST 为常应变。由节点位�
 
 ```
 framelab/
-├── index.html              # 全部代码（HTML + CSS + JavaScript），零依赖
+├── index.html              # 主界面（求解器入口为适配器，实现在 solver.js）
+├── solver.js               # 自编求解器独立模块：FrameSolver.solve(ctx)（默认求解器）
+├── xara.js                 # OpenSees/xara 集成：导出脚本 / 调用桥接 / 回填结果
+├── opensees_import.js      # OpenSees 文件读取：OpenSeesPy(.py)/Tcl(.tcl) → 模型快照
+├── xara_server.py          # 本地桥接服务（标准库实现）：执行脚本 + 静态托管 + 示例中转
+├── run_xara.py             # 命令行离线运行导出的 xara 脚本并提取结果
+├── start_server.bat        # 一键启动：uv sync + 运行桥接（默认 8007，可传端口）
+├── pyproject.toml + uv.lock# 桥接环境声明与锁定（xara/opensees/mkl）
+├── requirements-xara.txt   # 同版本对照表（uv 安装备用）
+├── design.js               # 混凝土/钢结构设计后处理模块
+├── example/                # 示例文件
+│   ├── framelab-*.json              # JSON 模型（框架 / 壳）
+│   ├── openseespy_portal_frame.py   # OpenSeesPy 例：单跨门式刚架
+│   └── tcl_simple_beam.tcl          # Tcl 例：简支梁（均布+跨中集中力）
+├── tests/
+│   ├── verify_bridge.mjs   # 桥接验证：内置求解器 vs OpenSees（A~K 用例）
+│   ├── verify_osimport.mjs # 导入验证：解析+求解+解析值核对+roundtrip
+│   └── verify_phymesh.mjs  # 物理分割回归：面板参数+重复分割（DOM 桩驱动真实页面脚本）
 ├── docs/                   # 界面截图
 │   ├── 01-displacement.png
 │   ├── 02-moment.png
@@ -258,6 +397,12 @@ framelab/
 
 ## 🧪 验证
 
+自动化测试（仓库根目录执行，一律 `RESULT: ALL PASS` 为通过）：
+
+- `node tests/verify_bridge.mjs` —— 内置求解器 vs OpenSees 真机对比（A~K，含杆件细分 Case K；需先 `uv sync` 配好 `.venv`）；
+- `node tests/verify_osimport.mjs` —— OpenSees 文件解析 + 内置求解 + 简支梁解析值 + xara 导出 roundtrip；
+- `node tests/verify_phymesh.mjs` —— 物理分割回归：最小 DOM 桩加载真实页面脚本，驱动真实按钮 handler，验证分割采用面板参数、可重复加密、分割后仍可求解。
+
 内置算例已与解析解核对：
 
 - 悬臂梁均布荷载：端部挠度 `qL⁴/(8EI)`、固端弯矩 `qL²/2`；
@@ -269,7 +414,7 @@ framelab/
 - **面细分收敛**：nx=1 与 nx=6 轴向应力均收敛到解析值 10000 kPa；
 - **框架 + 面混合**：刚度矩阵非奇异，位移与应力合理；
 - **框架—面共边协调**：共边处杆件与面取相同细分数且节点按坐标合并（底边节点数与杆件子单元数一致）；
-- **物理分割**：面 nx=2 分割为 4 个面单元、周边 4 根框架各拆为 2 段、节点 4→9；杆件物理分割段数与参数一致；
+- **物理分割**：面 nx=2 分割为 4 个面单元、周边 4 根框架各拆为 2 段、节点 4→9；杆件物理分割段数与面板参数一致，且可重复执行逐级加密（`verify_phymesh.mjs` 回归覆盖）；
 - **面收缩显示**：勾选后二维单元收缩渲染正常，无异常；
 - **模型保存 / 打开**：保存的 JSON 重新载入后模型、荷载、细分、单位与显示设置完整还原；
 - **多文档标签页**：新建 / 切换 / 关闭 / 重命名正常，各标签模型与显示设置相互独立不串扰；「打开」文件会新建标签；关闭最后一个标签自动重建空白文件；

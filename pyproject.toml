@@ -1,0 +1,18 @@
+[project]
+name = "framelab-bridge"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "xara==0.0.34",
+  "opensees==0.1.31",
+  "mkl<2026; sys_platform == 'win32'",
+]
+
+[tool.uv]
+managed = true
+# opensees 声明了 tcinter>=1.0（仅 PyPy/emscripten 生效），但 PyPI 上最高只有
+# tcinter 0.0.6，导致 uv 通用解析失败；本项目只跑 win CPython，该依赖恒被
+# marker 跳过，这里用恒假 marker 的 override 放行锁定，同步/安装时不受影响。
+override-dependencies = [
+  "tcinter==0.0.6; python_version < '3.0'",
+]

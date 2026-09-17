@@ -1,0 +1,14 @@
+# FrameLab xara/OpenSees 桥接验证环境（Windows）。
+# 首选 uv sync（pyproject.toml + uv.lock，与本文件同版本）；
+# 备用才用：uv venv .venv
+#         uv pip install -r requirements-xara.txt
+#
+# 版本钉选说明（2026-09 实测）：
+# - xara==0.0.34：与 xara.js 映射关系核对的版本。
+# - opensees==0.1.31：提供 OpenSeesRT 内核（xara 的 Model API 后端），含 win_amd64 轮子。
+# - mkl<2026（仅 Windows）：OpenSeesRT.dll 依赖 mkl_rt.2.dll / libmmd.dll 等；
+#   mkl 2026 起只提供 mkl_rt.3.dll，会导致 Model() 初始化时 DLL 加载失败。
+#   （mkl DLL 位于 .venv\Library\bin，由导出脚本的 _bootstrap_dll() 自动加入搜索路径。）
+xara==0.0.34
+opensees==0.1.31
+mkl<2026; sys_platform == "win32"
