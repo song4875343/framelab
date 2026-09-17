@@ -175,6 +175,81 @@
   body.light #cloudbar .cb-fit { color: #0a7a6c; border-color: rgba(20, 150, 140, .5); }
   body.light .toptools .tb { background: rgba(35, 211, 196, .16); border-color: rgba(20, 150, 140, .5); color: #0a7a6c; }
   body.light .toptools .tb:hover { background: rgba(35, 211, 196, .3); }
+
+  /* 左侧两级面板：第一级视图切换 + 第二级子菜单 */
+  #viewseg.lvl1 { margin-bottom: 10px; }
+  #viewseg.lvl1 button { padding: 7px 0; font-size: 12px; }
+  .subpane { display: flex; flex-direction: column; }
+  .subpane.hidden { display: none !important; }
+  #modelPanel.hidden { display: none !important; }
+  #modelPanel .seg:last-child { margin-bottom: 9px; }
+  #modelToggle { margin-top: 2px; }
+  #extWrap { margin-top: 8px; }
+  #gridPanel .btn { margin-top: 0; }
+  #designPanel { display: flex; flex-direction: column; gap: 7px; margin-bottom: 9px; }
+  #designPanel.hidden { display: none !important; }
+  #designPanel label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: #a7b3d1; }
+  body.light #designPanel label { color: #41527a; }
+  #designPanel .seg button { font-size: 10px; padding: 5px 2px; }
+  #designPanel .seg button.active { background: rgba(47, 123, 255, .25); border-color: #6ee7ff; color: #cdefff; }
+  body.light #designPanel .seg button.active { background: rgba(47, 123, 255, .18); border-color: #2f7bff; color: #1b4fb0; }
+  #designSummary { font-size: 10.5px; color: #9fd0ff; line-height: 1.6; white-space: pre-wrap; }
+  body.light #designSummary { color: #1b4fb0; }
+  /* 右键菜单 */
+  #ctxmenu { position: absolute; z-index: 20; min-width: 150px; background: rgba(14, 20, 38, .97); border: 1px solid rgba(110, 200, 255, .45); border-radius: 8px; box-shadow: 0 14px 40px rgba(0,0,0,.6); padding: 4px; }
+  #ctxmenu.hidden { display: none; }
+  #ctxmenu button { display: block; width: 100%; text-align: left; padding: 6px 10px; font-size: 11.5px; background: transparent; border: none; border-radius: 6px; color: #cdefff; cursor: pointer; font-family: inherit; }
+  #ctxmenu button:hover { background: rgba(47, 123, 255, .25); }
+  body.light #ctxmenu { background: rgba(255,255,255,.98); border-color: rgba(90,150,220,.5); }
+  body.light #ctxmenu button { color: #1b3a6b; }
+  body.light #ctxmenu button:hover { background: rgba(47,123,255,.15); }
+  /* 设计信息小窗 */
+  #designInfo { position: absolute; top: 14px; right: 290px; width: 300px; z-index: 6; background: rgba(14, 20, 38, .97); border: 1px solid rgba(255, 200, 80, .55); border-radius: 10px; box-shadow: 0 14px 40px rgba(0,0,0,.6); padding: 9px 11px 11px; max-height: calc(100% - 40px); overflow-y: auto; scrollbar-width: none; }
+  #designInfo.hidden { display: none !important; }
+  #designInfo::-webkit-scrollbar { width: 0; display: none; }
+  #designInfo pre { white-space: pre-wrap; font-size: 10.5px; line-height: 1.6; color: #cdefff; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; margin: 6px 0; }
+  body.light #designInfo { background: rgba(255,255,255,.98); }
+  body.light #designInfo pre { color: #1b3a6b; }
+  /* 壳剖面沿线应力图 */
+  #cutChart { display: block; width: 100%; height: auto; border-radius: 6px; margin-top: 2px; background: rgba(6, 10, 20, .6); }
+  body.light #cutChart { background: rgba(255, 255, 255, .85); }
+  /* 分栏计算书 */
+  .stage.split { flex-direction: row; }
+  .stage.split .cvwrap { flex: 1 1 50%; min-width: 0; }
+  #calcPane { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; background: rgba(10, 15, 30, .92); border: 1px solid rgba(110, 200, 255, .35); border-radius: 9px; margin-right: 8px; overflow: hidden; }
+  #calcPane.hidden { display: none; }
+  #calcPane .cb-head { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; font-size: 12px; font-weight: 600; color: #cdefff; border-bottom: 1px solid rgba(90,120,190,.3); }
+  #calcPane .cb-head button { padding: 2px 10px; font-size: 11px; cursor: pointer; border-radius: 6px; border: 1px solid rgba(110,231,255,.4); background: rgba(35,211,196,.12); color: #a9f4ec; font-family: inherit; }
+  #calcPane .cb-body { flex: 1 1 auto; overflow-y: auto; padding: 12px 16px; font-size: 12px; line-height: 1.7; color: #dbe4f5; scrollbar-width: none; -ms-overflow-style: none; }
+  #calcPane .cb-body::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  #designInfo { scrollbar-width: none; -ms-overflow-style: none; }
+  #designInfo::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  #calcPane .cb-body table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: 11.5px; }
+  #calcPane .cb-body th, #calcPane .cb-body td { border: 1px solid rgba(120, 150, 200, .4); padding: 3px 6px; text-align: right; font-variant-numeric: tabular-nums; }
+  #calcPane .cb-body th { text-align: center; background: rgba(47, 123, 255, .12); }
+  body.light #calcPane .cb-body th { background: rgba(47, 123, 255, .1); }
+  @media print {
+    body > *:not(#printArea) { display: none !important; }
+    #printArea { display: block !important; color: #000; font-size: 12px; line-height: 1.6; }
+    #printArea h2 { font-size: 16px; } #printArea h3 { font-size: 13px; }
+    #printArea pre { white-space: pre-wrap; border: 1px solid #999; padding: 6px; }
+    #printArea table { border-collapse: collapse; width: 100%; }
+    #printArea th, #printArea td { border: 1px solid #666; padding: 2px 5px; font-size: 11px; text-align: right; }
+  }
+  #printArea { display: none; }
+  #calcPane .cb-body h2 { font-size: 15px; color: #7fd7ff; margin: 10px 0 6px; }
+  #calcPane .cb-body h3 { font-size: 13px; color: #8ff0d0; margin: 10px 0 4px; }
+  #calcPane .cb-body code { background: rgba(47,123,255,.15); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; }
+  #calcPane .cb-body pre { background: rgba(6,10,20,.7); border: 1px solid rgba(90,120,190,.3); border-radius: 6px; padding: 8px 10px; overflow-x: auto; }
+  body.light #calcPane { background: rgba(255,255,255,.96); }
+  body.light #calcPane .cb-head { color: #1b3a6b; }
+  body.light #calcPane .cb-body { color: #26324c; }
+  body.light #calcPane .cb-body h2 { color: #0b7fa8; }
+  body.light #calcPane .cb-body h3 { color: #0a7a6c; }
+  body.light #calcPane .cb-head button { color: #0a7a6c; border-color: rgba(20, 150, 140, .5); background: rgba(35, 211, 196, .16); }
+  body.light #calcPane .cb-head button:hover { background: rgba(35, 211, 196, .3); }
+  body.light #calcPane .cb-body code { background: rgba(47, 123, 255, .12); color: #1b3a6b; }
+  body.light #calcPane .cb-body pre { background: #f2f5fb; border-color: rgba(90, 120, 190, .35); color: #22304c; }
 </style>
 </head>
 <body>
@@ -184,6 +259,7 @@
     <div class="toptools">
       <button class="tb" id="btnSave" type="button">保存</button>
       <button class="tb" id="btnOpen" type="button">打开</button>
+      <button class="tb" id="fitview" type="button">适应窗口</button>
       <button class="tb" id="btnTheme" type="button">亮色主题</button>
       <input type="file" id="fileInput" accept=".json,.framelab,.txt,application/json" style="display:none" />
     </div>
@@ -191,101 +267,167 @@
 
   <div class="layout">
     <div class="panel controls">
-      <button class="collapse-head" id="gridToggle" type="button"><span class="caret">▸</span>网格生成</button>
-      <div class="grid2 hidden" id="gridPanel">
-        <label>跨数<input type="number" id="in-bays" min="1" max="6" step="1" value="1" /></label>
-        <label>层数<input type="number" id="in-stories" min="1" max="8" step="1" value="2" /></label>
-        <label>跨度 L (m)<input type="number" id="in-W" min="1" max="30" step="0.5" value="6" /></label>
-        <label>层高 h (m)<input type="number" id="in-h" min="1" max="20" step="0.5" value="4" /></label>
-        <label>单元数/杆(全局)<input type="number" id="in-NSUB" min="1" max="30" step="1" value="5" /></label>
-        <label>面默认细分<input type="number" id="in-AMESH" min="1" max="20" step="1" value="2" /></label>
+      <!-- 第一级：视图切换 -->
+      <div class="seg lvl1" id="viewseg">
+        <button type="button" data-view="model">几何</button>
+        <button type="button" data-view="disp" class="active">位移</button>
+        <button type="button" data-view="force">内力</button>
+        <button type="button" data-view="design">设计</button>
       </div>
 
-      <h2>建模工具</h2>
-      <div class="seg tools" id="toolseg">
-        <button type="button" data-mode="select" class="active">选择</button>
-        <button type="button" data-mode="node">新增节点</button>
-        <button type="button" data-mode="member">新增杆件</button>
-      </div>
-      <div class="seg tools" id="toolseg2">
-        <button type="button" data-mode="plane">新增平面</button>
-        <button type="button" data-mode="shell">新增壳</button>
-      </div>
-
-      <h2>显示内容</h2>
-      <div class="seg" id="viewseg">
-        <button type="button" data-view="model">建模图</button>
-        <button type="button" data-view="disp" class="active">位移云图</button>
-        <button type="button" data-view="force">内力图</button>
-      </div>
-
-      <div class="slider">
-        <label>变形放大（1 = 真实比例）<b>×<span id="v-mag">1</span></b></label>
-        <input type="range" id="mag" min="1" max="200" step="1" value="1" />
-      </div>
-      <div class="slider">
-        <label>内力图比例<b>×<span id="v-dscale">1.0</span></b></label>
-        <input type="range" id="dscale" min="0.2" max="4" step="0.1" value="1" />
-      </div>
-      <div class="slider">
-        <label>荷载图比例<b>×<span id="v-lscale">1.0</span></b></label>
-        <input type="range" id="lscale" min="0.3" max="3" step="0.1" value="1" />
-      </div>
-
-      <div id="dispOpts">
-        <div class="fcol">
-          <label class="chk"><input type="checkbox" id="showIds" /> 显示节点编号</label>
-          <label class="chk"><input type="checkbox" id="showLoads" checked /> 显示荷载符号</label>
-          <label class="chk"><input type="checkbox" id="showLoadVals" /> 显示荷载数值</label>
+      <!-- 第二级：几何 -->
+      <div id="sub-geo" class="subpane hidden">
+        <button class="collapse-head" id="gridToggle" type="button"><span class="caret">▸</span>网格生成</button>
+        <div class="grid2 hidden" id="gridPanel">
+          <label>跨数<input type="number" id="in-bays" min="1" max="6" step="1" value="1" /></label>
+          <label>层数<input type="number" id="in-stories" min="1" max="8" step="1" value="2" /></label>
+          <label>跨度 L (m)<input type="number" id="in-W" min="1" max="30" step="0.5" value="6" /></label>
+          <label>层高 h (m)<input type="number" id="in-h" min="1" max="20" step="0.5" value="4" /></label>
+          <label>单元数/杆(全局)<input type="number" id="in-NSUB" min="1" max="50" step="1" value="5" /></label>
+          <label>面默认细分<input type="number" id="in-AMESH" min="1" max="50" step="1" value="2" /></label>
+          <button class="btn" id="btn-load-frame" type="button">载入框架示例</button>
+          <button class="btn" id="btn-load-shell" type="button">载入壳示例</button>
         </div>
-        <div class="fcol">
-          <label class="chk"><input type="checkbox" id="showMat" /> 显示材料</label>
-          <label class="chk"><input type="checkbox" id="showSec" /> 显示截面</label>
-          <label class="chk"><input type="checkbox" id="areaShrink" /> 面收缩</label>
+        <button class="collapse-head open" id="modelToggle" type="button"><span class="caret">▸</span>建模工具</button>
+        <div id="modelPanel">
+          <div class="seg tools" id="toolseg">
+            <button type="button" data-mode="select" class="active">选择</button>
+            <button type="button" data-mode="node">新增节点</button>
+            <button type="button" data-mode="member">新增杆件</button>
+          </div>
+          <div class="seg tools" id="toolseg2">
+            <button type="button" data-mode="plane">新增平面</button>
+            <button type="button" data-mode="shell">新增壳</button>
+          </div>
+        </div>
+        <label class="chk" id="extWrap"><input type="checkbox" id="f-extreme" /> 显示极值位置（位移 / 应力 / 内力）</label>
+        <div id="shellGeoOpts">
+          <label class="chk"><input type="checkbox" id="showShellBeam" /> 显示壳梁（矩形壳X向中线）</label>
+          <label class="chk"><input type="checkbox" id="showShellCol" /> 显示壳柱（矩形壳Y向中线）</label>
+        </div>
+        <div class="note" id="geoNote">
+          <b style="color:#9fd0ff">操作：</b>“新增节点”后点击放置；“新增杆件”依次点两节点；“新增平面/壳”依次点 3~4 个节点后点“完成”（或第 4 点自动闭合）。
+          选择模式左键多选、右键取消。选中后在右上角窗口分「单元 / 细分 / 荷载 / 内力 / 材料 / 截面 / 设计」编辑。细分页对杆件按等分、对面按 nx×ny 分别处理。
+          <br /><b style="color:#9fd0ff">说明：</b>本工具为二维平面分析，面单元为平面应力/应变（Q4/CST）；壳单元在此按“膜 + 厚度”处理（N=σ·t），不含板弯曲（面外）自由度。
+          <br /><b style="color:#9fd0ff">壳梁/壳柱：</b>仅矩形壳单元在母单元中线生成参考线（梁=橙色X向中线，柱=青色Y向中线），全部分细分单元应力沿线积分；几何菜单控制参考线显示，内力菜单将其当框架构件显示 M/V/N 图（受轴力/弯矩/剪力开关控制）。选中面后在「内力」页可查看参考线端-中-端内力。
         </div>
       </div>
-      <div id="forceOpts" class="hidden">
-        <div class="fcol">
-          <label class="chk"><input type="checkbox" id="f-axial" /> 显示轴力 N</label>
-          <label class="chk"><input type="checkbox" id="f-moment" checked /> 显示弯矩 M</label>
-          <label class="chk"><input type="checkbox" id="f-shear" /> 显示剪力 V</label>
-        </div>
-        <div class="fcol">
-          <label class="chk"><input type="checkbox" id="f-vals" /> 显示内力数值</label>
-          <label class="chk"><input type="checkbox" id="f-areacloud" checked /> 显示面应力云图</label>
-        </div>
-      </div>
-      <div class="grid2" id="areaOpts">
-        <label>面云图分量<select id="cloud-var">
-          <option value="vm">von Mises</option>
-          <option value="sx">σx</option>
-          <option value="sy">σy</option>
-          <option value="txy">τxy</option>
-          <option value="s1">σ1(最大主应力)</option>
-          <option value="nx">Nx(壳膜内力)</option>
-        </select></label>
-      </div>
-      <label class="chk"><input type="checkbox" id="showAreaMesh" checked /> 显示面单元网格</label>
-      <label class="chk"><input type="checkbox" id="f-extreme" /> 显示极值位置（位移 / 应力 / 内力）</label>
 
-      <div class="inline2">
-        <button class="btn" id="fitview">适应窗口</button>
-        <button class="btn" id="reset">恢复默认模型</button>
+      <!-- 第二级：位移 -->
+      <div id="sub-disp" class="subpane hidden">
+        <div class="slider" id="magWrap">
+          <label>变形放大（0 = 不变形，1 = 真实比例）<b>×<span id="v-mag">1</span></b></label>
+          <input type="range" id="mag" min="0" max="200" step="1" value="1" />
+        </div>
+        <div class="slider" id="dscaleWrap2">
+          <label>内力图比例<b>×<span id="v-dscale2">1.0</span></b></label>
+          <input type="range" id="dscale2" min="0.2" max="4" step="0.1" value="1" />
+        </div>
+        <div class="slider" id="lscaleWrap">
+          <label>荷载图比例<b>×<span id="v-lscale">1.0</span></b></label>
+          <input type="range" id="lscale" min="0.3" max="3" step="0.1" value="1" />
+        </div>
+        <div class="grid2" id="dispCloudOpts">
+          <label>位移云图分量<select id="cloud-dvar">
+            <option value="mag">总位移</option>
+            <option value="ux">Ux（X向位移）</option>
+            <option value="uy">Uy（Y向位移）</option>
+          </select></label>
+        </div>
+        <div id="dispOpts">
+          <div class="fcol">
+            <label class="chk"><input type="checkbox" id="showIds" /> 显示节点编号</label>
+            <label class="chk"><input type="checkbox" id="showLoads" checked /> 显示荷载符号</label>
+            <label class="chk"><input type="checkbox" id="showLoadVals" /> 显示荷载数值</label>
+          </div>
+          <div class="fcol">
+            <label class="chk"><input type="checkbox" id="showMat" /> 显示材料</label>
+            <label class="chk"><input type="checkbox" id="showSec" /> 显示截面</label>
+            <label class="chk"><input type="checkbox" id="areaShrink" /> 面收缩</label>
+          </div>
+        </div>
+        <div class="grid2" id="areaOpts">
+          <label>面云图分量<select id="cloud-var">
+            <option value="vm">von Mises</option>
+            <option value="sx">σx</option>
+            <option value="sy">σy</option>
+            <option value="txy">τxy</option>
+            <option value="s1">σ1(最大主应力)</option>
+            <option value="nx">Nx(壳膜内力)</option>
+          </select></label>
+        </div>
+        <label class="chk" id="meshWrap"><input type="checkbox" id="showAreaMesh" checked /> 显示面单元网格</label>
       </div>
-      <button class="btn" id="demo">载入示例（2跨3层 + 荷载）</button>
-      <button class="btn" id="demoArea">载入面/壳示例（悬臂墙 + 侧向荷载）</button>
 
-      <div class="note">
-        <b style="color:#9fd0ff">操作：</b>“新增节点”后点击放置；“新增杆件”依次点两节点；“新增平面/壳”依次点 3~4 个节点后点“完成”（或第 4 点自动闭合）。
-        选择模式左键多选、右键取消。选中后在右上角窗口分「单元 / 细分 / 荷载 / 内力 / 材料 / 截面」编辑。细分页对杆件按等分、对面按 nx×ny 分别处理。
-        <br /><b style="color:#9fd0ff">说明：</b>本工具为二维平面分析，面单元为平面应力/应变（Q4/CST）；壳单元在此按“膜 + 厚度”处理（N=σ·t），不含板弯曲（面外）自由度。
+      <!-- 第二级：内力 -->
+      <div id="sub-force" class="subpane hidden">
+        <div class="slider" id="dscaleWrap">
+          <label>内力图比例<b>×<span id="v-dscale">1.0</span></b></label>
+          <input type="range" id="dscale" min="0.2" max="4" step="0.1" value="1" />
+        </div>
+        <div class="slider" id="magWrap2">
+          <label>变形放大（0 = 不变形，1 = 真实比例）<b>×<span id="v-mag2">1</span></b></label>
+          <input type="range" id="mag2" min="0" max="200" step="1" value="1" />
+        </div>
+        <div id="forceOpts">
+          <div class="fcol">
+            <label class="chk"><input type="checkbox" id="f-axial" /> 显示轴力 N</label>
+            <label class="chk"><input type="checkbox" id="f-moment" checked /> 显示弯矩 M</label>
+            <label class="chk"><input type="checkbox" id="f-shear" /> 显示剪力 V</label>
+            <label class="chk"><input type="checkbox" id="f-cuts" checked /> 显示剖面符号</label>
+          </div>
+          <div class="fcol">
+            <label class="chk"><input type="checkbox" id="f-vals" /> 显示内力数值</label>
+            <label class="chk"><input type="checkbox" id="f-areacloud" checked /> 显示面应力云图</label>
+            <label class="chk"><input type="checkbox" id="f-shellbeam" /> 显示壳梁内力</label>
+            <label class="chk"><input type="checkbox" id="f-shellcol" /> 显示壳柱内力</label>
+          </div>
+        </div>
       </div>
+
+      <!-- 第二级：设计 -->
+      <div id="sub-design" class="subpane hidden">
+        <div id="designPanel">
+          <label>钢结构设计规范<select id="ds-steel">
+            <option value="GB50017-2003">GB50017-2003</option>
+            <option value="GB50017-2017" selected>GB50017-2017</option>
+          </select></label>
+          <label>混凝土设计规范<select id="ds-conc">
+            <option value="GB50010-2010" selected>GB50010-2010</option>
+            <option value="GB50010-2020">GB50010-2020（GB55002）</option>
+          </select></label>
+          <div class="seg" id="designModes" style="flex-wrap:wrap">
+            <button type="button" data-dmode="rebar" class="active">配筋简图</button>
+            <button type="button" data-dmode="real">实配钢筋图</button>
+          </div>
+          <div class="seg" id="designModes2" style="flex-wrap:wrap">
+            <button type="button" data-dmode="crack">挠度裂缝图</button>
+            <button type="button" data-dmode="info">总信息</button>
+          </div>
+          <button class="btn" id="btn-design-run">开始设计</button>
+          <div id="designSummary">尚未设计，点击「开始设计」按所选规范计算。</div>
+        </div>
+      </div>
+      <div id="park" style="display:none"></div>
     </div>
 
-    <div class="panel stage">
+    <div class="panel stage" id="stagePanel">
+      <div id="calcPane" class="hidden">
+        <div class="cb-head"><span id="calcTitle">详细计算书</span><span><button id="calcPrint" type="button">打印</button> <button id="calcPdf" type="button">输出PDF</button> <button id="calcClose" type="button">关闭分栏</button></span></div>
+        <div class="cb-body" id="calcBody"></div>
+      </div>
       <div class="cvwrap" id="cvwrap">
         <canvas id="cv"></canvas>
         <div id="hoverbox"></div>
+        <div id="ctxmenu" class="hidden">
+          <button type="button" id="ctx-design">设计信息</button>
+          <button type="button" id="ctx-clear">清除选择</button>
+        </div>
+        <div id="designInfo" class="hidden">
+          <div class="pp-head">设计信息<span id="di-close">×</span></div>
+          <pre id="di-body">—</pre>
+          <button class="btn" id="di-book">生成详细计算书</button>
+        </div>
         <div id="cloudbar" class="hidden">
           <div class="cb-title" id="cb-title">云图色标</div>
           <div class="cb-wrap">
@@ -313,6 +455,8 @@
           <button type="button" data-tab="force">内力</button>
           <button type="button" data-tab="mat">材料</button>
           <button type="button" data-tab="sec">截面</button>
+          <button type="button" data-tab="cut">剖面</button>
+          <button type="button" data-tab="design">设计</button>
         </div>
 
         <!-- 单元 -->
@@ -384,7 +528,7 @@
           <div class="pp-sec" id="div-frame">
             <div class="pp-title">杆件细分（Frame，等分）</div>
             <div class="pp-grid2">
-              <label>等分数 n<input type="number" id="dv-n" min="1" max="30" step="1" value="5" /></label>
+              <label>等分数 n<input type="number" id="dv-n" min="1" max="50" step="1" value="5" /></label>
               <label>最大段长(m,0=不限)<input type="number" id="dv-lmax" value="0" step="0.5" /></label>
             </div>
             <div class="pp-row">
@@ -397,8 +541,8 @@
           <div class="pp-sec" id="div-area">
             <div class="pp-title">面细分（Plane / Shell：nx × ny）</div>
             <div class="pp-grid2">
-              <label>nx（u 向）<input type="number" id="dv-nx" min="1" max="20" step="1" value="2" /></label>
-              <label>ny（v 向）<input type="number" id="dv-ny" min="1" max="20" step="1" value="2" /></label>
+              <label>nx（u 向）<input type="number" id="dv-nx" min="1" max="50" step="1" value="2" /></label>
+              <label>ny（v 向）<input type="number" id="dv-ny" min="1" max="50" step="1" value="2" /></label>
               <label>最大尺寸(m,0=不限)<input type="number" id="dv-hmax" value="0" step="0.5" /></label>
               <label>三角形分法<select id="dv-tri"><option value="n2">每边等分 n</option></select></label>
             </div>
@@ -420,8 +564,10 @@
               <label>Fy<input type="number" id="nl-fy" value="0" /></label>
               <label>M<input type="number" id="nl-mz" value="0" /></label>
             </div>
-            <button class="btn" id="nl-apply">应用到选中节点</button>
-            <button class="btn" id="nl-clear">清除选中节点荷载</button>
+            <div class="pp-row">
+              <button class="btn" id="nl-apply">应用到选中节点</button>
+              <button class="btn" id="nl-clear">清除选中节点荷载</button>
+            </div>
           </div>
 
           <div class="pp-sec">
@@ -444,8 +590,10 @@
               <label>起点 c (m)<input type="number" id="ml-c" value="1" /></label>
               <label>终点 d (m)<input type="number" id="ml-d" value="4" /></label>
             </div>
-            <button class="btn" id="ml-apply">添加到选中杆件</button>
-            <button class="btn" id="ml-clear">清除选中杆件荷载</button>
+            <div class="pp-row">
+              <button class="btn" id="ml-apply">添加到选中杆件</button>
+              <button class="btn" id="ml-clear">清除选中杆件荷载</button>
+            </div>
           </div>
 
           <div class="pp-sec">
@@ -454,8 +602,10 @@
               <label>qx<input type="number" id="al-qx" value="0" /></label>
               <label>qy<input type="number" id="al-qy" value="-10" /></label>
             </div>
-            <button class="btn" id="al-apply">应用到选中面</button>
-            <button class="btn" id="al-clear">清除选中面荷载</button>
+            <div class="pp-row">
+              <button class="btn" id="al-apply">应用到选中面</button>
+              <button class="btn" id="al-clear">清除选中面荷载</button>
+            </div>
           </div>
         </div>
 
@@ -486,6 +636,19 @@
               <label>泊松比 ν<input type="number" id="mt-nu" step="0.01" /></label>
             </div>
             <button class="btn" id="mt-apply">应用材料</button>
+          </div>
+          <div class="pp-sec" id="rebar-block">
+            <div class="pp-title">钢筋（设计分析用，仅混凝土构件）</div>
+            <select id="rb-grade">
+              <option value="HPB300">HPB300</option>
+              <option value="HRB400" selected>HRB400</option>
+              <option value="HRB500">HRB500</option>
+            </select>
+            <div class="pp-grid2" style="margin-top:6px">
+              <label>屈服强度 fyk (MPa)<input type="number" id="rb-fyk" value="400" /></label>
+              <label>设计强度 fy (MPa)<input type="number" id="rb-fd" value="360" /></label>
+            </div>
+            <div class="pp-sel">切换钢筋等级自动填入规范值，可再手动修改，随材料一起应用。</div>
           </div>
           <div class="pp-sec">
             <div class="pp-title">说明</div>
@@ -536,6 +699,70 @@
           </div>
         </div>
 
+        <!-- 壳剖面（SAP2000 式截面切割） -->
+        <div class="pp-tabpane hidden" id="tab-cut">
+          <div class="pp-sec">
+            <div class="pp-title">剖面</div>
+            <select id="cut-sel"></select>
+            <div class="pp-row">
+              <button class="btn" id="cut-add">增加壳剖面</button>
+              <button class="btn danger" id="cut-del">删除当前剖面</button>
+            </div>
+          </div>
+          <div class="pp-sec">
+            <div class="pp-title">沿线应力（平滑 + 彩虹色标）</div>
+            <select id="cut-var">
+              <option value="sx">σx</option>
+              <option value="sy">σy</option>
+              <option value="txy">τxy</option>
+              <option value="vm">von Mises</option>
+              <option value="s1">σ1(最大主应力)</option>
+              <option value="nx">Nx(壳膜内力)</option>
+            </select>
+            <canvas id="cutChart" width="244" height="150"></canvas>
+            <div class="pp-title" style="margin-top:6px">探针滑点（拖动读数，主图同步）</div>
+            <input type="range" id="cut-pos" min="0" max="1000" value="500" />
+            <div class="pp-sel" id="cut-probe" style="white-space:pre-wrap">—</div>
+          </div>
+          <div class="pp-sec">
+            <div class="pp-title">截面积分（法向轴力 Fn / 切向剪力 Fs / 绕中轴弯矩 M）</div>
+            <div class="pp-sel" id="cut-read" style="white-space:pre-wrap">—</div>
+          </div>
+          <div class="pp-sec">
+            <div class="pp-title">起点 / 终点 / 中轴（中轴⊥剖面，默认取有应力范围中点）</div>
+            <div class="pp-grid2">
+              <label>起点 X<input type="number" id="cut-x0" step="0.1" /></label>
+              <label>起点 Y<input type="number" id="cut-y0" step="0.1" /></label>
+              <label>终点 X<input type="number" id="cut-x1" step="0.1" /></label>
+              <label>终点 Y<input type="number" id="cut-y1" step="0.1" /></label>
+              <label>中轴 X<input type="number" id="cut-cx" step="0.1" /></label>
+              <label>中轴 Y<input type="number" id="cut-cy" step="0.1" /></label>
+            </div>
+            <div class="pp-row">
+              <button class="btn" id="cut-restore">恢复坐标（画线数值）</button>
+              <button class="btn" id="cut-mid">中轴回应力中点</button>
+            </div>
+            <div class="pp-row">
+              <button class="btn" id="cut-align">剖面对齐壳中线站（与壳梁/壳柱对账）</button>
+            </div>
+          </div>
+          <div class="pp-sec">
+            <label class="chk"><input type="checkbox" id="cut-snap" checked /> 画线角度磁吸 15°（含 X/Y 轴）</label>
+            <div class="pp-sel">画线：在图上依次点击起点、终点（近节点自动吸附；右键/Esc 退出）。选中剖面后可直接拖拽起点/终点/中轴圆柄（起点终点只显示线无实心点），改坐标实时重算。应力图横轴为壳内有效段（从壳边起算，边缘实心点=画线与壳交点）；曲线=各应力柱中点连线、向壳边线性外推、不做光滑、折线直连（不与0连接）。积分给出原始分段值与连线值两套（Fn/Fs/M + 当前分量沿线积分，可与理论值对比）。探针滑点在应力图/主图/滑杆三处同步拖动。法向 n 为切向逆时针 90°，弯矩绕中轴逆时针为正。剖面线在位移/内力视图跟随变形显示，坐标框为未变形值（分析基准）。</div>
+          </div>
+        </div>
+
+        <!-- 设计信息 -->
+        <div class="pp-tabpane hidden" id="tab-design">
+          <div class="pp-sec">
+            <div class="pp-title">扼要设计结果（先选中一根杆件）</div>
+            <div class="pp-sel" id="design-brief" style="white-space:pre-wrap">请选择杆件后查看；先在左侧「设计」视图点击「开始设计」。</div>
+          </div>
+          <div class="pp-sec">
+            <button class="btn" id="btn-calcbook">生成详细计算书</button>
+          </div>
+        </div>
+
         <div class="pp-sec">
           <div class="inline2">
             <button class="btn" id="pp-clear">清除选择</button>
@@ -564,6 +791,8 @@
     <div class="sb-coord" id="status-coord">X —　Y —</div>
   </div>
 
+<div id="printArea"></div>
+<script src="design.js"></script>
 <script>
 (function () {
   "use strict";
@@ -575,8 +804,12 @@
             showAxial: false, showMoment: true, showShear: false, showLoadVals: false, showForceVals: false, showExtreme: false,
             showIds: false, showLoads: true,
             showMat: false, showSec: false, showAreaMesh: true, showAreaCloud: true, cloudVar: "vm", showAreaShrink: false,
+            dispVar: "mag",
+            showShellBeam: false, showShellCol: false, showShellBeamF: false, showShellColF: false,
+            cutSnap: true, cutVar: "sx", showCutPanel: true, cutPos: 0.5, showCuts: true,
             light: false, lenUnit: "m", forceUnit: "kN", cloudLo: null, cloudHi: null, dispLo: null, dispHi: null,
-            station: 0.5, zoom: 1, px: 0, py: 0 };
+            station: 0.5, zoom: 1, px: 0, py: 0,
+            designSteel: "GB50017-2017", designConc: "GB50010-2010", designMode: "rebar" };
   var DEF_STIFF = { col: { EA: 4.5e6, EI: 93750, GA: 1.0e9 }, beam: { EA: 4.5e6, EI: 150000, GA: 1.0e9 }, user: { EA: 4.5e6, EI: 150000, GA: 1.0e9 } };
 
   // 常见材料（E 单位 kN/m²，即 kPa）
@@ -588,6 +821,13 @@
     "AL6061": { label: "铝 6061",     short: "6061", E: 6.90e7, nu: 0.33 },
     "CUSTOM": { label: "自定义",      short: "自定义", E: 2.06e8, nu: 0.30 }
   };
+  // 钢筋（设计分析用）：fyk 屈服/标准值，fy 设计值（MPa），GB50010 表4.2.3
+  var REBARS = {
+    "HPB300": { fyk: 300, fy: 270 },
+    "HRB400": { fyk: 400, fy: 360 },
+    "HRB500": { fyk: 500, fy: 435 }
+  };
+  function isConcLabel(lab) { return !!lab && /^C\d/i.test(String(lab)); }
 
   // 截面几何特性：A 面积、I 抗弯惯性矩、As 抗剪面积
   function sectionProps(sec) {
@@ -619,25 +859,25 @@
   }
   // 杆件有效细分数：选中覆盖优先，否则全局 NSUB；lmax>0 时按最大段长加密
   function effFrameDiv(m) {
-    var n = clampInt(D.NSUB, 1, 30), o = memDiv[m.id];
+    var n = clampInt(D.NSUB, 1, 50), o = memDiv[m.id];
     if (o) {
-      n = clampInt(o.n || n, 1, 30);
+      n = clampInt(o.n || n, 1, 50);
       if (o.lmax > 0 && m.L > 0) { n = Math.max(n, Math.ceil(m.L / o.lmax)); }
-      n = clampInt(n, 1, 30);
+      n = clampInt(n, 1, 50);
     }
     return n;
   }
   // 面有效细分：选中覆盖优先，否则全局 AMESH；hmax>0 时按边长加密
   function effAreaDiv(a) {
-    var nx = clampInt(D.AMESH, 1, 20), ny = nx, o = areaDiv[a.id];
-    if (o) { nx = clampInt(o.nx || nx, 1, 20); ny = clampInt(o.ny || ny, 1, 20); }
+    var nx = clampInt(D.AMESH, 1, 50), ny = nx, o = areaDiv[a.id];
+    if (o) { nx = clampInt(o.nx || nx, 1, 50); ny = clampInt(o.ny || ny, 1, 50); }
     if (o && o.hmax > 0) {
       var pts = a.nodes.map(nodeById).filter(Boolean), Lmax = 0, i;
       for (i = 0; i < pts.length; i++) {
         var p = pts[i], q = pts[(i + 1) % pts.length];
         Lmax = Math.max(Lmax, Math.hypot(q.x - p.x, q.y - p.y));
       }
-      if (Lmax > 0) { var k = Math.min(20, Math.ceil(Lmax / o.hmax)); nx = Math.max(nx, k); ny = Math.max(ny, k); }
+      if (Lmax > 0) { var k = Math.min(50, Math.ceil(Lmax / o.hmax)); nx = Math.max(nx, k); ny = Math.max(ny, k); }
     }
     return { nx: nx, ny: ny };
   }
@@ -663,7 +903,7 @@
   }
   // 三角形每边 n 等分：返回 {pts:[[x,y]], tris:[[i,j,k]]}（局部索引）
   function triSubCells(corners, n) {
-    n = Math.max(1, Math.min(20, n));
+    n = Math.max(1, Math.min(50, n));
     var A = corners[0], B = corners[1], C = corners[2], map = {}, pts = [], tris = [];
     function key(i, j, k) { return i + "," + j + "," + k; }
     function idx(i, j, k) {
@@ -780,10 +1020,369 @@
     return s.vm;
   }
 
+  /* ================= 壳剖面截面切割（SAP2000 式 shell section cut） =================
+   * 剖面为模型坐标系下直线段 P0→P1，切向 s，法向 n（s 逆时针 90°）。
+   * 对穿过的每个面子单元（常应力 σx、σy、τxy，厚 t）求交集长度 len，
+   * 面力 t_vec = σ·n，合力 F += t_vec·t·len，
+   * 法向轴力 Fn = F·n， 切向剪力 Fs = F·s，
+   * 绕中轴 C 弯矩 M += ((r−C)×t_vec)·t·len（逆时针为正）。
+   * 中轴 C 默认取剖面中点，可调（中轴⊥剖面，指弯矩取面外 z 轴）。
+   */
+  function clipSegPoly(ax, ay, bx, by, poly) {
+    var t0 = 0, t1 = 1, dx = bx - ax, dy = by - ay, i;
+    var cx = 0, cy = 0;
+    for (i = 0; i < poly.length; i++) { cx += poly[i][0]; cy += poly[i][1]; }
+    cx /= poly.length; cy /= poly.length;
+    for (i = 0; i < poly.length; i++) {
+      var p = poly[i], q = poly[(i + 1) % poly.length];
+      var ex = q[0] - p[0], ey = q[1] - p[1];
+      var nx = -ey, ny = ex;
+      if (nx * (cx - p[0]) + ny * (cy - p[1]) < 0) { nx = -nx; ny = -ny; }
+      var denom = nx * dx + ny * dy, dist = nx * (ax - p[0]) + ny * (ay - p[1]);
+      if (Math.abs(denom) < 1e-12) { if (dist < 0) { return null; } continue; }
+      var t = -dist / denom;
+      if (denom > 0) { if (t > t0) { t0 = t; } }
+      else { if (t < t1) { t1 = t; } }
+      if (t0 > t1) { return null; }
+    }
+    if (t1 < 0 || t0 > 1) { return null; }
+    return [clamp(t0, 0, 1), clamp(t1, 0, 1)];
+  }
+  function cutGeom(cut) {
+    var dx = cut.x1 - cut.x0, dy = cut.y1 - cut.y0, L = Math.hypot(dx, dy);
+    if (!(L > 1e-12)) { return null; }
+    var sx = dx / L, sy = dy / L;
+    return { L: L, sx: sx, sy: sy, nx: -sy, ny: sx };
+  }
+  // 画线角度磁吸：吸附到最近的 15° 倍数（含 X/Y 轴），保持起点距离不变
+  function snapCutAngle(x0, y0, x, y) {
+    var dx = x - x0, dy = y - y0, r = Math.hypot(dx, dy);
+    if (!(r > 1e-12)) { return [x, y]; }
+    var step = Math.PI / 12, a = Math.round(Math.atan2(dy, dx) / step) * step;
+    return [x0 + Math.cos(a) * r, y0 + Math.sin(a) * r];
+  }
+  function integrateCuts(cuts, elems, all) {
+    var out = {};
+    (cuts || []).forEach(function (cut) {
+      var g = cutGeom(cut);
+      var res = { L: 0, Fn: 0, Fs: 0, M: 0, segs: [], hit: false, cax: cut.cx, cay: cut.cy };
+      if (!g || !elems || !all) { out[cut.id] = res; return; }
+      res.L = g.L;
+      elems.forEach(function (ae) {
+        if (!ae.s) { return; }
+        var poly = ae.g.map(function (gi) { return all[gi]; });
+        var tt = clipSegPoly(cut.x0, cut.y0, cut.x1, cut.y1, poly);
+        if (!tt) { return; }
+        var a = tt[0] * g.L, b = tt[1] * g.L;
+        if (!(b - a > 1e-12)) { return; }
+        res.segs.push({ a: a, b: b, s: ae.s, t: ae.t || 0.2 });
+        res.hit = true;
+      });
+      res.segs.sort(function (p, q) { return p.a - q.a; });
+      // 中轴默认取有应力范围的中点（画线常比壳宽，两边不等长，线中点≠真实中轴）
+      if (res.hit && cut.cAuto !== false) {
+        var mid = (res.segs[0].a + res.segs[res.segs.length - 1].b) / 2;
+        cut.cx = cut.x0 + g.sx * mid; cut.cy = cut.y0 + g.sy * mid;
+      }
+      res.cax = cut.cx; res.cay = cut.cy;
+      res.segs.forEach(function (sg) {
+        var len = sg.b - sg.a, s = sg.s, t = sg.t;
+        var tx = s.sx * g.nx + s.txy * g.ny;
+        var ty = s.txy * g.nx + s.sy * g.ny;
+        res.Fn += (tx * g.nx + ty * g.ny) * t * len;
+        res.Fs += (tx * g.sx + ty * g.sy) * t * len;
+        var mx = cut.x0 + g.sx * (sg.a + sg.b) / 2, my = cut.y0 + g.sy * (sg.a + sg.b) / 2;
+        res.M += ((mx - cut.cx) * ty - (my - cut.cy) * tx) * t * len;
+      });
+      out[cut.id] = res;
+    });
+    return out;
+  }
+  function cutSample(res, x, comp) {
+    if (!res || !res.segs.length) { return null; }
+    for (var i = 0; i < res.segs.length; i++) {
+      var sg = res.segs[i];
+      if (x >= sg.a - 1e-9 && x <= sg.b + 1e-9) { return areaStressPick(sg.s, comp); }
+    }
+    return null;
+  }
+  /* ---- 剖面应力：应力柱中点连线 + 壳边外推（折线直连，无光滑） ----
+   * 每个穿过子单元的交集段视为一个"应力柱"（常值段 [a,b]）。
+   * 取柱中点 m=(a+b)/2 连线；首尾按相邻两中点斜率线性外推至壳边
+   * （hitA=首段a，hitB=末段b），不与 0 连接；多段不连续（壳间空隙）
+   * 按块分别处理，块间断开。
+   * 不做光滑，折线直连以保持两侧直线。积分对比：原始常值分段积分 vs
+   * 连线梯形积分（wr=0，两者仅差网格非均匀性与端部外推）。
+   */
+  function cutBlocks(res) {
+    var blocks = [], i, cur = null;
+    (res.segs || []).forEach(function (sg) {
+      if (!cur || sg.a > cur.b + 1e-9) { cur = { a: sg.a, b: sg.b, segs: [sg] }; blocks.push(cur); }
+      else { cur.b = Math.max(cur.b, sg.b); cur.segs.push(sg); }
+    });
+    return blocks;
+  }
+  function cutHitRange(res) {
+    if (!res || !res.segs || !res.segs.length) { return null; }
+    return [res.segs[0].a, res.segs[res.segs.length - 1].b];
+  }
+  // 单块的中点折线节点（含壳边外推点）：[{x, v}]，v 为内部单位原始值
+  function cutBlockNodes(block, comp) {
+    var ms = [], vs = [], i;
+    block.segs.forEach(function (sg) {
+      ms.push((sg.a + sg.b) / 2); vs.push(areaStressPick(sg.s, comp));
+    });
+    if (!ms.length) { return []; }
+    var v0e = vs[0], v1e = vs[vs.length - 1];
+    if (ms.length >= 2) {
+      var s0 = (vs[1] - vs[0]) / ((ms[1] - ms[0]) || 1e-12);
+      var s1 = (vs[vs.length - 1] - vs[vs.length - 2]) / ((ms[ms.length - 1] - ms[ms.length - 2]) || 1e-12);
+      v0e = vs[0] + s0 * (block.a - ms[0]);
+      v1e = vs[vs.length - 1] + s1 * (block.b - ms[ms.length - 1]);
+    }
+    var nodes = [{ x: block.a, v: v0e, edge: true }];
+    for (i = 0; i < ms.length; i++) { nodes.push({ x: ms[i], v: vs[i], mid: true }); }
+    nodes.push({ x: block.b, v: v1e, edge: true });
+    return nodes;
+  }
+  // 节点折线线性插值到 N+1 个等距点
+  function cutInterpNodes(nodes, N) {
+    var xs = [], vs = [], i, k;
+    if (!nodes.length) { return { xs: xs, vs: vs }; }
+    var a = nodes[0].x, b = nodes[nodes.length - 1].x;
+    for (i = 0; i <= N; i++) {
+      var x = a + (b - a) * i / N, v = nodes[nodes.length - 1].v;
+      for (k = 0; k + 1 < nodes.length; k++) {
+        if (x >= nodes[k].x - 1e-12 && x <= nodes[k + 1].x + 1e-12) {
+          var t = (x - nodes[k].x) / ((nodes[k + 1].x - nodes[k].x) || 1e-12);
+          v = nodes[k].v + (nodes[k + 1].v - nodes[k].v) * clamp(t, 0, 1);
+          break;
+        }
+      }
+      xs.push(x); vs.push(v);
+    }
+    return { xs: xs, vs: vs };
+  }
+  // 单块连线：raw=中点连线插值，sm=箱式光滑（半径 wr，默认 0 即无光滑、折线直连）
+  function cutBlockCurve(block, comp, N, wr) {
+    var nodes = cutBlockNodes(block, comp);
+    var dense = cutInterpNodes(nodes, N || 60);
+    var sm = smoothArr(dense.vs, wr == null ? 0 : wr);
+    return { nodes: nodes, xs: dense.xs, raw: dense.vs, sm: sm };
+  }
+  // 显示分量原始积分（含厚度：应力kPa×t×len→kN；Nx已含t，×len→kN）
+  function cutCompIntegralRaw(res, comp) {
+    var sum = 0, isNx = (comp === "nx");
+    (res.segs || []).forEach(function (sg) {
+      var v = areaStressPick(sg.s, comp);
+      if (isFinite(v)) { sum += v * (isNx ? 1 : (sg.t || 0.2)) * (sg.b - sg.a); }
+    });
+    return sum;
+  }
+  function cutThickAt(res, x) {
+    for (var i = 0; i < (res.segs || []).length; i++) {
+      var sg = res.segs[i];
+      if (x >= sg.a - 1e-9 && x <= sg.b + 1e-9) { return sg.t || 0.2; }
+    }
+    return 0;
+  }
+  // 显示分量连线积分（含厚度，梯形法则，内部单位 kN）
+  function cutCompIntegralSmooth(res, comp, N, wr) {
+    var sum = 0, blocks = cutBlocks(res), b, i;
+    var isNx = (comp === "nx");
+    for (b = 0; b < blocks.length; b++) {
+      var cv = cutBlockCurve(blocks[b], comp, N || 60, wr == null ? 0 : wr);
+      for (i = 0; i + 1 < cv.xs.length; i++) {
+        var xm = (cv.xs[i] + cv.xs[i + 1]) / 2;
+        var t = isNx ? 1 : cutThickAt(res, xm);
+        sum += (cv.sm[i] + cv.sm[i + 1]) / 2 * t * (cv.xs[i + 1] - cv.xs[i]);
+      }
+    }
+    return sum;
+  }
+  // 连线后的力学合力（对 sx/sy/txy 分别走中点连线，再按 t(x) 梯形积分）
+  function cutSmoothForces(res, cut, N, wr) {
+    var out = { Fn: 0, Fs: 0, M: 0 };
+    var g = cutGeom(cut);
+    if (!g || !res || !res.hit) { return out; }
+    N = N || 80; wr = (wr == null ? 0 : wr);
+    var curves = {};
+    ["sx", "sy", "txy"].forEach(function (cp) {
+      curves[cp] = [];
+      cutBlocks(res).forEach(function (bl) {
+        curves[cp].push(cutBlockCurve(bl, cp, N, wr));
+      });
+    });
+    function thickAt(x) {
+      for (var i = 0; i < res.segs.length; i++) {
+        var sg = res.segs[i];
+        if (x >= sg.a - 1e-9 && x <= sg.b + 1e-9) { return sg.t || 0.2; }
+      }
+      return 0;
+    }
+    function valAt(cvlist, x) {
+      for (var b = 0; b < cvlist.length; b++) {
+        var cv = cvlist[b];
+        if (x < cv.xs[0] - 1e-9 || x > cv.xs[cv.xs.length - 1] + 1e-9) { continue; }
+        for (var i = 0; i + 1 < cv.xs.length; i++) {
+          if (x >= cv.xs[i] - 1e-12 && x <= cv.xs[i + 1] + 1e-12) {
+            var t = (x - cv.xs[i]) / ((cv.xs[i + 1] - cv.xs[i]) || 1e-12);
+            return cv.sm[i] + (cv.sm[i + 1] - cv.sm[i]) * clamp(t, 0, 1);
+          }
+        }
+        return cv.sm[cv.sm.length - 1];
+      }
+      return 0;
+    }
+    var hr = cutHitRange(res);
+    var steps = 200, j;
+    for (j = 0; j < steps; j++) {
+      var xa = hr[0] + (hr[1] - hr[0]) * j / steps, xb = hr[0] + (hr[1] - hr[0]) * (j + 1) / steps;
+      var xm = (xa + xb) / 2, dx = xb - xa;
+      var t = thickAt(xm);
+      if (!(t > 0)) { continue; }
+      var sx = valAt(curves.sx, xm), sy = valAt(curves.sy, xm), txy = valAt(curves.txy, xm);
+      var tx = sx * g.nx + txy * g.ny, ty = txy * g.nx + sy * g.ny;
+      out.Fn += (tx * g.nx + ty * g.ny) * t * dx;
+      out.Fs += (tx * g.sx + ty * g.sy) * t * dx;
+      var mx = cut.x0 + g.sx * xm, my = cut.y0 + g.sy * xm;
+      out.M += ((mx - cut.cx) * ty - (my - cut.cy) * tx) * t * dx;
+    }
+    return out;
+  }
+  // 探针 x 处的原始值与连线值（内部单位；空隙返回 null）
+  function cutProbeVals(res, comp, x, wr) {
+    var raw = cutSample(res, x, comp), sm = null;
+    var blocks = cutBlocks(res), b, i;
+    for (b = 0; b < blocks.length; b++) {
+      var cv = cutBlockCurve(blocks[b], comp, 60, wr == null ? 0 : wr);
+      if (x < cv.xs[0] - 1e-9 || x > cv.xs[cv.xs.length - 1] + 1e-9) { continue; }
+      for (i = 0; i + 1 < cv.xs.length; i++) {
+        if (x >= cv.xs[i] - 1e-12 && x <= cv.xs[i + 1] + 1e-12) {
+          var t = (x - cv.xs[i]) / ((cv.xs[i + 1] - cv.xs[i]) || 1e-12);
+          sm = cv.sm[i] + (cv.sm[i + 1] - cv.sm[i]) * clamp(t, 0, 1);
+          break;
+        }
+      }
+    }
+    return { raw: raw, sm: sm };
+  }
+
+  /* ================= 壳梁 / 壳柱参考线（SAP2000 风格截面切割） =================
+   * 仅限矩形壳单元：取未细分母单元的中线生成参考线——
+   *   壳梁 = 沿局部 u 向（P0→P1）的中线（v=Lv/2），颜色橙；
+   *   壳柱 = 沿局部 v 向（P0→P3）的中线（u=Lu/2），颜色青。
+   * 沿线内力由全部细分 nx×ny 子单元应力积分得到（子单元为常应力）：
+   *   壳梁站 u（截面⊥u，贯穿整高）：N=∫σx·t·dv（拉+），V=∫τxy·t·dv（+v 向+），
+   *       M=−∫σx·t·(v−Vc)·dv（下缘/v<Vc 侧受拉为正，与框架梁一致）；
+   *   壳柱站 v（截面⊥v，贯穿整宽）：N=∫σy·t·du（拉+），V=−∫τxy·t·du（框架局部+y 向+），
+   *       M=+∫σy·t·(u−Uc)·du（+u 侧受拉为正，与底部→顶部框架柱一致）。
+   * 子单元按剖分时的行主序 r*nx+c 排列（见 analyze），逐列/逐行积分后线性插值加密。
+   */
+  var SHELL_BEAM_COL = "#ff9f43", SHELL_COL_COL = "#38e1ff";
+  function rectInfo(P) {
+    if (!P || P.length < 4) { return null; }
+    function dd(i, j) { return Math.hypot(P[j][0] - P[i][0], P[j][1] - P[i][1]); }
+    var L01 = dd(0, 1), L12 = dd(1, 2), L23 = dd(2, 3), L30 = dd(3, 0);
+    if (L01 < 1e-9 || L12 < 1e-9) { return null; }
+    var tol = 0.02 * Math.max(L01, L12);
+    if (Math.abs(L01 - L23) > tol || Math.abs(L12 - L30) > tol) { return null; }
+    var D02 = Math.hypot(P[2][0] - P[0][0], P[2][1] - P[0][1]);
+    var D13 = Math.hypot(P[3][0] - P[1][0], P[3][1] - P[1][1]);
+    if (Math.abs(D02 - D13) > 0.02 * Math.max(D02, D13)) { return null; }
+    var ux = (P[1][0] - P[0][0]) / L01, uy = (P[1][1] - P[0][1]) / L01;
+    var vx = (P[3][0] - P[0][0]) / L30, vy = (P[3][1] - P[0][1]) / L30;
+    if (Math.abs(ux * vx + uy * vy) > 0.05) { return null; }
+    return { Lu: L01, Lv: L30, ux: ux, uy: uy, vx: vx, vy: vy };
+  }
+  // 分段线性插值；端外按首/末段斜率外推到端截面（此前钳制为边柱中点值，
+  // 端部系统偏差 V·du/2 量级，跨中内插不受影响）
+  function linInterp(xs, ys, x) {
+    var n = xs.length, i, t;
+    if (n === 0) { return 0; }
+    if (n === 1) { return ys[0]; }
+    if (x <= xs[0]) { i = 0; t = (x - xs[0]) / ((xs[1] - xs[0]) || 1e-12); return ys[0] + (ys[1] - ys[0]) * t; }
+    if (x >= xs[n - 1]) { i = n - 2; t = (x - xs[n - 2]) / ((xs[n - 1] - xs[n - 2]) || 1e-12); return ys[n - 2] + (ys[n - 1] - ys[n - 2]) * t; }
+    for (i = 0; i + 1 < n; i++) {
+      if (x >= xs[i] && x <= xs[i + 1]) {
+        t = (x - xs[i]) / ((xs[i + 1] - xs[i]) || 1e-12);
+        return ys[i] + (ys[i + 1] - ys[i]) * t;
+      }
+    }
+    return ys[n - 1];
+  }
+  function buildShellCuts(areas, grid, elems) {
+    var cuts = [];
+    areas.forEach(function (a) {
+      if (!a || a.etype !== "shell" || !a.nodes || a.nodes.length !== 4) { return; }
+      var g = grid[a.id];
+      if (!g || !g.nx || !g.ny) { return; }
+      var ri = rectInfo(g.P);
+      if (!ri) { return; }
+      var list = elems.filter(function (e) { return e.aid === a.id && e.s; });
+      if (list.length !== g.nx * g.ny) { return; }
+      var nx = g.nx, ny = g.ny, t = g.t || 0.2, Lu = ri.Lu, Lv = ri.Lv;
+      var du = Lu / nx, dv = Lv / ny, r, c;
+      function cs(r2, c2) { var e = list[r2 * nx + c2]; return e ? e.s : null; }
+      // 壳梁：逐列积分整高
+      var bu = [], bN = [], bV = [], bM = [];
+      for (c = 0; c < nx; c++) {
+        var N = 0, V = 0, M = 0;
+        for (r = 0; r < ny; r++) {
+          var s = cs(r, c);
+          if (!s) { continue; }
+          N += s.sx * t * dv; V += s.txy * t * dv;
+          M += -s.sx * t * ((r + 0.5) * dv - Lv / 2) * dv;
+        }
+        bu.push((c + 0.5) * du); bN.push(N); bV.push(V); bM.push(M);
+      }
+      // 壳柱：逐行积分整宽
+      var cv = [], cN = [], cV = [], cM = [];
+      for (r = 0; r < ny; r++) {
+        var N2 = 0, V2 = 0, M2 = 0;
+        for (c = 0; c < nx; c++) {
+          var s2 = cs(r, c);
+          if (!s2) { continue; }
+          N2 += s2.sy * t * du; V2 += -s2.txy * t * du;
+          M2 += s2.sy * t * ((c + 0.5) * du - Lu / 2) * du;
+        }
+        cv.push((r + 0.5) * dv); cN.push(N2); cV.push(V2); cM.push(M2);
+      }
+      var P = g.P;
+      var b0 = [P[0][0] + ri.vx * Lv / 2, P[0][1] + ri.vy * Lv / 2];
+      var b1 = [P[1][0] + ri.vx * Lv / 2, P[1][1] + ri.vy * Lv / 2];
+      var c0 = [P[0][0] + ri.ux * Lu / 2, P[0][1] + ri.uy * Lu / 2];
+      var c1 = [P[3][0] + ri.ux * Lu / 2, P[3][1] + ri.uy * Lu / 2];
+      function series(xs, Ns, Vs, Ms, L) {
+        var nS = Math.max(49, xs.length * 4), pts = [], i;
+        var mN = 0, mV = 0, mM = 0;
+        for (i = 0; i < nS; i++) {
+          var x = L * i / (nS - 1);
+          var qN = xs.length > 1 ? linInterp(xs, Ns, x) : (Ns[0] || 0);
+          var qV = xs.length > 1 ? linInterp(xs, Vs, x) : (Vs[0] || 0);
+          var qM = xs.length > 1 ? linInterp(xs, Ms, x) : (Ms[0] || 0);
+          pts.push({ x: x, N: qN, V: qV, M: qM });
+          mN = Math.max(mN, Math.abs(qN)); mV = Math.max(mV, Math.abs(qV)); mM = Math.max(mM, Math.abs(qM));
+        }
+        return { pts: pts, maxN: mN, maxV: mV, maxM: mM };
+      }
+      var bs = series(bu, bN, bV, bM, Lu), cs2 = series(cv, cN, cV, cM, Lv);
+      function ends(pts) {
+        if (!pts.length) { return { a: { N: 0, V: 0, M: 0 }, m: { N: 0, V: 0, M: 0 }, b: { N: 0, V: 0, M: 0 } }; }
+        return { a: pts[0], m: pts[Math.floor(pts.length / 2)], b: pts[pts.length - 1] };
+      }
+      cuts.push({ aid: a.id, kind: "beam", L: Lu, t: t, p0: b0, p1: b1, pts: bs.pts, maxN: bs.maxN, maxV: bs.maxV, maxM: bs.maxM, ends: ends(bs.pts) });
+      cuts.push({ aid: a.id, kind: "col", L: Lv, t: t, p0: c0, p1: c1, pts: cs2.pts, maxN: cs2.maxN, maxV: cs2.maxV, maxM: cs2.maxM, ends: ends(cs2.pts) });
+    });
+    return cuts;
+  }
+
   var model = null;              // { nodes:[{id,x,y,bc}], members:[{id,a,b,type}], areas:[{id,nodes:[..],etype:'plane'|'shell'}], nextNode, nextMember, nextArea }
   var memStiff = {};             // member id -> {EA,EI,GA} 手动覆盖
   var memMat = {};               // member id -> {label,E,nu}
   var memSec = {};               // member id -> {type,...}
+  var memRebar = {};             // member id -> {grade,fyk,fd} 混凝土构件钢筋（设计用），默认 HRB400
+  var areaRebar = {};            // area id -> {grade,fyk,fd}
   var memLoads = {};             // member id -> [loads]
   var nodeLoads = {};            // node id -> {fx,fy,mz}
   var areaMat = {};              // area id -> {label,E,nu}
@@ -794,6 +1393,10 @@
   var selNodes = {};             // node id -> true
   var selMembers = {};           // member id -> true
   var selAreas = {};             // area id -> true
+  var selCuts = {};              // cut id -> true（壳剖面选中）
+  var pendingCut = null;         // 剖面画线第一点 {x, y}（模型坐标 m）
+  var cutHover = null;           // 剖面画线橡皮筋当前点（屏幕坐标）
+  var cutDrag = null;            // 剖面手柄拖拽 {id, part:'p0'|'p1'|'c'}
   var pendingMember = null;      // first node id while adding a member
   var pendingArea = [];          // node ids while adding plane/shell
   var stationM = null;           // member id for station readout
@@ -925,7 +1528,7 @@
 
   /* ================= 模型生成 / 增删改 ================= */
 
-  function newModel() { model = { nodes: [], members: [], areas: [], nextNode: 0, nextMember: 0, nextArea: 0 }; }
+  function newModel() { model = { nodes: [], members: [], areas: [], cuts: [], nextNode: 0, nextMember: 0, nextArea: 0, nextCut: 0 }; }
 
   function addNode(x, y, bc) {
     var n = { id: model.nextNode++, x: x, y: y, bc: bc || { ux: false, uy: false, rz: false } };
@@ -934,17 +1537,30 @@
   function addMemberById(a, b, type) {
     if (a === b) { return null; }
     var m = { id: model.nextMember++, a: a, b: b, type: type || "user" };
-    model.members.push(m); return m;
+    model.members.push(m); defaultMemProps(m); return m;
   }
   function addAreaByIds(ids, etype) {
     if (!ids || ids.length < 3 || ids.length > 4) { return null; }
     var uniq = ids.filter(function (v, i) { return ids.indexOf(v) === i; });
     if (uniq.length < 3) { return null; }
     var a = { id: model.nextArea++, nodes: uniq.slice(0, 4), etype: etype === "shell" ? "shell" : "plane" };
-    model.areas.push(a); return a;
+    model.areas.push(a); defaultAreaProps(a); return a;
   }
   function nodeById(id) { return model.nodes.find(function (n) { return n.id === id; }); }
   function memberById(id) { return model.members.find(function (m) { return m.id === id; }); }
+  function cutById(id) { return (model.cuts || []).find(function (c) { return c.id === id; }); }
+  function addCut(x0, y0, x1, y1) {
+    if (!model.cuts) { model.cuts = []; }
+    if (model.nextCut == null) { model.nextCut = 0; }
+    var c = { id: model.nextCut++, x0: x0, y0: y0, x1: x1, y1: y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, cAuto: true };
+    c.d0 = { x0: c.x0, y0: c.y0, x1: c.x1, y1: c.y1, cx: c.cx, cy: c.cy };   // 画线数值（恢复坐标用）
+    model.cuts.push(c); return c;
+  }
+  function delCut(id) {
+    if (!model.cuts) { return; }
+    model.cuts = model.cuts.filter(function (c) { return c.id !== id; });
+    delete selCuts[id];
+  }
 
   /* ================= 物理分割（真正新增模型节点并拆分单元） ================= */
 
@@ -975,8 +1591,8 @@
       if (k > 0) { var p = coord(seq[k - 1]), q = coord(seq[k]); sx += Math.hypot(q[0] - p[0], q[1] - p[1]); }
       xacc.push(sx);
     }
-    var st = memStiff[m.id], mat = memMat[m.id], sec = memSec[m.id], loads = memLoads[m.id];
-    delete memStiff[m.id]; delete memMat[m.id]; delete memSec[m.id]; delete memLoads[m.id]; delete memDiv[m.id];
+    var st = memStiff[m.id], mat = memMat[m.id], sec = memSec[m.id], loads = memLoads[m.id], rbr = memRebar[m.id];
+    delete memStiff[m.id]; delete memMat[m.id]; delete memSec[m.id]; delete memRebar[m.id]; delete memLoads[m.id]; delete memDiv[m.id];
     model.members = model.members.filter(function (mm) { return mm.id !== m.id; });
     var newIds = [];
     for (k = 0; k + 1 < seq.length; k++) {
@@ -986,6 +1602,7 @@
       if (st) { memStiff[nm.id] = JSON.parse(JSON.stringify(st)); }
       if (mat) { memMat[nm.id] = JSON.parse(JSON.stringify(mat)); }
       if (sec) { memSec[nm.id] = JSON.parse(JSON.stringify(sec)); }
+      if (rbr) { memRebar[nm.id] = JSON.parse(JSON.stringify(rbr)); }
       memDiv[nm.id] = { n: 1, lmax: 0 };   // 物理段即单元，分析时不再临时再分
       if (loads) {
         var x0 = xacc[k], x1 = xacc[k + 1], mapped = [];
@@ -1033,8 +1650,8 @@
     var corners = a.nodes.map(nodeById).filter(Boolean);
     if (corners.length < 3) { return []; }
     var dv = effAreaDiv(a), nx = dv.nx, ny = dv.ny, etype = a.etype;
-    var mat = areaMat[a.id], sec = areaSec[a.id], ld = areaLoads[a.id];
-    delete areaMat[a.id]; delete areaSec[a.id]; delete areaLoads[a.id]; delete areaDiv[a.id];
+    var mat = areaMat[a.id], sec = areaSec[a.id], ld = areaLoads[a.id], rbr = areaRebar[a.id];
+    delete areaMat[a.id]; delete areaSec[a.id]; delete areaLoads[a.id]; delete areaDiv[a.id]; delete areaRebar[a.id];
     model.areas = model.areas.filter(function (aa) { return aa.id !== a.id; });
     function makeChild(nodeIds) {
       var na = addAreaByIds(nodeIds, etype);
@@ -1042,6 +1659,7 @@
       if (mat) { areaMat[na.id] = JSON.parse(JSON.stringify(mat)); }
       if (sec) { areaSec[na.id] = JSON.parse(JSON.stringify(sec)); }
       if (ld) { areaLoads[na.id] = JSON.parse(JSON.stringify(ld)); }
+      if (rbr) { areaRebar[na.id] = JSON.parse(JSON.stringify(rbr)); }
       areaDiv[na.id] = { nx: 1, ny: 1, hmax: 0 };   // 已是物理单元，分析时不再临时再分
       return na.id;
     }
@@ -1121,16 +1739,37 @@
     return DEF_STIFF[m.type] || DEF_STIFF.user;
   }
 
+  // ---- 混凝土默认 C30 + 钢筋 HRB400 ----
+  function defaultRebar() { return { grade: "HRB400", fyk: REBARS.HRB400.fyk, fd: REBARS.HRB400.fy }; }
+  function ensureMemRebar(mid) {
+    if (!memRebar[mid]) { memRebar[mid] = defaultRebar(); }
+    return memRebar[mid];
+  }
+  function defaultMemProps(m) {
+    if (!m) { return; }
+    if (!memMat[m.id]) { memMat[m.id] = { label: "C30", E: MATERIALS.C30.E, nu: MATERIALS.C30.nu }; }
+    if (!memSec[m.id]) {
+      memSec[m.id] = (m.type === "col") ? { type: "rect", b: 0.4, h: 0.4 } :
+        (m.type === "beam") ? { type: "rect", b: 0.3, h: 0.6 } : { type: "rect", b: 0.3, h: 0.5 };
+    }
+    if (isConcLabel((memMat[m.id] || {}).label)) { ensureMemRebar(m.id); }
+  }
+  function defaultAreaProps(a) {
+    if (!a) { return; }
+    if (!areaMat[a.id]) { areaMat[a.id] = { label: "C30", E: MATERIALS.C30.E, nu: MATERIALS.C30.nu }; }
+    if (isConcLabel((areaMat[a.id] || {}).label) && !areaRebar[a.id]) { areaRebar[a.id] = defaultRebar(); }
+  }
+
   function generateModel() {
     newModel();
+    memStiff = {}; memMat = {}; memSec = {}; memRebar = {}; areaRebar = {}; memLoads = {}; nodeLoads = {}; selNodes = {}; selMembers = {}; selCuts = {};
+    areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {}; selAreas = {}; pendingArea = [];
     var B = clampInt(D.bays, 1, 6), S = clampInt(D.stories, 1, 8), W = Math.max(0.5, D.W), h = Math.max(0.5, D.h);
     var g = [], r, c;
     for (r = 0; r <= S; r++) { g[r] = []; for (c = 0; c <= B; c++) { g[r][c] = addNode(c * W, r * h, r === 0 ? { ux: true, uy: true, rz: true } : null).id; } }
     for (r = 0; r < S; r++) { for (c = 0; c <= B; c++) { addMemberById(g[r][c], g[r + 1][c], "col"); } }
     for (r = 1; r <= S; r++) { for (c = 0; c < B; c++) { addMemberById(g[r][c], g[r][c + 1], "beam"); } }
-    memStiff = {}; memMat = {}; memSec = {}; memLoads = {}; nodeLoads = {}; selNodes = {}; selMembers = {};
-    areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {}; selAreas = {}; pendingArea = [];
-    pendingMember = null;
+    pendingMember = null; pendingCut = null; cutHover = null; cutDrag = null;
   }
 
   // 载入演示：2 跨 3 层框架 + 各层水平节点荷载 + 顶层梁均布荷载
@@ -1141,6 +1780,7 @@
     model.members.forEach(function (m) {
       memMat[m.id] = { label: "C30", E: MATERIALS.C30.E, nu: MATERIALS.C30.nu };
       memSec[m.id] = (m.type === "col") ? { type: "rect", b: 0.4, h: 0.4 } : { type: "rect", b: 0.2, h: 0.6 };
+      memRebar[m.id] = defaultRebar();
     });
     var maxY = 0;
     model.nodes.forEach(function (n) { maxY = Math.max(maxY, n.y); });
@@ -1153,7 +1793,7 @@
       var A = nodeById(m.a);
       if (A && Math.abs(A.y - maxY) < 1e-6) { memLoads[m.id] = [{ type: "udl", q: -12 }]; }
     });
-    selNodes = {}; selMembers = {};
+    selNodes = {}; selMembers = {}; selCuts = {};
     areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {}; selAreas = {}; pendingArea = [];
     rebuild();
   }
@@ -1161,9 +1801,9 @@
   // 载入面/壳示例：悬臂墙（平面/壳），底部固定，顶部侧向节点荷载
   function seedAreaDemo() {
     newModel();
-    memStiff = {}; memMat = {}; memSec = {}; memLoads = {}; nodeLoads = {}; selNodes = {}; selMembers = {};
+    memStiff = {}; memMat = {}; memSec = {}; memRebar = {}; areaRebar = {}; memLoads = {}; nodeLoads = {}; selNodes = {}; selMembers = {}; selCuts = {};
     areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {}; selAreas = {}; pendingArea = [];
-    pendingMember = null;
+    pendingMember = null; pendingCut = null; cutHover = null; cutDrag = null;
     var W = 6, H = 4, nx = 3, ny = 3;
     var bl = addNode(0, 0, { ux: true, uy: true, rz: true });
     var br = addNode(W, 0, { ux: true, uy: true, rz: true });
@@ -1197,6 +1837,7 @@
     nodes.forEach(function (n) { idx[n.id] = ensureNode(n.x, n.y); });
     var elems = [];
     var areaElems = [];          // 面子单元：{aid, etype, kind:'q4'|'cst', g:[全局分析节点], B, Dmat, t}
+    var areaGrid = {};           // 面 id -> {nx, ny, P:[[x,y]x4], t}（四边形结构化网格，供壳梁/壳柱积分）
     var areaNodal = [];          // 每分析节点的应力累加（云图用）
     function nodalAcc(i) {
       if (!areaNodal[i]) { areaNodal[i] = { sx: 0, sy: 0, txy: 0, vm: 0, s1: 0, nx: 0, n: 0 }; }
@@ -1247,6 +1888,7 @@
       var dv = areaDivUse[a.id] || effAreaDiv(a), nx = dv.nx, ny = dv.ny;
       if (corners.length >= 4) {
         var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, n.y]; });
+        areaGrid[a.id] = { nx: nx, ny: ny, P: P, t: t };
         var sub = quadSubCells(P, nx, ny), gid = [], r, c;
         for (r = 0; r <= ny; r++) {
           gid[r] = [];
@@ -1451,6 +2093,11 @@
       }
     });
 
+    // ---- 壳梁 / 壳柱参考线（仅矩形壳）：母单元中线 + 全部分细分单元积分 ----
+    var shellCuts = buildShellCuts(model.areas || [], areaGrid, areaElems);
+    // ---- 壳剖面（自由切割线）：穿过的全部分细分单元应力积分 ----
+    var cutResults = integrateCuts(model.cuts || [], areaElems, all);
+
     var maxDisp = 0;
     for (var i2 = 0; i2 < all.length; i2++) { maxDisp = Math.max(maxDisp, Math.hypot(u[3 * i2], u[3 * i2 + 1])); }
     // 顶层（y 最大）侧移与逐层位移角：按不同 y 分组
@@ -1462,7 +2109,8 @@
 
     return {
       nodes: nodes, all: all, elems: elems, u: u, ok: ok, idx: idx, byMember: byMember,
-      areaElems: areaElems, areaNodal: areaNodal,
+      areaElems: areaElems, areaNodal: areaNodal, areaGrid: areaGrid, shellCuts: shellCuts,
+      cutResults: cutResults,
       res: { roof: roof * 1000, maxDisp: maxDisp * 1000, maxM: maxM, maxV: maxV, maxN: maxN, maxVM: maxVM, maxSX: maxSX, nNode: nodes.length, nMember: model.members.length, nArea: (model.areas || []).length }
     };
   }
@@ -1475,6 +2123,14 @@
   var T = { ox: 0, oy: 0, scale: 1 };
   var CB = { show: false, kind: "disp", rng: { min: 0, max: 1 }, lo: 0, hi: 1, title: "" };   // 底部云图色标范围
   var gSX = null, gSY = null;   // 变形后各分析节点的屏幕坐标（供标注/荷载随变形移动）
+  var DCV = [];                 // 位移视图当前分量各分析节点值（mm）：mag=总位移，ux=X向，uy=Y向
+  var DISP_NAMES = { mag: "位移", ux: "Ux", uy: "Uy" };
+  function dispNodeVal(i) {
+    var ux = ana.u[3 * i], uy = ana.u[3 * i + 1];
+    var v = D.dispVar === "ux" ? ux : D.dispVar === "uy" ? uy : Math.hypot(ux, uy);
+    return v * 1000;
+  }
+  function dispTitle() { return D.dispVar === "ux" ? "X向位移云图" : D.dispVar === "uy" ? "Y向位移云图" : "位移幅值云图"; }
 
   // 面云图数据范围（按当前分量取 min/max）
   function cloudRange() {
@@ -1491,13 +2147,21 @@
     return { min: mn, max: mx };
   }
   // 计算底部色标条当前范围（位移 / 应力共用）
-  function computeCloudBar(view, vmax) {
+  function computeCloudBar(view, vmax, vmin) {
     CB.show = false;
-    if (view === "disp" && vmax > 0) {
-      CB.kind = "disp"; CB.rng = { min: 0, max: vmax };
+    if (view === "disp") {
+      CB.kind = "disp";
+      if (D.dispVar === "mag") {
+        if (!(vmax > 0)) { return; }
+        CB.rng = { min: 0, max: vmax };
+      } else {
+        if (!isFinite(vmin) || !isFinite(vmax)) { return; }
+        CB.rng = { min: vmin, max: vmax };
+        if (CB.rng.max - CB.rng.min < 1e-9) { CB.rng.max = CB.rng.min + Math.max(1e-9, Math.abs(CB.rng.min) * 1e-3); }
+      }
       CB.lo = (D.dispLo == null) ? CB.rng.min : clamp(D.dispLo, CB.rng.min, CB.rng.max);
       CB.hi = (D.dispHi == null) ? CB.rng.max : clamp(D.dispHi, CB.rng.min, CB.rng.max);
-      CB.title = "位移幅值云图 (mm)";
+      CB.title = dispTitle() + " (mm)";
       CB.show = true;
     } else if (view === "force" && D.showAreaCloud && ana.areaElems && ana.areaElems.length) {
       var rng = cloudRange();
@@ -1587,8 +2251,8 @@
           col = TH().modelArea;
         } else if (view === "disp") {
           var dsum = 0;
-          for (i = 0; i < ae.g.length; i++) { dsum += Math.hypot(ana.u[3 * ae.g[i]], ana.u[3 * ae.g[i] + 1]); }
-          col = cloudColor(dsum / ae.g.length * 1000);
+          for (i = 0; i < ae.g.length; i++) { dsum += DCV[ae.g[i]]; }
+          col = cloudColor(dsum / ae.g.length);
         } else if (D.showAreaCloud && ae.s) {
           col = cloudColor(areaStressPick(ae.s, cv));
         } else {
@@ -1686,16 +2350,17 @@
     T.ox = cw / 2 + (bx - cw / 2) * zz + D.px;
     T.oy = ch / 2 + (by - ch / 2) * zz + D.py;
 
-    var amp = (view === "model") ? 0 : D.mag;
+    var amp = (view === "model" || view === "design") ? 0 : D.mag;
     var dxn = all.map(function (p, i) { return p[0] + u[3 * i] * amp; });
     var dyn = all.map(function (p, i) { return p[1] + u[3 * i + 1] * amp; });
     var sx = all.map(function (p, i) { return toX(dxn[i]); });
     var sy = all.map(function (p, i) { return toY(dyn[i]); });
     gSX = sx; gSY = sy;
-    var mags = all.map(function (p, i) { return Math.hypot(u[3 * i], u[3 * i + 1]); });
-    var vals = mags.map(function (m) { return m * 1000; });
+    DCV = all.map(function (p, i) { return dispNodeVal(i); });
+    var vals = DCV;
     var vmax = Math.max.apply(null, vals.concat([1e-9]));
-    computeCloudBar(view, vmax);
+    var vmin = Math.min.apply(null, vals.concat([-1e-9]));
+    computeCloudBar(view, vmax, vmin);
 
     hit.nodes = nodes.map(function (n) { return { id: n.id, x: sx[idx[n.id]], y: sy[idx[n.id]] }; });
     hit.members = model.members.filter(function (m) {
@@ -1705,8 +2370,8 @@
     });
     hit.areas = (model.areas || []).map(function (a) { return { id: a.id, poly: areaDeformedPoly(a) }; });
 
-    // 原始结构（建模图不再叠加虚线原始轮廓）
-    if (view !== "model") {
+    // 原始结构（几何/设计视图不再叠加虚线原始轮廓）
+    if (view === "disp" || view === "force") {
       ctx.save(); ctx.setLineDash([5, 5]); ctx.lineWidth = 1.1; ctx.strokeStyle = TH().ghost;
       model.members.forEach(function (m) {
         var A = nodes[idx[m.a]], B = nodes[idx[m.b]];
@@ -1739,11 +2404,13 @@
     var maxM = ana.res.maxM, maxV = ana.res.maxV, maxN = ana.res.maxN;
 
     if (view === "model") {
-      // 建模图：杆件黄色、无变形（结构与面单元已在下方/上方绘制）
+      // 几何：杆件黄色、无变形（结构与面单元已在下方/上方绘制）
       ctx.lineCap = "round"; ctx.strokeStyle = "rgba(0, 0, 0, 0.35)"; ctx.lineWidth = memberW + 3;
       elems.forEach(function (e) { ctx.beginPath(); ctx.moveTo(sx[e.a], sy[e.a]); ctx.lineTo(sx[e.b], sy[e.b]); ctx.stroke(); });
       ctx.lineCap = "butt"; ctx.strokeStyle = TH().modelMem; ctx.lineWidth = memberW;
       elems.forEach(function (e) { ctx.beginPath(); ctx.moveTo(sx[e.a], sy[e.a]); ctx.lineTo(sx[e.b], sy[e.b]); ctx.stroke(); });
+    } else if (view === "design") {
+      drawDesign(ctx, cw, ch, small, sx, sy, elems);
     } else if (view === "disp") {
       ctx.lineCap = "round"; ctx.strokeStyle = "rgba(6, 9, 18, 0.9)"; ctx.lineWidth = memberW + 2.5;
       elems.forEach(function (e) { ctx.beginPath(); ctx.moveTo(sx[e.a], sy[e.a]); ctx.lineTo(sx[e.b], sy[e.b]); ctx.stroke(); });
@@ -1757,6 +2424,12 @@
       elems.forEach(function (e) { ctx.beginPath(); ctx.moveTo(sx[e.a], sy[e.a]); ctx.lineTo(sx[e.b], sy[e.b]); ctx.stroke(); });
 
       ctx.lineJoin = "round";
+      // 框架与壳梁/壳柱共用峰值比例（参考线当框架构件显示）
+      var sMaxM = maxM, sMaxV = maxV, sMaxN = maxN;
+      (ana.shellCuts || []).forEach(function (cut) {
+        if (cut.kind === "beam" ? !D.showShellBeamF : !D.showShellColF) { return; }
+        sMaxM = Math.max(sMaxM, cut.maxM || 0); sMaxV = Math.max(sMaxV, cut.maxV || 0); sMaxN = Math.max(sMaxN, cut.maxN || 0);
+      });
       var diagram = function (peak, fillStyle, strokeStyle, getV) {
         var dsc = (0.11 * Math.min(cw, ch)) / (peak || 1) * D.dscale;
         elems.forEach(function (e) {
@@ -1770,10 +2443,12 @@
           if (selMembers[e.key]) { ctx.fillStyle = "rgba(4, 7, 16, 0.18)"; ctx.fill(); }
         });
       };
-      if (D.showAxial) { diagram(maxN, "rgba(130, 240, 140, 0.20)", "#63e06a", function (p, e) { return e.axial; }); }
-      if (D.showMoment) { diagram(maxM, "rgba(255, 120, 120, 0.24)", "#ff8080", function (p) { return p.M; }); }
-      if (D.showShear) { diagram(maxV, "rgba(80, 210, 255, 0.22)", "#4fd1ff", function (p) { return p.S; }); }
-      if (D.showForceVals) { drawForceValues(ctx, small); }
+      if (D.showAxial) { diagram(sMaxN, "rgba(130, 240, 140, 0.20)", "#63e06a", function (p, e) { return e.axial; }); }
+      if (D.showMoment) { diagram(sMaxM, "rgba(255, 120, 120, 0.24)", "#ff8080", function (p) { return p.M; }); }
+      if (D.showShear) { diagram(sMaxV, "rgba(80, 210, 255, 0.22)", "#4fd1ff", function (p) { return p.S; }); }
+      // 壳梁/壳柱参考线内力图（与框架共用峰值比例，当成框架构件显示 M/V/N）
+      drawShellCutDiagrams(ctx, cw, ch, sMaxM, sMaxV, sMaxN);
+      if (D.showForceVals) { drawForceValues(ctx, small); drawShellCutValues(ctx, small); }
       if (D.showExtreme) { drawExtremes(ctx, small); }
     }
 
@@ -1787,6 +2462,11 @@
         ctx.beginPath(); ctx.moveTo(sx[e.a], sy[e.a]); ctx.lineTo(sx[e.b], sy[e.b]); ctx.stroke();
       });
     }
+
+    // 壳梁 / 壳柱参考线（几何菜单开关；内力视图开内力时也显示）
+    drawShellRefs(ctx);
+    // 壳剖面切割线
+    drawCuts(ctx, small);
 
     // 云图极值标记（位移 / 应力）
     if (D.showExtreme && view !== "model") { drawCloudExtremes(ctx, small, view); }
@@ -1830,12 +2510,17 @@
     if (view === "model") {
       ctx.font = "600 " + (small + 1) + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
       ctx.fillStyle = TH().textMid;
-      ctx.fillText("建模图：面单元（红）· 杆件（黄）· 无变形", cw / 2, ch - small * 2.0);
+      var gtxt = "几何：面单元（红）· 杆件（黄）· 无变形";
+      if (D.showShellBeam) { gtxt += " · 壳梁(橙)"; }
+      if (D.showShellCol) { gtxt += " · 壳柱(青)"; }
+      ctx.fillText(gtxt, cw / 2, ch - small * 2.0);
     } else if (view === "force") {
       var names = [];
       if (D.showAxial) { names.push("轴力 N"); }
       if (D.showMoment) { names.push("弯矩 M"); }
       if (D.showShear) { names.push("剪力 V"); }
+      if (D.showShellBeamF) { names.push("壳梁"); }
+      if (D.showShellColF) { names.push("壳柱"); }
       if (D.showAreaCloud && ana.areaElems && ana.areaElems.length) {
         var cnames = { vm: "von Mises", sx: "σx", sy: "σy", txy: "τxy", s1: "σ1", nx: "Nx" };
         names.push("面" + (cnames[D.cloudVar] || D.cloudVar));
@@ -1849,12 +2534,14 @@
     var modeTxt = D.mode === "node" ? "新增节点模式" : D.mode === "member" ? "新增杆件模式" :
       D.mode === "plane" ? ("新增平面模式（已点 " + pendingArea.length + " 节点，点“完成”生成）") :
       D.mode === "shell" ? ("新增壳模式（已点 " + pendingArea.length + " 节点，点“完成”生成）") :
-      (D.view === "model" ? "建模图视图（真实几何，无变形）" :
-       D.view === "disp" ? (D.mag === 1 ? "变形放大 ×1（真实比例）" : "变形放大 ×" + D.mag) : "内力图视图");
+      (D.view === "model" ? "几何视图（真实几何，无变形）" :
+       D.view === "design" ? "设计视图（PKPM/YJK 风格）" :
+       D.view === "disp" ? (D.mag === 0 ? "不变形（真实几何）" : D.mag === 1 ? "变形放大 ×1（真实比例）" : "变形放大 ×" + D.mag) : "内力图视图");
     ctx.fillText(modeTxt, 10, small + 6);
     ctx.fillText("视图缩放 ×" + D.zoom.toFixed(2) + "（滚轮缩放 · 中键拖动平移）", 10, small * 2 + 10);
 
-    drawResults(ctx, cw, ch, small, ana.res, ana.ok);
+    // 设计视图的结果由左侧面板 + 图面标注给出，不再叠加通用结果条（避免与层间/顶点位移文字重叠）
+    if (D.view !== "design") { drawResults(ctx, cw, ch, small, ana.res, ana.ok); }
     updateCloudBar();
     updateStatusHelp();
   }
@@ -1878,13 +2565,18 @@
     ctx.lineTo(x1 - size * Math.cos(a + 0.4), y1 - size * Math.sin(a + 0.4));
     ctx.closePath(); ctx.fill();
   }
+  /* 文字锐化：全画布取消阴影/光晕；压在图形上的文字改用无模糊细描边保证可读 */
+  function outlineForText(ctx) {
+    ctx.lineWidth = 3; ctx.lineJoin = "round";
+    ctx.strokeStyle = D.light ? "rgba(255,255,255,0.85)" : "rgba(5,7,14,0.85)";
+  }
   function tag(ctx, txt, x, y, small, color) {
     ctx.save();
     ctx.font = "600 " + small + "px Segoe UI, Microsoft YaHei";
     ctx.textAlign = "center";
     var w = ctx.measureText(txt).width, cw = T.cw || 800;
     var px = clamp(x, w / 2 + 4, cw - w / 2 - 4);
-    ctx.shadowColor = D.light ? "rgba(255, 255, 255, 0.95)" : "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 4;
+    outlineForText(ctx); ctx.strokeText(txt, px, y);
     ctx.fillStyle = color; ctx.fillText(txt, px, y);
     ctx.restore();
   }
@@ -1912,8 +2604,9 @@
         if (fy) { s.push("Fy=" + roundN(fO(fy), 3)); }
         if (mz) { s.push("M=" + roundN(momO(mz), 3)); }
         ctx.save(); ctx.font = "600 " + small + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "left";
-        ctx.shadowColor = "rgba(0,0,0,0.9)"; ctx.shadowBlur = 4; ctx.fillStyle = "#ffc98a";
-        ctx.fillText(s.join("  "), x + 8, y - 9);
+        var _lt = s.join("  ");
+        outlineForText(ctx); ctx.strokeText(_lt, x + 8, y - 9);
+        ctx.fillStyle = "#ffc98a"; ctx.fillText(_lt, x + 8, y - 9);
         ctx.restore();
       }
     });
@@ -2071,6 +2764,270 @@
     });
   }
 
+  /* ================= 壳梁 / 壳柱参考线绘制与内力图 ================= */
+  // 参考线（含变形）的屏幕折线：端点按母单元四角变形后位置双线性插值
+  function shellCutScreen(cut) {
+    if (!cut || !ana || !gSX) { return null; }
+    var a = null;
+    (model.areas || []).forEach(function (aa) { if (aa.id === cut.aid) { a = aa; } });
+    if (!a || !a.nodes || a.nodes.length !== 4) { return null; }
+    var D00 = null, D10 = null, D11 = null, D01 = null;
+    var ids = [a.nodes[0], a.nodes[1], a.nodes[2], a.nodes[3]];
+    var pts = ids.map(function (nid) { var gi = ana.idx[nid]; return (gi == null) ? null : [gSX[gi], gSY[gi]]; });
+    if (pts.some(function (p) { return !p; })) { return null; }
+    D00 = pts[0]; D10 = pts[1]; D11 = pts[2]; D01 = pts[3];
+    function edgeMid(p, q) { return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; }
+    var e0, e1;
+    if (cut.kind === "beam") { e0 = edgeMid(D00, D01); e1 = edgeMid(D10, D11); }
+    else { e0 = edgeMid(D00, D10); e1 = edgeMid(D01, D11); }
+    return cut.pts.map(function (p) {
+      var t = clamp(p.x / (cut.L || 1), 0, 1);
+      return [e0[0] + (e1[0] - e0[0]) * t, e0[1] + (e1[1] - e0[1]) * t];
+    });
+  }
+  function shellCutColor(cut) { return cut.kind === "beam" ? SHELL_BEAM_COL : SHELL_COL_COL; }
+  function shellCutName(cut) { return (cut.kind === "beam" ? "壳梁S" : "壳柱S") + cut.aid; }
+  function enabledShellCuts(forForce) {
+    if (!ana || !ana.shellCuts) { return []; }
+    return ana.shellCuts.filter(function (c) {
+      return forForce ? (c.kind === "beam" ? D.showShellBeamF : D.showShellColF)
+                      : (c.kind === "beam" ? (D.showShellBeam || D.showShellBeamF) : (D.showShellCol || D.showShellColF));
+    });
+  }
+  // 参考线细线（不同方向不同颜色：梁橙 / 柱青）
+  function drawShellRefs(ctx) {
+    var list = enabledShellCuts(false);
+    if (!list.length) { return; }
+    ctx.save();
+    ctx.lineWidth = 1.6; ctx.setLineDash([]);
+    list.forEach(function (cut) {
+      var sp = shellCutScreen(cut);
+      if (!sp || !sp.length) { return; }
+      ctx.strokeStyle = shellCutColor(cut);
+      ctx.beginPath();
+      sp.forEach(function (p, i) { if (i) { ctx.lineTo(p[0], p[1]); } else { ctx.moveTo(p[0], p[1]); } });
+      ctx.stroke();
+      // 端点小圆点 + 编号
+      sp.forEach(function (p, i) {
+        if (i !== 0 && i !== sp.length - 1) { return; }
+        ctx.fillStyle = shellCutColor(cut);
+        ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, Math.PI * 2); ctx.fill();
+      });
+      var mid = sp[Math.floor(sp.length / 2)];
+      tag(ctx, shellCutName(cut), mid[0], mid[1] - 8, 10, shellCutColor(cut));
+    });
+    ctx.restore();
+  }
+  // 参考线内力图：当成框架构件，沿线画 M / V / N（受 showMoment/showShear/showAxial 控制）
+  function drawShellCutDiagrams(ctx, cw, ch, peakM, peakV, peakN) {
+    var list = enabledShellCuts(true);
+    if (!list.length) { return; }
+    var dscM = (0.11 * Math.min(cw, ch)) / (peakM || 1) * D.dscale;
+    var dscV = (0.11 * Math.min(cw, ch)) / (peakV || 1) * D.dscale;
+    var dscN = (0.11 * Math.min(cw, ch)) / (peakN || 1) * D.dscale;
+    ctx.save(); ctx.lineJoin = "round";
+    function one(cut, getV, dsc, fill, stroke) {
+      var sp = shellCutScreen(cut);
+      if (!sp || sp.length < 2) { return; }
+      var n = sp.length, i;
+      var ex = sp[n - 1][0] - sp[0][0], ey = sp[n - 1][1] - sp[0][1], L = Math.hypot(ex, ey) || 1;
+      var nX = -ey / L, nY = ex / L;
+      ctx.beginPath(); ctx.moveTo(sp[0][0], sp[0][1]);
+      for (i = 1; i < n; i++) { ctx.lineTo(sp[i][0], sp[i][1]); }
+      for (i = n - 1; i >= 0; i--) {
+        var v = getV(cut.pts[i]);
+        ctx.lineTo(sp[i][0] + nX * v * dsc, sp[i][1] + nY * v * dsc);
+      }
+      ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = stroke; ctx.lineWidth = 1.4; ctx.stroke();
+    }
+    list.forEach(function (cut) {
+      if (D.showAxial) { one(cut, function (p) { return p.N; }, dscN, "rgba(130, 240, 140, 0.20)", "#63e06a"); }
+      if (D.showMoment) { one(cut, function (p) { return p.M; }, dscM, "rgba(255, 120, 120, 0.24)", "#ff8080"); }
+      if (D.showShear) { one(cut, function (p) { return p.S !== undefined ? p.S : p.V; }, dscV, "rgba(80, 210, 255, 0.22)", "#4fd1ff"); }
+    });
+    ctx.restore();
+  }
+  // 参考线内力数值标注（最大值位置）
+  function drawShellCutValues(ctx, small) {
+    var list = enabledShellCuts(true);
+    if (!list.length || !D.showForceVals) { return; }
+    list.forEach(function (cut) {
+      var sp = shellCutScreen(cut);
+      if (!sp || !sp.length) { return; }
+      var n = sp.length;
+      var ex = sp[n - 1][0] - sp[0][0], ey = sp[n - 1][1] - sp[0][1], L = Math.hypot(ex, ey) || 1;
+      var nX = -ey / L, nY = ex / L;
+      function place(idx, val, label, color, off) {
+        tag(ctx, shellCutName(cut) + label + "=" + fO(val).toFixed(1), sp[idx][0] + nX * off, sp[idx][1] + nY * off, small, color);
+      }
+      function argmax(key) {
+        var bi = 0, bv = 0, i;
+        for (i = 0; i < cut.pts.length; i++) { if (Math.abs(cut.pts[i][key]) > bv) { bv = Math.abs(cut.pts[i][key]); bi = i; } }
+        return { i: Math.round(bi / (cut.pts.length - 1) * (n - 1)), v: bv };
+      }
+      if (D.showMoment) { var a = argmax("M"); place(a.i, a.v, "M", "#ff8080", 16); }
+      if (D.showShear) { var b = argmax("V"); place(b.i, b.v, "V", "#4fd1ff", 34); }
+      if (D.showAxial) { var c = argmax("N"); place(c.i, c.v, "N", "#63e06a", 52); }
+    });
+  }
+  // 悬停/命中：返回最近参考线上的插值内力
+  function shellCutAt(px, py) {
+    var list = enabledShellCuts(true).length ? enabledShellCuts(true) : enabledShellCuts(false);
+    var best = null, bd = 10, bi = 0;
+    list.forEach(function (cut) {
+      var sp = shellCutScreen(cut);
+      if (!sp) { return; }
+      for (var i = 0; i + 1 < sp.length; i++) {
+        var d = distSeg(px, py, sp[i][0], sp[i][1], sp[i + 1][0], sp[i + 1][1]);
+        if (d < bd) { bd = d; best = cut; bi = i; }
+      }
+    });
+    if (!best) { return null; }
+    var si = clamp(bi, 0, best.pts.length - 1);
+    return { cut: best, f: best.pts[si] || { N: 0, V: 0, M: 0 } };
+  }
+
+  /* ================= 壳剖面绘制 =================
+   * 主题色：暗色选中用黄（#ffe066），亮色用蓝（#1b4fb0）保证可见。
+   * 起点/终点只保留线（无实心点，可拖拽手柄为空心小圈）；有意义的
+   * 边缘实心点画在绘制线与壳的交点（壳内有效段端部）上。
+   * 剖面线跟随变形显示：位移/内力视图按 D.mag 对剖面点做位移插值；
+   * 存储坐标仍为未变形值（分析基准），交互时经 undeformPt 换算。
+   */
+  function cutThemeCol(sel) {
+    if (D.light) { return sel ? "#1b4fb0" : "#2f7bff"; }
+    return sel ? "#ffe066" : "#e08fff";
+  }
+  // 任意未变形点 (x,y) 的位移（已乘放大系数，模型单位 m）：近邻 K 点反距离加权
+  function dispAt(x, y) {
+    var amp = (D.view === "model" || D.view === "design") ? 0 : (D.mag == null ? 1 : D.mag);
+    if (!ana || !ana.all || !ana.u || !amp) { return [0, 0]; }
+    var all = ana.all, u = ana.u, n = all.length, i;
+    var K = 6, bd = [], bv = [], m = 0;
+    for (i = 0; i < n; i++) {
+      var dx = x - all[i][0], dy = y - all[i][1], d2 = dx * dx + dy * dy;
+      if (d2 < 1e-18) { return [u[3 * i] * amp, u[3 * i + 1] * amp]; }
+      if (m < K) { bd.push(d2); bv.push(i); m++; }
+      else {
+        var mi = 0, k;
+        for (k = 1; k < K; k++) { if (bd[k] > bd[mi]) { mi = k; } }
+        if (d2 < bd[mi]) { bd[mi] = d2; bv[mi] = i; }
+      }
+    }
+    var sx = 0, sy = 0, sw = 0, k2;
+    for (k2 = 0; k2 < m; k2++) { var w = 1 / (bd[k2] + 1e-12); sx += u[3 * bv[k2]] * w; sy += u[3 * bv[k2] + 1] * w; sw += w; }
+    if (!(sw > 0)) { return [0, 0]; }
+    return [sx / sw * amp, sy / sw * amp];
+  }
+  function deformPt(x, y) { var d = dispAt(x, y); return [x + d[0], y + d[1]]; }
+  // 变形空间坐标 → 未变形存储坐标（阻尼不动点迭代 8 次，大放大系数下也稳定）
+  function undeformPt(x, y) {
+    var ux = x, uy = y, k;
+    for (k = 0; k < 8; k++) {
+      var d = dispAt(ux, uy);
+      ux += 0.5 * ((x - d[0]) - ux); uy += 0.5 * ((y - d[1]) - uy);
+    }
+    return [ux, uy];
+  }
+  // 未变形剖面点 → 变形后屏幕坐标
+  function cutDefPt(x, y) { var d = deformPt(x, y); return [toX(d[0]), toY(d[1])]; }
+  // 剖面探针在主图上的屏幕坐标（壳内有效段内插值，随变形移动），无命中返回 null
+  function cutProbeScreen(c) {
+    var res = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
+    var g = cutGeom(c);
+    if (!res || !res.hit || !g) { return null; }
+    var hr = cutHitRange(res);
+    var x = hr[0] + clamp(D.cutPos == null ? 0.5 : D.cutPos, 0, 1) * (hr[1] - hr[0]);
+    var p = cutDefPt(c.x0 + g.sx * x, c.y0 + g.sy * x);
+    return [p[0], p[1], x];
+  }
+  function drawCuts(ctx, small) {
+    // 隐藏剖面符号时跳过已有剖面绘制（画线橡皮筋仍显示，保证能新建剖面）
+    var list = (D.showCuts === false) ? [] : (model.cuts || []);
+    if (!list.length && !(D.mode === "cut" && pendingCut)) { return; }
+    ctx.save();
+    list.forEach(function (c) {
+      var sel = !!selCuts[c.id];
+      var col = cutThemeCol(sel);
+      // 端点随变形显示
+      var pa = cutDefPt(c.x0, c.y0), pb = cutDefPt(c.x1, c.y1);
+      var ax = pa[0], ay = pa[1], bx = pb[0], by = pb[1];
+      // 变形后屏幕方向及法向（中轴短 tick 用）
+      var ddx = bx - ax, ddy = by - ay, ddl = Math.hypot(ddx, ddy) || 1;
+      var dnx = ddy / ddl, dny = -ddx / ddl;
+      // 画线全程（细线，起点终点无实心点）
+      ctx.strokeStyle = col;
+      ctx.lineWidth = sel ? 2 : 1.4;
+      ctx.globalAlpha = sel ? 1 : 0.85;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+      ctx.globalAlpha = 1;
+      var g = cutGeom(c);
+      var res = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
+      function cutPtAt(x) { return cutDefPt(c.x0 + g.sx * x, c.y0 + g.sy * x); }
+      // 壳内有效段加粗覆盖
+      if (g && res && res.hit) {
+        ctx.lineWidth = sel ? 4 : 3;
+        cutBlocks(res).forEach(function (bl) {
+          var qa = cutPtAt(bl.a), qb = cutPtAt(bl.b);
+          ctx.beginPath();
+          ctx.moveTo(qa[0], qa[1]);
+          ctx.lineTo(qb[0], qb[1]);
+          ctx.stroke();
+        });
+        // 边缘实心点：绘制线与壳的交点（每块有效段端部）
+        ctx.fillStyle = col;
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1;
+        cutBlocks(res).forEach(function (bl) {
+          [[bl.a], [bl.b]].forEach(function (q) {
+            var pe = cutPtAt(q[0]);
+            ctx.beginPath(); ctx.arc(pe[0], pe[1], 4.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          });
+        });
+      }
+      var mc = cutDefPt(c.cx, c.cy), tl = 7;
+      ctx.strokeStyle = col; ctx.lineWidth = sel ? 2 : 1.4;
+      ctx.beginPath(); ctx.moveTo(mc[0] - dnx * tl, mc[1] - dny * tl); ctx.lineTo(mc[0] + dnx * tl, mc[1] + dny * tl); ctx.stroke();
+      if (sel) {
+        // 选中时：起点/终点为空心小圈（可拖拽），中轴为实心点
+        ctx.strokeStyle = col; ctx.lineWidth = 1.4;
+        [[ax, ay], [bx, by]].forEach(function (p) {
+          ctx.beginPath(); ctx.arc(p[0], p[1], 3.2, 0, Math.PI * 2); ctx.stroke();
+        });
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(mc[0], mc[1], 4.2, 0, Math.PI * 2); ctx.fill();
+        // 同步探针点（与应力图滑点联动，主图可拖）
+        var ps = cutProbeScreen(c);
+        if (ps) {
+          ctx.fillStyle = col;
+          ctx.beginPath(); ctx.arc(ps[0], ps[1], 5, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.6; ctx.stroke();
+          ctx.strokeStyle = col; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(ps[0], ps[1], 7.5, 0, Math.PI * 2); ctx.stroke();
+        }
+      }
+      tag(ctx, "S" + c.id, (ax + bx) / 2, (ay + by) / 2 - 9, 10, col);
+    });
+    // 画线橡皮筋（第二点经节点吸附/15°磁吸，均随变形显示）
+    if (D.mode === "cut" && pendingCut && cutHover) {
+      var sp0 = cutDefPt(pendingCut.x, pendingCut.y);
+      var sx0 = sp0[0], sy0 = sp0[1];
+      var ex = cutHover.x, ey = cutHover.y;
+      var hn = pickNode(ex, ey);
+      if (hn !== null) { var hnn = nodeById(hn); var hp = cutDefPt(hnn.x, hnn.y); ex = hp[0]; ey = hp[1]; }
+      else if (D.cutSnap) {
+        var wxy = undeformPt(fromX(ex), fromY(ey));
+        var sn2 = snapCutAngle(pendingCut.x, pendingCut.y, wxy[0], wxy[1]);
+        var spp = cutDefPt(sn2[0], sn2[1]); ex = spp[0]; ey = spp[1];
+      }
+      ctx.strokeStyle = cutThemeCol(false); ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]);
+      ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = cutThemeCol(false);
+      ctx.beginPath(); ctx.arc(sx0, sy0, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
   // 云图极值标记（SAP2000 风格：在极值位置画标记 + 数值）
   function extremeMarker(ctx, x, y, label, color, small) {
     ctx.save();
@@ -2093,13 +3050,20 @@
 
   function drawCloudExtremes(ctx, small, view) {
     if (view === "disp") {
-      var i, best = -1, bm = -1;
+      var i, best = -1, bm = -Infinity, worst = -1, wm = Infinity;
       for (i = 0; i < ana.all.length; i++) {
-        var mag = Math.hypot(ana.u[3 * i], ana.u[3 * i + 1]);
-        if (mag > bm) { bm = mag; best = i; }
+        var dv = DCV[i];
+        if (dv > bm) { bm = dv; best = i; }
+        if (dv < wm) { wm = dv; worst = i; }
       }
-      if (best >= 0 && bm > 0) {
-        extremeMarker(ctx, gSX[best], gSY[best], "位移max " + (bm * 1000).toFixed(2) + " mm", "#ff5252", small);
+      var dlab = DISP_NAMES[D.dispVar] || "位移";
+      if (D.dispVar === "mag") {
+        if (best >= 0 && bm > 0) {
+          extremeMarker(ctx, gSX[best], gSY[best], "位移max " + bm.toFixed(2) + " mm", "#ff5252", small);
+        }
+      } else {
+        if (best >= 0) { extremeMarker(ctx, gSX[best], gSY[best], dlab + " max " + bm.toFixed(2) + " mm", "#ff5252", small); }
+        if (worst >= 0 && worst !== best) { extremeMarker(ctx, gSX[worst], gSY[worst], dlab + " min " + wm.toFixed(2) + " mm", "#3aa0ff", small); }
       }
     } else if (view === "force" && D.showAreaCloud && ana.areaElems && ana.areaElems.length) {
       var cv = D.cloudVar, mn = Infinity, mx = -Infinity, imin = null, imax = null;
@@ -2135,17 +3099,25 @@
     ctx.save();
     ctx.font = "600 " + fs2 + "px Segoe UI, Microsoft YaHei";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowColor = D.light ? "rgba(255, 255, 255, 0.95)" : "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 4;
+    outlineForText(ctx);
     ctx.fillStyle = D.light ? "#1f3a6b" : "#cfe0ff";
     model.members.forEach(function (m) {
       if (m.L == null) { return; }
       var parts = [];
       var mat = memMat[m.id], sec = memSec[m.id];
-      if (D.showMat && mat) { parts.push(MATERIALS[mat.label] ? MATERIALS[mat.label].short : (mat.label || "自定义")); }
+      if (D.showMat && mat) {
+        parts.push(MATERIALS[mat.label] ? MATERIALS[mat.label].short : (mat.label || "自定义"));
+        if (isConcLabel(mat.label)) {
+          var rb0 = memRebar[m.id];
+          parts.push(rb0 && rb0.grade ? rb0.grade : "HRB400");
+        }
+      }
       if (D.showSec && sec) { parts.push(secShort(sec)); }
       if (!parts.length) { return; }
       var mid = memScreenPoint(m, m.L / 2), nd = memDirNormal(m), off = fs2 * 1.3;
-      ctx.fillText(parts.join(" "), mid[0] + nd.x * off, mid[1] + nd.y * off);
+      var _mt = parts.join(" ");
+      ctx.strokeText(_mt, mid[0] + nd.x * off, mid[1] + nd.y * off);
+      ctx.fillText(_mt, mid[0] + nd.x * off, mid[1] + nd.y * off);
     });
     ctx.restore();
     ctx.textBaseline = "alphabetic";
@@ -2309,7 +3281,6 @@
     var lh = small + 5, bx = 12, bottom = ch - 12;
     ctx.textAlign = "left";
     ctx.save();
-    ctx.shadowColor = D.light ? "rgba(255,255,255,0.9)" : "rgba(0, 0, 0, 0.85)"; ctx.shadowBlur = 4;
     for (var i = 0; i < rows.length; i++) {
       var yy = bottom - (rows.length - 1 - i) * lh;
       ctx.fillStyle = i === 0 ? TH().accent : (ok ? TH().res : "#e05555");
@@ -2404,8 +3375,8 @@
 
   function areaDispAt(ae) {
     var dsum = 0;
-    for (var i = 0; i < ae.g.length; i++) { dsum += Math.hypot(ana.u[3 * ae.g[i]], ana.u[3 * ae.g[i] + 1]); }
-    return dsum / ae.g.length * 1000;
+    for (var i = 0; i < ae.g.length; i++) { dsum += DCV[ae.g[i]]; }
+    return dsum / ae.g.length;
   }
 
   // 鼠标所在杆件的截面位置 x（投影到变形后弦线）
@@ -2417,7 +3388,7 @@
     var t = clamp(((px - h.x1) * dx + (py - h.y1) * dy) / L2, 0, 1);
     return t * (m.L || 0);
   }
-  // 杆件某截面处的位移幅值（mm），线性插值
+  // 杆件某截面处的位移分量值（mm），线性插值
   function memDispAt(mid, x) {
     var els = ana && ana.byMember ? ana.byMember[mid] : null;
     if (!els || !els.length) { return null; }
@@ -2425,9 +3396,8 @@
       var el = els[i];
       if (x >= el.xa - 1e-9 && x <= el.xa + el.Lsub + 1e-9) {
         var t = clamp((x - el.xa) / el.Lsub, 0, 1);
-        var ma = Math.hypot(ana.u[3 * el.a], ana.u[3 * el.a + 1]);
-        var mb = Math.hypot(ana.u[3 * el.b], ana.u[3 * el.b + 1]);
-        return (ma + (mb - ma) * t) * 1000;
+        var ma = DCV[el.a], mb = DCV[el.b];
+        return ma + (mb - ma) * t;
       }
     }
     return null;
@@ -2438,18 +3408,27 @@
     if (!ana) { return null; }
     var v = D.view;
     if (v === "model") { return null; }
-    if (v !== "disp" && v !== "force") { return null; }
+    if (v !== "disp" && v !== "force" && v !== "design") { return null; }
     var ae = areaSubAt(p.x, p.y, gSX, gSY);
     var mid = pickMember(p.x, p.y);
-    if (v === "disp") {
-      if (ae) { return "位移 <b>" + areaDispAt(ae).toFixed(3) + "</b> mm"; }
-      if (mid !== null) {
-        var m = memberById(mid);
-        if (m) { var d = memDispAt(mid, memberXAt(m, p.x, p.y)); if (d != null) { return "位移 <b>" + d.toFixed(3) + "</b> mm"; } }
+    if (v === "design") {
+      if (mid !== null && designRes && designRes.members[mid]) {
+        var r = designRes.members[mid];
+        if (r.type === "steel") { return "M" + mid + " η <b>" + r.yjkEta + "</b> " + (r.ok ? "✔" : "✘"); }
+        return "M" + mid + " 上<b>" + r.yjkTop + "</b> 下<b>" + r.yjkBot + "</b> " + r.yjkG + " " + (r.ok ? "✔" : "✘");
       }
       return null;
     }
-    // force 视图：杆件优先显示 N/V/M，其次显示面应力
+    if (v === "disp") {
+      var dlab2 = DISP_NAMES[D.dispVar] || "位移";
+      if (ae) { return dlab2 + " <b>" + areaDispAt(ae).toFixed(3) + "</b> mm"; }
+      if (mid !== null) {
+        var m = memberById(mid);
+        if (m) { var d = memDispAt(mid, memberXAt(m, p.x, p.y)); if (d != null) { return dlab2 + " <b>" + d.toFixed(3) + "</b> mm"; } }
+      }
+      return null;
+    }
+    // force 视图：杆件优先显示 N/V/M，其次壳梁/壳柱参考线，再次显示面应力
     if (mid !== null) {
       var m2 = memberById(mid);
       if (m2) {
@@ -2457,6 +3436,17 @@
         return "N <b>" + fO(f.N).toFixed(1) + "</b>　V <b>" + fO(f.V).toFixed(1) + "</b> " + forceU() +
                "　M <b>" + momO(f.M).toFixed(1) + "</b> " + momU();
       }
+    }
+    var sc = shellCutAt(p.x, p.y);
+    if (sc) {
+      return shellCutName(sc.cut) + " N <b>" + fO(sc.f.N).toFixed(1) + "</b>　V <b>" + fO(sc.f.V).toFixed(1) + "</b> " + forceU() +
+             "　M <b>" + momO(sc.f.M).toFixed(1) + "</b> " + momU();
+    }
+    var cc = pickCut(p.x, p.y);
+    if (cc !== null && ana.cutResults && ana.cutResults[cc] && ana.cutResults[cc].hit) {
+      var rr = ana.cutResults[cc];
+      return "剖面S" + cc + " Fn <b>" + fO(rr.Fn).toFixed(1) + "</b>　Fs <b>" + fO(rr.Fs).toFixed(1) + "</b> " + forceU() +
+             "　M <b>" + momO(rr.M).toFixed(1) + "</b> " + momU();
     }
     if (ae && D.showAreaCloud && ae.s) {
       var val = areaStressPick(ae.s, D.cloudVar), isNx = (D.cloudVar === "nx");
@@ -2495,10 +3485,12 @@
     else if (D.mode === "member") { txt = (pendingMember === null) ? "新增杆件：单击第一个节点。" : "新增杆件：单击第二个节点完成。" ; }
     else if (D.mode === "plane" || D.mode === "shell") {
       txt = "新增" + (D.mode === "plane" ? "平面" : "壳") + "：依次单击 3~4 个节点，右键或点“完成”生成。已点 " + pendingArea.length + " 个。";
+    } else if (D.mode === "cut") {
+      txt = pendingCut ? "壳剖面：单击确定终点（15°磁吸" + (D.cutSnap ? "开" : "关") + "）。" : "壳剖面：单击确定起点。";
     } else {
       var c = selCounts();
       if (c.n || c.m || c.a) {
-        txt = "已选 " + c.n + " 节点 / " + c.m + " 杆件 / " + c.a + " 面 —— 在右上角窗口分页编辑（单元 / 细分 / 荷载 / 内力 / 材料 / 截面）。";
+        txt = "已选 " + c.n + " 节点 / " + c.m + " 杆件 / " + c.a + " 面 —— 在右上角窗口分页编辑（单元 / 细分 / 荷载 / 内力 / 材料 / 截面 / 设计）。";
       } else {
         txt = "选择模式：左键选择节点 / 杆件 / 面，右键取消；中键拖动平移、滚轮缩放。";
       }
@@ -2516,7 +3508,16 @@
 
   function rebuild() {
     ana = analyze();
-    draw(); updatePopup();
+    if (!designKeep) { designRes = null; if (typeof updateDesignSummary === "function") { updateDesignSummary(); } }
+    designKeep = false;
+    draw(); updatePopup(); updateCutPanel(false);
+  }
+
+  // 轻量刷新剖面（仅重算切割积分，不重跑整体分析；供拖拽手柄/改坐标用）
+  function refreshCuts(skipInputs) {
+    if (!ana) { return; }
+    ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, ana.all);
+    draw(); updateCutPanel(skipInputs);
   }
 
   /* ================= 命中 / 交互 ================= */
@@ -2524,6 +3525,31 @@
   function distSeg(px, py, x1, y1, x2, y2) { var dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy; var t = l2 > 0 ? ((px - x1) * dx + (py - y1) * dy) / l2 : 0; t = clamp(t, 0, 1); return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy)); }
   function pickNode(mx, my) { var best = null, bd = 13; hit.nodes.forEach(function (h) { var d = Math.hypot(mx - h.x, my - h.y); if (d < bd) { bd = d; best = h.id; } }); return best; }
   function pickMember(mx, my) { var best = null, bd = 9; hit.members.forEach(function (h) { var d = distSeg(mx, my, h.x1, h.y1, h.x2, h.y2); if (d < bd) { bd = d; best = h.id; } }); return best; }
+  function pickCut(px, py) {
+    if (D.showCuts === false) { return null; }
+    var best = null, bd = 10;
+    (model.cuts || []).forEach(function (c) {
+      var pa = cutDefPt(c.x0, c.y0), pb = cutDefPt(c.x1, c.y1);
+      var d = distSeg(px, py, pa[0], pa[1], pb[0], pb[1]);
+      if (d < bd) { bd = d; best = c.id; }
+    });
+    return best;
+  }
+  // 选中剖面的手柄（探针 probe / 起点 p0 / 终点 p1 / 中轴 c）命中检测（屏幕坐标，随变形）
+  function cutHandleAt(px, py) {
+    if (D.showCuts === false) { return null; }
+    var best = null;
+    Object.keys(selCuts).forEach(function (k) {
+      var c = cutById(+k); if (!c) { return; }
+      var ps = cutProbeScreen(c);
+      if (ps && Math.hypot(px - ps[0], py - ps[1]) < 12) { best = { id: c.id, part: "probe" }; return; }
+      [["p0", c.x0, c.y0], ["p1", c.x1, c.y1], ["c", c.cx, c.cy]].forEach(function (q) {
+        var hp = cutDefPt(q[1], q[2]);
+        if (Math.hypot(px - hp[0], py - hp[1]) < 11) { best = { id: c.id, part: q[0] }; }
+      });
+    });
+    return best;
+  }
   function canvasPos(ev) { var r = $("cv").getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; }
 
   function finishPendingArea() {
@@ -2541,6 +3567,18 @@
     mb.classList.add("show");
     if (D.mode === "node") { mb.textContent = "模式：新增节点（右键或 Esc 退出）"; }
     else if (D.mode === "member") { mb.textContent = pendingMember === null ? "模式：新增杆件 — 点击第一个节点" : "模式：新增杆件 — 点击第二个节点（右键/Esc 退出）"; }
+    else if (D.mode === "cut") {
+      mb.innerHTML = "";
+      mb.appendChild(document.createTextNode(pendingCut ? "模式：壳剖面 — 点击终点（近节点吸附，右键/Esc 退出）" : "模式：壳剖面 — 点击起点（近节点吸附，右键/Esc 退出）"));
+      var snapLab = document.createElement("label");
+      snapLab.style.marginLeft = "8px";
+      var snapCb = document.createElement("input");
+      snapCb.type = "checkbox"; snapCb.checked = !!D.cutSnap;
+      snapCb.onchange = function () { D.cutSnap = snapCb.checked; var p = $("cut-snap"); if (p) { p.checked = D.cutSnap; } refreshModebar(); };
+      snapLab.appendChild(snapCb);
+      snapLab.appendChild(document.createTextNode("磁吸15°（含X/Y轴）"));
+      mb.appendChild(snapLab);
+    }
     else {
       var label = D.mode === "plane" ? "新增平面" : "新增壳";
       mb.innerHTML = "";
@@ -2580,23 +3618,77 @@
       }
       refreshModebar(); draw(); return;
     }
+    if (D.mode === "cut") {
+      // 点击位置为变形后屏幕坐标：节点吸附直接用节点坐标，否则换算回未变形坐标存储
+      var nid3 = pickNode(p.x, p.y);
+      var mx, my;
+      if (nid3 !== null) { var nn3 = nodeById(nid3); mx = nn3.x; my = nn3.y; }
+      else { var uw = undeformPt(fromX(p.x), fromY(p.y)); mx = uw[0]; my = uw[1]; }
+      if (!pendingCut) { pendingCut = { x: mx, y: my }; cutHover = null; refreshModebar(); draw(); }
+      else {
+        var qx = mx, qy = my;
+        if (D.cutSnap) { var sn = snapCutAngle(pendingCut.x, pendingCut.y, mx, my); qx = sn[0]; qy = sn[1]; }
+        if (Math.hypot(qx - pendingCut.x, qy - pendingCut.y) < 1e-9) { return; }
+        var nc = addCut(pendingCut.x, pendingCut.y, qx, qy);
+        pendingCut = null; cutHover = null;
+        selNodes = {}; selMembers = {}; selAreas = {}; selCuts = {}; selCuts[nc.id] = true;
+        rebuild(); setMode("select"); showTab("cut");
+      }
+      return;
+    }
     var h = pickNode(p.x, p.y);
     if (h !== null) { selNodes[h] = true; }
     else {
       var mh = pickMember(p.x, p.y);
       if (mh !== null) { selMembers[mh] = true; }
-      else { var ah = pickArea(p.x, p.y); if (ah !== null) { selAreas[ah] = true; } else { selNodes = {}; selMembers = {}; selAreas = {}; } }
+      else { var ah = pickArea(p.x, p.y); if (ah !== null) { selAreas[ah] = true; } else { var ch = pickCut(p.x, p.y); if (ch !== null) { selCuts[ch] = true; showTab("cut"); } else { selNodes = {}; selMembers = {}; selAreas = {}; selCuts = {}; } } }
     }
-    draw(); updatePopup();
+    draw(); updatePopup(); updateCutPanel(false);
   }
 
   var pan = null;       // 中键拖拽平移
   var downPos = null;   // 左键点击判定
   $("cv").addEventListener("mousedown", function (ev) {
     if (ev.button === 1) { pan = { lx: ev.clientX, ly: ev.clientY }; $("cv").style.cursor = "grabbing"; ev.preventDefault(); }
-    else if (ev.button === 0) { downPos = { x: ev.clientX, y: ev.clientY }; }
+    else if (ev.button === 0) {
+      if (D.mode === "select" && !pan) {
+        var hh = cutHandleAt(canvasPos(ev).x, canvasPos(ev).y);
+        if (hh) { cutDrag = hh; }
+      }
+      downPos = { x: ev.clientX, y: ev.clientY };
+    }
   });
   window.addEventListener("mousemove", function (ev) {
+    if (cutDrag) {
+      var r = $("cv").getBoundingClientRect();
+      var c = cutById(cutDrag.id);
+      if (c) {
+        // 鼠标为变形后坐标，先换算回未变形坐标再更新存储值
+        var uw2 = undeformPt(fromX(ev.clientX - r.left), fromY(ev.clientY - r.top));
+        var wx = uw2[0], wy = uw2[1];
+        if (cutDrag.part === "probe") {
+          // 探针沿剖面线投影，钳制到壳内有效段（与应力图滑点同步）
+          var g = cutGeom(c);
+          var res = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
+          if (g && res && res.hit) {
+            var hr = cutHitRange(res);
+            var t = ((wx - c.x0) * g.sx + (wy - c.y0) * g.sy - hr[0]) / (Math.max(hr[1] - hr[0], 1e-12));
+            D.cutPos = clamp(t, 0, 1);
+          }
+          refreshCuts(true);
+        }
+        else if (cutDrag.part === "p0") { c.x0 = wx; c.y0 = wy; refreshCuts(true); }
+        else if (cutDrag.part === "p1") { c.x1 = wx; c.y1 = wy; refreshCuts(true); }
+        else { c.cx = wx; c.cy = wy; c.cAuto = false; refreshCuts(true); }
+      }
+      return;
+    }
+    if (D.mode === "cut" && pendingCut) {
+      var r2 = $("cv").getBoundingClientRect();
+      cutHover = { x: ev.clientX - r2.left, y: ev.clientY - r2.top };
+      draw();
+      return;
+    }
     if (!pan) { return; }
     var dx = ev.clientX - pan.lx, dy = ev.clientY - pan.ly;
     pan.lx = ev.clientX; pan.ly = ev.clientY;
@@ -2605,6 +3697,7 @@
   window.addEventListener("mouseup", function (ev) {
     if (ev.button === 1 && pan) { pan = null; $("cv").style.cursor = D.mode === "select" ? "crosshair" : "copy"; return; }
     if (ev.button === 0 && downPos) {
+      if (cutDrag) { cutDrag = null; downPos = null; refreshCuts(false); return; }
       var moved = Math.hypot(ev.clientX - downPos.x, ev.clientY - downPos.y) > 4;
       downPos = null;
       if (!moved) { handleLeftClick(canvasPos(ev)); }
@@ -2623,22 +3716,74 @@
       if (pendingArea.length >= 3) { finishPendingArea(); } else { pendingArea = []; setMode("select"); }
       return;
     }
+    if (D.mode === "cut") {
+      if (pendingCut) { pendingCut = null; cutHover = null; refreshModebar(); draw(); }
+      else { setMode("select"); }
+      return;
+    }
     if (D.mode !== "select") { pendingMember = null; setMode("select"); return; }
     var p = canvasPos(ev);
     var h = pickNode(p.x, p.y);
-    if (h !== null) { delete selNodes[h]; }
-    else {
-      var mh = pickMember(p.x, p.y);
-      if (mh !== null) { delete selMembers[mh]; }
-      else { var ah = pickArea(p.x, p.y); if (ah !== null) { delete selAreas[ah]; } else { selNodes = {}; selMembers = {}; selAreas = {}; } }
+    var mh = (h === null) ? pickMember(p.x, p.y) : null;
+    var ah = (h === null && mh === null) ? pickArea(p.x, p.y) : null;
+    var ch = (h === null && mh === null && ah === null) ? pickCut(p.x, p.y) : null;
+    // 右键命中杆件/面/剖面：弹出菜单（含设计信息、壳剖面）；命中节点或空白：维持原取消选择逻辑
+    if (mh !== null || ah !== null || ch !== null) {
+      if (mh !== null && !selMembers[mh]) { selMembers[mh] = true; }
+      if (ah !== null && !selAreas[ah]) { selAreas[ah] = true; }
+      if (ch !== null && !selCuts[ch]) { selCuts[ch] = true; }
+      draw(); updatePopup(); updateCutPanel(false);
+      var menu = $("ctxmenu"), wrap = $("cvwrap");
+      menu.classList.remove("hidden");
+      var r = $("cv").getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+      menu.style.left = clamp(ev.clientX - wr.left + 6, 4, Math.max(4, wr.width - 170)) + "px";
+      menu.style.top = clamp(ev.clientY - wr.top + 6, 4, Math.max(4, wr.height - 90)) + "px";
+      void r;
+      return;
     }
-    draw(); updatePopup();
+    $("ctxmenu").classList.add("hidden");
+    if (h !== null) { delete selNodes[h]; }
+    else { selNodes = {}; selMembers = {}; selAreas = {}; selCuts = {}; }
+    draw(); updatePopup(); updateCutPanel(false);
   });
+  document.addEventListener("click", function (ev) {
+    var menu = $("ctxmenu");
+    if (!menu || menu.classList.contains("hidden")) { return; }
+    if (menu.contains(ev.target)) { return; }
+    menu.classList.add("hidden");
+  });
+  function showDesignInfoPopup() {
+    var ids = Object.keys(selMembers);
+    if (!ids.length) { alert("请先左键选中一根杆件，再右键查看设计信息"); return; }
+    if (!designRes) { runDesignFromUI(); if (!designRes) { return; } }
+    var mid = +ids[0], r = designRes.members[mid];
+    if (!r) { return; }
+    var L = [];
+    L.push("构件 M" + mid + " 扼要设计结果（" + designRes.codeConc + "/" + designRes.codeSteel + "）");
+    if (r.type === "steel") {
+      L.push("三段应力比 η(左-中-右)=" + r.yjkEta);
+      L.push("最大 σ=" + r.stress.toFixed(1) + "MPa / f=" + r.allow.toFixed(0) + "MPa");
+    } else {
+      L.push("上部 Asu(左-中-右)=" + r.yjkTop + " cm²");
+      L.push("下部 Asd(左-中-右)=" + r.yjkBot + " cm²");
+      L.push("箍筋 " + r.yjkG + " cm²/m；实配上" + r.asRealTop.text + " 下" + r.asRealBot.text + " 箍" + r.stirrup.text);
+      if (r.kind === "col" && r.colBars) {
+        L.push("集中标注：角筋" + r.colBars.corner.text + " + 中筋" + r.colBars.side.text);
+      }
+      L.push("挠度 " + r.defl.toFixed(2) + "/" + r.deflAllow.toFixed(2) + "mm；裂缝 " + r.crack.toFixed(3) + "/" + r.crackAllow.toFixed(2) + "mm");
+    }
+    L.push("结论 " + (r.ok ? "安全" : "不安全") + " 余度" + (r.margin * 100).toFixed(1) + "%");
+    L.push("全楼：混凝土" + designRes.concVol.toFixed(2) + "m³ 钢筋" + (designRes.rebarWt / 1000).toFixed(2) + "t 钢材" + (designRes.steelWt / 1000).toFixed(2) + "t");
+    $("di-body").textContent = L.join("\n");
+    $("designInfo").classList.remove("hidden");
+    showTab("design");
+  }
 
-  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") { pendingMember = null; pendingArea = []; setMode("select"); } });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") { pendingMember = null; pendingArea = []; pendingCut = null; cutHover = null; cutDrag = null; setMode("select"); } });
 
   function setMode(mode) {
     D.mode = mode; pendingMember = null; pendingArea = [];
+    pendingCut = null; cutHover = null; cutDrag = null;
     var btns = $("toolseg").getElementsByTagName("button");
     for (var i = 0; i < btns.length; i++) { btns[i].className = btns[i].getAttribute("data-mode") === mode ? "active" : ""; }
     var btns2 = $("toolseg2").getElementsByTagName("button");
@@ -2665,9 +3810,10 @@
 
   function updatePopup() {
     var c = selCounts();
-    $("pp-info").textContent = c.n + " 节点 / " + c.m + " 杆件" + (c.a ? " / " + c.a + " 面" : "");
+    var nc = Object.keys(selCuts).length;
+    $("pp-info").textContent = c.n + " 节点 / " + c.m + " 杆件" + (c.a ? " / " + c.a + " 面" : "") + (nc ? " / " + nc + " 剖面" : "");
     updateStation(); updateAreaForce();
-    if (c.n === 0 && c.m === 0 && c.a === 0) { $("popup").classList.add("hidden"); return; }
+    if (c.n === 0 && c.m === 0 && c.a === 0 && nc === 0) { $("popup").classList.add("hidden"); return; }
     $("popup").classList.remove("hidden");
     // 预填
     var nid = Object.keys(selNodes)[0];
@@ -2717,10 +3863,254 @@
         " " + D.lenUnit + "，E=" + fmtSci(mat.E) + " kPa；网格 " + eff.nx + "×" + eff.ny +
         (a.nodes.length >= 4 ? "（四边形）" : "（三角形，每边 " + eff.nx + " 等分）") + "。";
     }
+    // 钢筋回填（杆件优先，否则面）
+    (function fillRebar() {
+      var rb = null, conc = false;
+      var mk = Object.keys(selMembers)[0];
+      if (mk !== undefined) {
+        var mlab = (memMat[+mk] || {}).label || "";
+        conc = isConcLabel(mlab);
+        rb = memRebar[+mk] || (conc ? defaultRebar() : null);
+        if (conc && !memRebar[+mk]) { memRebar[+mk] = JSON.parse(JSON.stringify(rb)); }
+      } else {
+        var ak = Object.keys(selAreas)[0];
+        if (ak !== undefined) {
+          var alab = (areaMat[+ak] || areaMatOf(+ak) || {}).label || "";
+          conc = isConcLabel(alab);
+          rb = areaRebar[+ak] || (conc ? defaultRebar() : null);
+          if (conc && !areaRebar[+ak]) { areaRebar[+ak] = JSON.parse(JSON.stringify(rb)); }
+        }
+      }
+      if (rb) { $("rb-grade").value = rb.grade || "HRB400"; $("rb-fyk").value = rb.fyk; $("rb-fd").value = rb.fd; }
+      syncRebarBlock();
+    })();
+    updateDesignBrief();
   }
 
-  function updateAreaForce() {
-    var el = $("area-force"), aid = Object.keys(selAreas)[0];
+  // 选中矩形壳的参考线内力摘要（端-中-端）：壳梁沿 X 向中线，壳柱沿 Y 向中线
+  function shellCutText(aid) {
+    if (!ana || !ana.shellCuts) { return ""; }
+    var out = "";
+    ana.shellCuts.forEach(function (cut) {
+      if (cut.aid !== aid) { return; }
+      function f3(q) { return "N=" + fO(q.N).toFixed(1) + " V=" + fO(q.V).toFixed(1) + " M=" + momO(q.M).toFixed(1); }
+      out += "\n" + shellCutName(cut) + "（长" + fmtLen(cut.L) + D.lenUnit + "，全截面积分）\n" +
+        "起端 " + f3(cut.ends.a) + "\n跨中 " + f3(cut.ends.m) + "\n末端 " + f3(cut.ends.b) +
+        "（" + forceU() + " / " + momU() + "）";
+    });
+    return out;
+  }
+
+  /* ================= 壳剖面面板 ================= */
+  function selCutId() {
+    var ids = Object.keys(selCuts);
+    if (ids.length) { var c0 = cutById(+ids[0]); if (c0) { return c0.id; } }
+    if ((model.cuts || []).length) { return model.cuts[model.cuts.length - 1].id; }
+    return null;
+  }
+  function updateCutPanel(skipInputs) {
+    if (!$("cut-sel")) { return; }
+    var sel = $("cut-sel"), cur = selCutId();
+    sel.innerHTML = "";
+    (model.cuts || []).forEach(function (c) {
+      var g = cutGeom(c);
+      var o = document.createElement("option");
+      o.value = c.id;
+      var effTxt = "";
+      var rr = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
+      if (rr && rr.hit) {
+        var hrr = cutHitRange(rr);
+        effTxt = "，有效" + fmtLen(hrr[1] - hrr[0]) + D.lenUnit;
+      }
+      o.textContent = "剖面 S" + c.id + "（长" + fmtLen(g ? g.L : 0) + D.lenUnit + effTxt + "）";
+      sel.appendChild(o);
+    });
+    if (cur !== null) { sel.value = cur; }
+    $("cut-var").value = D.cutVar || "sx";
+    $("cut-snap").checked = D.cutSnap !== false;
+    var c = (cur !== null) ? cutById(cur) : null;
+    if (c && !skipInputs) {
+      $("cut-x0").value = roundN(lenO(c.x0), 3); $("cut-y0").value = roundN(lenO(c.y0), 3);
+      $("cut-x1").value = roundN(lenO(c.x1), 3); $("cut-y1").value = roundN(lenO(c.y1), 3);
+      $("cut-cx").value = roundN(lenO(c.cx), 3); $("cut-cy").value = roundN(lenO(c.cy), 3);
+    }
+    if (!c) { $("cut-read").textContent = "尚无壳剖面，点「增加壳剖面」后在图上画线"; updateCutProbe(null); }
+    else { updateCutRead(c); }
+    syncCutSlider();
+    drawCutChart(c);
+  }
+  function updateCutRead(c) {
+    var el = $("cut-read");
+    if (!c || !ana || !ana.cutResults) { el.textContent = "—"; return; }
+    var r = ana.cutResults[c.id];
+    if (!r || !r.hit) { el.textContent = "S" + c.id + " 未穿过任何壳/面单元（无积分结果）"; updateCutProbe(c); return; }
+    var comp = D.cutVar || "sx";
+    // 原始分段积分 vs 连线（中点+外推）积分，两套并排对比
+    var iRaw = cutCompIntegralRaw(r, comp), iSm = cutCompIntegralSmooth(r, comp, 60, 0);
+    var fSm = cutSmoothForces(r, c, 80, 0);
+    var iu = forceU(); // 两类积分均已含厚度，单位为力
+    var hr = cutHitRange(r);
+    // 相对差：原始值≈0（如弯曲正应力自平衡）时百分比无意义，改显示绝对差
+    var ref = Math.max(Math.abs(iRaw), Math.abs(iSm)), diffTxt;
+    if (ref < 1e-9) { diffTxt = "均为≈0"; }
+    else if (Math.abs(iRaw) < 1e-3 * ref) { diffTxt = "原始≈0，绝对差 " + fmtSci(fO(iSm - iRaw)) + "（%无意义）"; }
+    else { diffTxt = "差 " + (((iSm - iRaw) / Math.abs(iRaw)) * 100).toFixed(1) + "%"; }
+    var dFn = fSm.Fn - r.Fn, dFs = fSm.Fs - r.Fs, dM = fSm.M - r.M;
+    el.textContent = "S" + c.id + "（画线全长 " + fmtLen(r.L) + "，壳内有效 " + fmtLen(hr[1] - hr[0]) + " " + D.lenUnit + "）\n" +
+      "Fn 原始= " + fO(r.Fn).toFixed(2) + "｜连线= " + fO(fSm.Fn).toFixed(2) + "（Δ" + fO(dFn).toFixed(2) + "）" + forceU() + "\n" +
+      "Fs 原始= " + fO(r.Fs).toFixed(2) + "｜连线= " + fO(fSm.Fs).toFixed(2) + "（Δ" + fO(dFs).toFixed(2) + "）" + forceU() + "\n" +
+      "M 原始= " + momO(r.M).toFixed(2) + "｜连线= " + momO(fSm.M).toFixed(2) + "（Δ" + momO(dM).toFixed(2) + "）" + momU() + "\n" +
+      "当前分量" + comp + "沿线积分（含厚度）：原始 " + fmtSci(fO(iRaw)) + "｜连线 " + fmtSci(fO(iSm)) + "（" + diffTxt + "）" + iu + "\n" +
+      "中轴(" + (c.cAuto === false ? "手动" : "有应力范围中点") + ") = (" +
+      fmtLen(r.cax) + ", " + fmtLen(r.cay) + ") " + D.lenUnit;
+    updateCutProbe(c);
+  }
+  // 探针读数行（滑点位置的原始/连线应力值）
+  function updateCutProbe(c) {
+    var el = $("cut-probe");
+    if (!el) { return; }
+    if (!c || !ana || !ana.cutResults) { el.textContent = "—"; return; }
+    var r = ana.cutResults[c.id];
+    if (!r || !r.hit) { el.textContent = "—"; return; }
+    var comp = D.cutVar || "sx";
+    var isNx = (comp === "nx");
+    var hr = cutHitRange(r);
+    var x = hr[0] + clamp(D.cutPos == null ? 0.5 : D.cutPos, 0, 1) * (hr[1] - hr[0]);
+    var pv = cutProbeVals(r, comp, x, 0);
+    function fmtV(v) { return v == null ? "空隙" : (isNx ? roundN(lO(v), 3).toString() : fmtSci(sO(v))); }
+    var unit = isNx ? lineU() : stressU();
+    el.textContent = "探针 s=" + fmtLen(x - hr[0]) + "/" + fmtLen(hr[1] - hr[0]) + " " + D.lenUnit +
+      "｜原始 " + fmtV(pv.raw) + "｜连线 " + fmtV(pv.sm) + " " + unit + "（图上/主图拖动同步）";
+  }
+  // 箱式平滑（半径 w，边界截断；用于沿线应力去锯齿）
+  function smoothArr(vs, w) {
+    var n = vs.length, out = new Array(n), i, k;
+    for (i = 0; i < n; i++) {
+      var s = 0, c = 0;
+      for (k = -w; k <= w; k++) { var j = i + k; if (j < 0 || j >= n) { continue; } s += vs[j]; c++; }
+      out[i] = s / c;
+    }
+    return out;
+  }
+  function drawCutChart(c) {
+    var cv = $("cutChart"); if (!cv || !cv.getContext) { return; }
+    var ctx = cv.getContext("2d");
+    var W = Math.max(120, cv.clientWidth || 224), H = 190;
+    var dpr = window.devicePixelRatio || 1;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.height = H + "px"; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = TH().chartBg; ctx.fillRect(0, 0, W, H);
+    ctx.font = "11px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
+    if (!c) { ctx.fillStyle = TH().textDim; ctx.fillText("尚无壳剖面，点「增加壳剖面」画线", W / 2, H / 2); return; }
+    var res = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
+    if (!res || !res.hit) { ctx.fillStyle = TH().textDim; ctx.fillText("S" + c.id + " 未穿过壳/面单元", W / 2, H / 2); return; }
+    var comp = D.cutVar || "sx";
+    var names = { sx: "σx", sy: "σy", txy: "τxy", vm: "von Mises", s1: "σ1", nx: "Nx" };
+    var isNx = (comp === "nx");
+    function conv(v) { return isNx ? lO(v) : sO(v); }
+    var hr = cutHitRange(res), span = Math.max(hr[1] - hr[0], 1e-12);
+    // 各块连线（中点连线 + 壳边外推，折线直连不过零）
+    var blocks = cutBlocks(res), curves = [], bi, i;
+    for (bi = 0; bi < blocks.length; bi++) { curves.push(cutBlockCurve(blocks[bi], comp, 60, 0)); }
+    var mn = Infinity, mx = -Infinity;
+    curves.forEach(function (cv2) {
+      cv2.sm.forEach(function (vv0) { var vv = conv(vv0); if (vv < mn) { mn = vv; } if (vv > mx) { mx = vv; } });
+      cv2.nodes.forEach(function (nd) { var vv2 = conv(nd.v); if (vv2 < mn) { mn = vv2; } if (vv2 > mx) { mx = vv2; } });
+    });
+    if (!isFinite(mn)) { mn = 0; mx = 0; }
+    if (mx - mn < 1e-9) { mx = mn + Math.max(1e-9, Math.abs(mn) * 1e-3); }
+    var padL = 10, padR = 12, padT = 22, padB = 40;
+    var ax0 = padL, ax1 = W - padR, ay0 = padT, ay1 = H - padB;
+    function X(x) { return ax0 + (ax1 - ax0) * (x - hr[0]) / span; }
+    function Y(vv) { return ay1 - (vv - mn) / (mx - mn) * (ay1 - ay0); }
+    function xInv(px) { return hr[0] + (px - ax0) / ((ax1 - ax0) || 1) * span; }
+    var unit = isNx ? lineU() : stressU();
+    ctx.fillStyle = TH().textMid; ctx.font = "600 10px Segoe UI, Microsoft YaHei"; ctx.textAlign = "left";
+    ctx.fillText((names[comp] || comp) + " 沿 S" + c.id + " (" + unit + "，中点连线+壳边外推)", 6, 12);
+    var yZero = clamp(Y(0), ay0, ay1);
+    ctx.strokeStyle = TH().chartGrid; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax0, yZero); ctx.lineTo(ax1, yZero); ctx.stroke();
+    // 淡填充 + 连线按彩虹(jet)逐段着色（块间断开，不连 0）
+    curves.forEach(function (cv2) {
+      ctx.beginPath(); ctx.moveTo(X(cv2.xs[0]), yZero);
+      for (i = 0; i < cv2.xs.length; i++) { ctx.lineTo(X(cv2.xs[i]), Y(conv(cv2.sm[i]))); }
+      ctx.lineTo(X(cv2.xs[cv2.xs.length - 1]), yZero); ctx.closePath();
+      ctx.save(); ctx.globalAlpha = 0.15; ctx.fillStyle = "#c39bff"; ctx.fill(); ctx.restore();
+    });
+    ctx.lineWidth = 2;
+    curves.forEach(function (cv2) {
+      for (i = 0; i + 1 < cv2.xs.length; i++) {
+        var f = (conv(cv2.sm[i]) + conv(cv2.sm[i + 1])) / 2;
+        ctx.strokeStyle = rgb(jet((f - mn) / (mx - mn)));
+        ctx.beginPath(); ctx.moveTo(X(cv2.xs[i]), Y(conv(cv2.sm[i]))); ctx.lineTo(X(cv2.xs[i + 1]), Y(conv(cv2.sm[i + 1]))); ctx.stroke();
+      }
+    });
+    // 应力柱中点标记（空心圆）+ 壳边交点（实心点，边缘两点）
+    curves.forEach(function (cv2) {
+      cv2.nodes.forEach(function (nd) {
+        var px = X(nd.x), py = Y(conv(nd.v));
+        ctx.beginPath(); ctx.arc(px, py, nd.edge ? 3.6 : 2.6, 0, Math.PI * 2);
+        if (nd.edge) { ctx.fillStyle = D.light ? "#1b4fb0" : "#ffe066"; ctx.fill(); }
+        else { ctx.strokeStyle = D.light ? "#1b4fb0" : "#ffe066"; ctx.lineWidth = 1.4; ctx.stroke(); }
+      });
+    });
+    // 探针滑点（图上可拖）
+    var probeX = hr[0] + clamp(D.cutPos == null ? 0.5 : D.cutPos, 0, 1) * span;
+    var pv = cutProbeVals(res, comp, probeX, 0);
+    var probeCol = D.light ? "#1b4fb0" : "#ffe066";
+    var pX = X(clamp(probeX, hr[0], hr[1]));
+    ctx.save(); ctx.strokeStyle = probeCol; ctx.setLineDash([3, 3]); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(pX, ay0); ctx.lineTo(pX, ay1); ctx.stroke(); ctx.restore();
+    if (pv.sm != null) {
+      ctx.fillStyle = probeCol;
+      ctx.beginPath(); ctx.arc(pX, Y(conv(pv.sm)), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.stroke();
+    }
+    // 底部彩虹色标 + 壳边刻度
+    var cbY = H - 28, cbW = Math.round(ax1 - ax0);
+    for (var px = 0; px < cbW; px++) {
+      ctx.fillStyle = rgb(jet(px / Math.max(1, cbW - 1)));
+      ctx.fillRect(ax0 + px, cbY, 1, 8);
+    }
+    ctx.fillStyle = TH().textMid; ctx.font = "9px Segoe UI, Microsoft YaHei";
+    ctx.textAlign = "left"; ctx.fillText(fmtSci(mn), ax0, cbY + 18);
+    ctx.textAlign = "right"; ctx.fillText(fmtSci(mx), ax1, cbY + 18);
+    ctx.textAlign = "left"; ctx.fillText("壳边 " + fmtLen(0) , ax0, H - 2);
+    ctx.textAlign = "right"; ctx.fillText("壳边 " + fmtLen(span) + " " + D.lenUnit, ax1, H - 2);
+    ctx.textAlign = "center";
+    ctx.fillStyle = probeCol; ctx.font = "600 10px Segoe UI, Microsoft YaHei";
+    var plab = (pv.sm == null) ? "探针：空隙无应力" : ("探针 " + fmtV2(pv.sm, isNx) + " " + unit);
+    ctx.fillText(plab, (ax0 + ax1) / 2, H - 2);
+    function fmtV2(v, nx) { return nx ? roundN(lO(v), 3).toString() : fmtSci(sO(v)); }
+    // 记录探针映射供鼠标拖拽使用
+    cv._cutMap = { ax0: ax0, ax1: ax1, hr0: hr[0], hr1: hr[1], cid: c.id, xInv: xInv };
+  }
+  // 剖面应力图探针拖拽（图上直接拖滑点）
+  (function initCutChartDrag() {
+    var cv = $("cutChart");
+    if (!cv) { return; }
+    var dragging = false;
+    function setFromEvent(ev) {
+      var map = cv._cutMap;
+      if (!map) { return; }
+      var r = cv.getBoundingClientRect();
+      var px = ev.clientX - r.left;
+      var x = map.xInv(clamp(px, map.ax0, map.ax1));
+      D.cutPos = clamp((x - map.hr0) / (Math.max(map.hr1 - map.hr0, 1e-12)), 0, 1);
+      var c = cutById(map.cid);
+      if (c) { drawCutChart(c); updateCutRead(c); syncCutSlider(); }
+      draw();
+    }
+    cv.addEventListener("mousedown", function (ev) { dragging = true; setFromEvent(ev); ev.preventDefault(); });
+    window.addEventListener("mousemove", function (ev) { if (dragging) { setFromEvent(ev); } });
+    window.addEventListener("mouseup", function () { dragging = false; });
+  })();
+  function syncCutSlider() {
+    var s = $("cut-pos");
+    if (s && document.activeElement !== s) { s.value = Math.round(clamp(D.cutPos == null ? 0.5 : D.cutPos, 0, 1) * 1000); }
+  }
+
+  function updateAreaForce() {    var el = $("area-force"), aid = Object.keys(selAreas)[0];
     var a = (aid !== undefined) ? areaById(+aid) : null;
     if (!a || !ana) { el.textContent = "请选择一个面单元"; return; }
     var list = (ana.areaElems || []).filter(function (ae) { return ae.aid === +aid && ae.s; });
@@ -2733,7 +4123,8 @@
     el.textContent = (a.etype === "shell" ? "壳" : "平面") + " A" + a.id + "（" + list.length + " 子单元均值）\n" +
       "σx=" + fmtSci(sO(vx)) + " ｜ σy=" + fmtSci(sO(vy)) + " ｜ τxy=" + fmtSci(sO(vxy)) + " " + stressU() + "\n" +
       "σ1=" + fmtSci(sO(s1)) + " ｜ σ2=" + fmtSci(sO(s2)) + " ｜ vonMises=" + fmtSci(sO(vm)) + "\n" +
-      "膜内力 Nx=" + fmtSci(lO(vx * sec.t)) + " ｜ Ny=" + fmtSci(lO(vy * sec.t)) + " " + lineU();
+      "膜内力 Nx=" + fmtSci(lO(vx * sec.t)) + " ｜ Ny=" + fmtSci(lO(vy * sec.t)) + " " + lineU() +
+      shellCutText(+aid);
   }
 
   function updateStation() {
@@ -2757,12 +4148,16 @@
     $("tab-force").classList.toggle("hidden", t !== "force");
     $("tab-mat").classList.toggle("hidden", t !== "mat");
     $("tab-sec").classList.toggle("hidden", t !== "sec");
+    $("tab-cut").classList.toggle("hidden", t !== "cut");
+    $("tab-design").classList.toggle("hidden", t !== "design");
     // 细分 tab 子菜单按选中对象切换：有面则显示面细分，有杆则显示杆件细分
     var hasM = Object.keys(selMembers).length > 0, hasA = Object.keys(selAreas).length > 0;
     $("div-frame").classList.toggle("hidden", !hasM);
     $("div-area").classList.toggle("hidden", !hasA);
     if (t === "force") { drawForceCharts(); updateAreaForce(); }
+    if (t === "cut") { updateCutPanel(false); }
     if (t === "sec") { updateSecInfo(); }
+    if (t === "design") { updateDesignBrief(); }
     if (t === "div" && !hasM && !hasA) { $("div-frame").classList.remove("hidden"); $("div-area").classList.remove("hidden"); }
   }
   $("pp-tabs").addEventListener("click", function (ev) { var b = ev.target; while (b && b.tagName !== "BUTTON") { b = b.parentNode; } if (b) { showTab(b.getAttribute("data-tab")); } });
@@ -2770,7 +4165,7 @@
   $("pp-close").addEventListener("click", clearSel);
   $("pp-close2").addEventListener("click", clearSel);
   $("pp-clear").addEventListener("click", clearSel);
-  function clearSel() { selNodes = {}; selMembers = {}; selAreas = {}; draw(); updatePopup(); }
+  function clearSel() { selNodes = {}; selMembers = {}; selAreas = {}; selCuts = {}; draw(); updatePopup(); updateCutPanel(false); }
 
   // 单元操作
   $("nd-coord").addEventListener("click", function () {
@@ -2818,6 +4213,7 @@
         if (memStiff[m.id]) { memStiff[nm.id] = { EA: stiffOf(m).EA, EI: stiffOf(m).EI, GA: stiffOf(m).GA }; }
         if (memMat[m.id]) { memMat[nm.id] = JSON.parse(JSON.stringify(memMat[m.id])); }
         if (memSec[m.id]) { memSec[nm.id] = JSON.parse(JSON.stringify(memSec[m.id])); }
+        if (memRebar[m.id]) { memRebar[nm.id] = JSON.parse(JSON.stringify(memRebar[m.id])); }
         if (memDiv[m.id]) { memDiv[nm.id] = JSON.parse(JSON.stringify(memDiv[m.id])); }
         newMembers[nm.id] = true;
       }
@@ -2831,6 +4227,7 @@
       if (na) {
         if (areaMat[a.id]) { areaMat[na.id] = JSON.parse(JSON.stringify(areaMat[a.id])); }
         if (areaSec[a.id]) { areaSec[na.id] = JSON.parse(JSON.stringify(areaSec[a.id])); }
+        if (areaRebar[a.id]) { areaRebar[na.id] = JSON.parse(JSON.stringify(areaRebar[a.id])); }
         if (areaLoads[a.id]) { areaLoads[na.id] = JSON.parse(JSON.stringify(areaLoads[a.id])); }
         if (areaDiv[a.id]) { areaDiv[na.id] = JSON.parse(JSON.stringify(areaDiv[a.id])); }
         newAreas[na.id] = true;
@@ -2843,11 +4240,11 @@
   $("pp-del").addEventListener("click", function () {
     // 删除面单元
     var delA = Object.keys(selAreas).map(Number);
-    delA.forEach(function (id) { delete areaMat[id]; delete areaSec[id]; delete areaLoads[id]; delete areaDiv[id]; });
+    delA.forEach(function (id) { delete areaMat[id]; delete areaSec[id]; delete areaLoads[id]; delete areaDiv[id]; delete areaRebar[id]; });
     model.areas = (model.areas || []).filter(function (a) { return delA.indexOf(a.id) === -1; });
     // 删除杆件
     var delM = Object.keys(selMembers).map(Number);
-    delM.forEach(function (id) { delete memStiff[id]; delete memLoads[id]; delete memMat[id]; delete memSec[id]; delete memDiv[id]; });
+    delM.forEach(function (id) { delete memStiff[id]; delete memLoads[id]; delete memMat[id]; delete memSec[id]; delete memDiv[id]; delete memRebar[id]; });
     model.members = model.members.filter(function (m) { return delM.indexOf(m.id) === -1; });
     // 删除节点及其相连杆件
     var delN = Object.keys(selNodes).map(Number);
@@ -2855,13 +4252,13 @@
     if (delN.length) {
       model.members = model.members.filter(function (m) {
         var drop = delN.indexOf(m.a) !== -1 || delN.indexOf(m.b) !== -1;
-        if (drop) { delete memStiff[m.id]; delete memLoads[m.id]; delete memMat[m.id]; delete memSec[m.id]; delete memDiv[m.id]; }
+        if (drop) { delete memStiff[m.id]; delete memLoads[m.id]; delete memMat[m.id]; delete memSec[m.id]; delete memDiv[m.id]; delete memRebar[m.id]; }
         return !drop;
       });
       // 退化面单元一并删除
       model.areas = model.areas.filter(function (a) {
         var drop = a.nodes.some(function (nid) { return delN.indexOf(nid) !== -1; });
-        if (drop) { delete areaMat[a.id]; delete areaSec[a.id]; delete areaLoads[a.id]; delete areaDiv[a.id]; }
+        if (drop) { delete areaMat[a.id]; delete areaSec[a.id]; delete areaLoads[a.id]; delete areaDiv[a.id]; delete areaRebar[a.id]; }
         return !drop;
       });
       model.nodes = model.nodes.filter(function (n) { return delN.indexOf(n.id) === -1; });
@@ -2911,7 +4308,7 @@
 
   // 单元细分：杆件（等分 / 最大段长）
   $("dv-apply").addEventListener("click", function () {
-    var n = clampInt(parseFloat($("dv-n").value) || D.NSUB, 1, 30);
+    var n = clampInt(parseFloat($("dv-n").value) || D.NSUB, 1, 50);
     var lmax = lenI(parseFloat($("dv-lmax").value) || 0);
     Object.keys(selMembers).forEach(function (k) { memDiv[+k] = { n: n, lmax: lmax > 0 ? lmax : 0 }; });
     rebuild();
@@ -2922,8 +4319,8 @@
   });
   // 单元细分：面（nx × ny / 最大尺寸）
   $("dv-aapply").addEventListener("click", function () {
-    var nx = clampInt(parseFloat($("dv-nx").value) || D.AMESH, 1, 20);
-    var ny = clampInt(parseFloat($("dv-ny").value) || D.AMESH, 1, 20);
+    var nx = clampInt(parseFloat($("dv-nx").value) || D.AMESH, 1, 50);
+    var ny = clampInt(parseFloat($("dv-ny").value) || D.AMESH, 1, 50);
     var hmax = lenI(parseFloat($("dv-hmax").value) || 0);
     Object.keys(selAreas).forEach(function (k) { areaDiv[+k] = { nx: nx, ny: ny, hmax: hmax > 0 ? hmax : 0 }; });
     rebuild();
@@ -2988,27 +4385,49 @@
   });
   $("al-clear").addEventListener("click", function () { Object.keys(selAreas).forEach(function (k) { delete areaLoads[+k]; }); rebuild(); });
 
-  // 材料
+  // 材料（默认 C30；混凝土构件附带钢筋 HRB400）
   (function initMaterialOptions() {
     var sel = $("mt-key");
     sel.innerHTML = Object.keys(MATERIALS).map(function (k) { return '<option value="' + k + '">' + MATERIALS[k].label + '</option>'; }).join("");
-    sel.value = "Q235";
-    $("mt-E").value = sO(MATERIALS.Q235.E); $("mt-nu").value = MATERIALS.Q235.nu;
+    sel.value = "C30";
+    $("mt-E").value = sO(MATERIALS.C30.E); $("mt-nu").value = MATERIALS.C30.nu;
+    $("rb-grade").value = "HRB400"; $("rb-fyk").value = 400; $("rb-fd").value = 360;
   })();
+  function syncRebarBlock() {
+    var key = $("mt-key").value, conc = isConcLabel(key);
+    $("rebar-block").style.display = conc ? "" : "none";
+  }
   $("mt-key").addEventListener("change", function () {
     var m = MATERIALS[$("mt-key").value];
     if (m) { $("mt-E").value = sO(m.E); $("mt-nu").value = m.nu; }
+    syncRebarBlock();
+  });
+  $("rb-grade").addEventListener("change", function () {
+    var r = REBARS[$("rb-grade").value] || REBARS.HRB400;
+    $("rb-fyk").value = r.fyk; $("rb-fd").value = r.fy;
   });
   $("mt-apply").addEventListener("click", function () {
     var key = $("mt-key").value, E = sI(parseFloat($("mt-E").value)), nu = parseFloat($("mt-nu").value);
     if (!isFinite(E) || E <= 0) { E = MATERIALS[key].E; }
     if (!isFinite(nu)) { nu = 0.3; }
     var mat = { label: key, E: E, nu: nu };
+    var grade = $("rb-grade").value || "HRB400";
+    var fyk = parseFloat($("rb-fyk").value), fd = parseFloat($("rb-fd").value);
+    if (!isFinite(fyk) || fyk <= 0) { fyk = (REBARS[grade] || REBARS.HRB400).fyk; }
+    if (!isFinite(fd) || fd <= 0) { fd = (REBARS[grade] || REBARS.HRB400).fy; }
+    var rb = { grade: grade, fyk: fyk, fd: fd };
     Object.keys(selMembers).forEach(function (k) {
       memMat[+k] = { label: key, E: E, nu: nu };
       delete memStiff[+k];
+      if (isConcLabel(key)) { memRebar[+k] = JSON.parse(JSON.stringify(rb)); }
+      else { delete memRebar[+k]; }
     });
-    Object.keys(selAreas).forEach(function (k) { areaMat[+k] = JSON.parse(JSON.stringify(mat)); });
+    Object.keys(selAreas).forEach(function (k) {
+      areaMat[+k] = JSON.parse(JSON.stringify(mat));
+      if (isConcLabel(key)) { areaRebar[+k] = JSON.parse(JSON.stringify(rb)); }
+      else { delete areaRebar[+k]; }
+    });
+    designRes = null;
     rebuild();
   });
 
@@ -3055,6 +4474,233 @@
   });
   updateSecInfo();
 
+  /* ================= 设计模块（PKPM/YJK 风格后处理，计算见 design.js） ================= */
+  var designRes = null, designKeep = false;
+
+  function runDesignFromUI() {
+    if (!window.FrameDesign) { alert("缺少 design.js，请与 index.html 放在同一目录"); return; }
+    if (!ana || !ana.ok) { alert("结构不稳定/机构，无法进行设计"); return; }
+    // YJK 式三截面同期内力：左端-跨中-右端（sampleMember 插值，N 取该截面所在单元轴力）
+    var secForces = {};
+    model.members.forEach(function (m) {
+      if (m.L == null) { return; }
+      try {
+        secForces[m.id] = [sampleMember(m.id, 0), sampleMember(m.id, m.L / 2), sampleMember(m.id, m.L)];
+      } catch (e) { secForces[m.id] = null; }
+    });
+    designRes = window.FrameDesign.runDesign({
+      model: model, memMat: memMat, memSec: memSec, memRebar: memRebar,
+      ana: ana, codeConc: D.designConc, codeSteel: D.designSteel, secForces: secForces
+    });
+    // 7 点内力（左端 + 5 均分点 + 右端），供计算书表格使用
+    model.members.forEach(function (m) {
+      if (m.L == null || !designRes.members[m.id]) { return; }
+      var pts = [];
+      for (var i = 0; i <= 6; i++) {
+        try { pts.push(sampleMember(m.id, m.L * i / 6)); }
+        catch (e) { pts.push({ N: 0, V: 0, M: 0 }); }
+      }
+      designRes.members[m.id].forces7 = pts;
+    });
+    updateDesignSummary();
+    updateDesignBrief();
+    draw();
+  }
+  function designBriefText(mid) {
+    if (!designRes || !designRes.members[mid]) { return "尚未设计：请在左侧「设计」视图点击「开始设计」。"; }
+    var r = designRes.members[mid];
+    var L = [];
+    L.push("构件 M" + mid + "（" + (r.kind === "col" ? "柱" : r.kind === "beam" ? "梁" : "杆") + "，" + r.mat + "）");
+    if (r.type === "steel") {
+      L.push("三段应力比 η(左-中-右)=" + r.yjkEta);
+      L.push("最大 σ=" + r.stress.toFixed(1) + "MPa / f=" + r.allow.toFixed(0) + "MPa");
+    } else {
+      L.push("上部 Asu(左-中-右)=" + r.yjkTop + " cm²");
+      L.push("下部 Asd(左-中-右)=" + r.yjkBot + " cm²");
+      L.push("箍筋 " + r.yjkG + " cm²/m（加密-非加密）");
+      L.push("实配上 " + r.asRealTop.text + "，下 " + r.asRealBot.text + "，箍 " + r.stirrup.text);
+      if (r.kind === "col" && r.colBars) {
+        L.push("集中标注：角筋" + r.colBars.corner.text + " + 中筋" + r.colBars.side.text);
+      }
+      L.push("挠度 " + r.defl.toFixed(2) + " / 允许 " + r.deflAllow.toFixed(2) + " mm");
+      L.push("裂缝 " + r.crack.toFixed(3) + " / 允许 " + r.crackAllow.toFixed(2) + " mm");
+    }
+    L.push("结论：" + (r.ok ? "安全" : "不安全") + "，余度 " + (r.margin * 100).toFixed(1) + "%");
+    return L.join("\n");
+  }
+  function updateDesignBrief() {
+    var el = $("design-brief"); if (!el) { return; }
+    var ids = Object.keys(selMembers);
+    if (!ids.length) { el.textContent = "请选择一根杆件后查看扼要设计结果。"; return; }
+    el.textContent = designBriefText(+ids[0]);
+  }
+  function updateDesignSummary() {
+    var el = $("designSummary"); if (!el) { return; }
+    if (!designRes) { el.textContent = "尚未设计，点击「开始设计」按所选规范计算。"; return; }
+    var d = designRes;
+    el.textContent = "已按 " + d.codeConc + " / " + d.codeSteel + " 完成：" + d.total + "根杆件，不安全" + d.unsafe + "根\n" +
+      "层间位移角最大 1/" + (d.maxDrift > 0 ? Math.round(1 / d.maxDrift) : "∞") + "，顶点 " + Number(d.topDisp).toFixed(2) + "mm\n" +
+      "混凝土 " + d.concVol.toFixed(2) + "m³，钢筋约 " + (d.rebarWt / 1000).toFixed(2) + "t，钢材约 " + (d.steelWt / 1000).toFixed(2) + "t";
+  }
+  // 设计视图绘制（YJK/PKPM 风格：骨架 + 杆件多行标注）
+  function drawDesign(ctx, cw, ch, small, sx, sy, elems) {
+    ctx.lineCap = "round"; ctx.strokeStyle = TH().skel; ctx.lineWidth = Math.max(3, Math.min(cw, ch) * 0.005);
+    elems.forEach(function (e) { ctx.beginPath(); ctx.moveTo(sx[e.a], sy[e.a]); ctx.lineTo(sx[e.b], sy[e.b]); ctx.stroke(); });
+    ctx.save();
+    var fs = Math.max(9, small - 1);
+    ctx.font = "600 " + fs + "px Segoe UI, Microsoft YaHei";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    outlineForText(ctx);
+    model.members.forEach(function (m) {
+      if (m.L == null) { return; }
+      var mid = memScreenPoint(m, m.L / 2), nd = memDirNormal(m);
+      // 视觉上侧：上部筋/箍筋始终画在杆件视觉上方，不随单元 a→b 方向翻转
+      var up = (nd.y > 0) ? { x: -nd.x, y: -nd.y } : nd;
+      var r = designRes ? designRes.members[m.id] : null;
+      if (!r) {
+        ctx.fillStyle = TH().textMid;
+        ctx.strokeText("M" + m.id + "（未设计）", mid[0], mid[1] - 12);
+        ctx.fillText("M" + m.id + "（未设计）", mid[0], mid[1] - 12);
+        return;
+      }
+      var bad = !r.ok;
+      function line(t, off, color) {
+        ctx.fillStyle = bad ? "#ff5252" : color;
+        ctx.strokeText(t, mid[0] + up.x * off, mid[1] + up.y * off);
+        ctx.fillText(t, mid[0] + up.x * off, mid[1] + up.y * off);
+      }
+      // YJK 布局：箍筋G在最上面，上一排配筋紧贴杆件上侧，下一排配筋在杆件下侧
+      var OFF_FAR = 27, OFF_NEAR = 13;
+      if (D.designMode === "rebar" && r.type === "conc") {
+        line(r.yjkG, OFF_FAR, "#8ff0d0");
+        line(r.yjkTop, OFF_NEAR, "#63e06a");
+        line(r.yjkBot, -OFF_NEAR, "#63e06a");
+      } else if (D.designMode === "real" && r.type === "conc") {
+        if (r.kind === "col" && r.colBars) {
+          // 柱平法集中标注：角筋 / 四面中筋 / 箍筋集中在杆件中部对齐标注
+          var lh = fs + 4, ccx = mid[0] + up.x * 16, ccy = mid[1] - lh;
+          ctx.fillStyle = bad ? "#ff5252" : "#7fd7ff";
+          ctx.fillText("角筋" + r.colBars.corner.text, ccx, ccy);
+          ctx.fillText("中筋" + r.colBars.side.text, ccx, ccy + lh);
+          ctx.fillText(r.stirrup.text, ccx, ccy + lh * 2);
+        } else {
+          // 梁：左上 / 中上 / 右上分段实配 + 下部取三截面最大值 + 箍筋（上部筋一律在视觉上侧）
+          var tb = r.topBars3 || [];
+          var pL = memScreenPoint(m, m.L * 0.07), pM = memScreenPoint(m, m.L * 0.5), pR = memScreenPoint(m, m.L * 0.93);
+          ctx.fillStyle = bad ? "#ff5252" : "#7fd7ff";
+          ctx.fillText(tb[0] ? tb[0].text : r.asRealTop.text, pL[0] + up.x * OFF_NEAR, pL[1] + up.y * OFF_NEAR);
+          ctx.fillText(tb[1] ? tb[1].text : r.asRealTop.text, pM[0] + up.x * OFF_NEAR, pM[1] + up.y * OFF_NEAR);
+          ctx.fillText(tb[2] ? tb[2].text : r.asRealTop.text, pR[0] + up.x * OFF_NEAR, pR[1] + up.y * OFF_NEAR);
+          ctx.fillText(r.asRealBot.text, pM[0] - up.x * OFF_NEAR, pM[1] - up.y * OFF_NEAR);
+          ctx.fillStyle = bad ? "#ff5252" : "#8ff0d0";
+          ctx.fillText(r.stirrup.text, pM[0] + up.x * OFF_FAR, pM[1] + up.y * OFF_FAR);
+        }
+      } else {
+        var col2 = TH().textMid, txt = "M" + m.id;
+        if (r.type === "steel") { txt = "η=" + (r.yjkEta || r.ratio.toFixed(2)); col2 = "#63e06a"; }
+        else if (D.designMode === "crack") { txt = "f" + r.defl.toFixed(1) + "/" + r.deflAllow.toFixed(1) + " w" + r.crack.toFixed(2); col2 = "#ffd166"; }
+        line(txt, 14, col2);
+      }
+      if (bad) {
+        ctx.strokeStyle = "#ff5252"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(mid[0], mid[1], 7, 0, Math.PI * 2); ctx.stroke();
+      }
+    });
+    ctx.restore();
+    ctx.textBaseline = "alphabetic";
+    // 总信息：层间位移比 + 顶点位移（旧 drift/top 模式自动归入）
+    if (designRes && (D.designMode === "info" || D.designMode === "drift" || D.designMode === "top")) {
+      ctx.save();
+      ctx.font = "600 " + (small + 1) + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "left";
+      var rows = ["层间位移比（限值 1/550）："];
+      designRes.stories.forEach(function (s, i) {
+        rows.push("层" + (i + 1) + "  Δ=" + s.drift.toFixed(2) + "mm  1/" + (s.ratio > 0 ? Math.round(1 / s.ratio) : "∞") + (s.ratio > 1 / 550 ? " ✘" : " ✔"));
+      });
+      rows.push("顶点位移 " + Number(designRes.topDisp).toFixed(2) + " mm，总高 " + designRes.height.toFixed(2) + " m");
+      rows.push("顶点位移角 " + designRes.topRatio.toExponential(2) + "（限值约 1/500）" + (designRes.topRatio > 1 / 500 ? " ✘" : " ✔"));
+      rows.forEach(function (t, i) {
+        ctx.fillStyle = /✘/.test(t) ? "#ff6b6b" : TH().res;
+        ctx.fillText(t, 12, ch - 12 - (rows.length - 1 - i) * (small + 6) - 90);
+      });
+      ctx.restore();
+    }
+    ctx.font = "600 " + (small + 1) + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
+    ctx.fillStyle = TH().textMid;
+    var titles = { rebar: "配筋简图（上 Asu / 下 Asd / 箍筋G，cm²）", real: "实配钢筋图（上/下/箍筋）", crack: "挠度裂缝图（f挠度 / w裂缝）", info: "总信息（层间位移比+顶点位移）", drift: "总信息", top: "总信息" };
+    ctx.fillText("设计：" + (titles[D.designMode] || "") + (designRes ? "" : "（未设计）"), cw / 2, ch - small * 2.0);
+  }
+  // Markdown 简易渲染（标题/加粗/代码块/表格/换行）
+  function mdToHtml(md) {
+    var esc = md.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    var blocks = esc.split("```"), html = "";
+    blocks.forEach(function (b, i) {
+      if (i % 2 === 1) { html += "<pre>" + b + "</pre>"; return; }
+      b = b.replace(/^## (.*)$/gm, "<h2>$1</h2>").replace(/^### (.*)$/gm, "<h3>$1</h3>");
+      b = b.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+      b = b.replace(/`(.+?)`/g, "<code>$1</code>");
+      var lines = b.split("\n"), out = [], ti;
+      function isTLine(s) { return /^\s*\|.*\|\s*$/.test(s); }
+      function isSep(s) { return /^\s*\|[\s:\-|]+\|\s*$/.test(s); }
+      for (ti = 0; ti < lines.length; ti++) {
+        var ln = lines[ti];
+        if (isTLine(ln) && !isSep(ln)) {
+          // 收集连续表格行
+          var rows = [ln], k = ti + 1;
+          if (k < lines.length && isSep(lines[k])) { k++; } // 跳过分隔行
+          while (k < lines.length && isTLine(lines[k]) && !isSep(lines[k])) { rows.push(lines[k]); k++; }
+          var hcells = rows[0].split("|").slice(1, -1).map(function (c) { return c.trim(); });
+          var th = "<tr>" + hcells.map(function (c) { return "<th>" + c + "</th>"; }).join("") + "</tr>";
+          var tb = rows.slice(1).map(function (r) {
+            return "<tr>" + r.split("|").slice(1, -1).map(function (c) { return "<td>" + c.trim() + "</td>"; }).join("") + "</tr>";
+          }).join("");
+          out.push("<table>" + th + tb + "</table>");
+          ti = k - 1;
+          continue;
+        }
+        if (isSep(ln)) { continue; }
+        if (/^<h|^<pre|^<table|^<tr|^$/.test(ln)) { out.push(ln); continue; }
+        if (/^\- /.test(ln)) { out.push("• " + ln.slice(2) + "<br/>"); continue; }
+        if (/^---+$/.test(ln.trim())) { out.push("<hr/>"); continue; }
+        out.push(ln + "<br/>");
+      }
+      html += out.join("\n");
+    });
+    return html;
+  }
+  var lastCalcMd = "", lastCalcTitle = "";
+  function openCalcBook(title, md) {
+    lastCalcTitle = title; lastCalcMd = md;
+    $("calcTitle").textContent = title;
+    $("calcBody").innerHTML = mdToHtml(md);
+    $("calcPane").classList.remove("hidden");
+    $("stagePanel").classList.add("split");
+    draw();
+  }
+  function printCalcBook(isPdf) {
+    if (!lastCalcMd) { alert("请先生成详细计算书"); return; }
+    $("printArea").innerHTML = "<h2>" + lastCalcTitle + "</h2>" + mdToHtml(lastCalcMd);
+    if (isPdf) {
+      try { alert("在打印对话框的目的地中选择“另存为 PDF”即可输出PDF。"); } catch (e) {}
+    }
+    window.print();
+  }
+  function closeCalcBook() {
+    $("calcPane").classList.add("hidden");
+    $("stagePanel").classList.remove("split");
+    draw();
+  }
+  function openBookForSelected() {
+    if (!window.FrameDesign) { alert("缺少 design.js"); return; }
+    var ids = Object.keys(selMembers);
+    if (!ids.length) { alert("请先选中一根杆件"); return; }
+    if (!designRes) { runDesignFromUI(); if (!designRes) { return; } }
+    var mid = +ids[0], m = memberById(mid), r = designRes.members[mid];
+    if (!m || !r) { return; }
+    var md = window.FrameDesign.mdCalcBook(m, memSec[mid], (memMat[mid] || {}).label || "C30", memRebar[mid], r);
+    openCalcBook("构件 M" + mid + " 详细计算书", md);
+    showTab("design");
+  }
+
   /* ================= 左侧参数 ================= */
 
   function numInput(id, key, min, max, isInt, isLen) {
@@ -3071,8 +4717,8 @@
   numInput("in-stories", "stories", 1, 8, true);
   numInput("in-W", "W", 1, 30, false, true);
   numInput("in-h", "h", 1, 20, false, true);
-  numInput("in-NSUB", "NSUB", 1, 30, true);
-  numInput("in-AMESH", "AMESH", 1, 20, true);
+  numInput("in-NSUB", "NSUB", 1, 50, true);
+  numInput("in-AMESH", "AMESH", 1, 50, true);
 
   $("toolseg").addEventListener("click", function (ev) { var b = ev.target; while (b && b.tagName !== "BUTTON") { b = b.parentNode; } if (b) { setMode(b.getAttribute("data-mode")); } });
   $("toolseg2").addEventListener("click", function (ev) { var b = ev.target; while (b && b.tagName !== "BUTTON") { b = b.parentNode; } if (b) { setMode(b.getAttribute("data-mode")); } });
@@ -3086,8 +4732,125 @@
     draw();
     drawForceCharts();
   });
-  $("mag").addEventListener("input", function () { D.mag = parseFloat($("mag").value); $("v-mag").textContent = D.mag; draw(); });
-  $("dscale").addEventListener("input", function () { D.dscale = parseFloat($("dscale").value); $("v-dscale").textContent = D.dscale.toFixed(1); draw(); });
+  // 设计面板事件
+  $("ds-steel").addEventListener("change", function () { D.designSteel = $("ds-steel").value; designRes = null; updateDesignSummary(); });
+  $("ds-conc").addEventListener("change", function () { D.designConc = $("ds-conc").value; designRes = null; updateDesignSummary(); });
+  function bindDMode(id) {
+    $(id).addEventListener("click", function (ev) {
+      var b = ev.target; while (b && b.tagName !== "BUTTON") { b = b.parentNode; } if (!b) { return; }
+      D.designMode = b.getAttribute("data-dmode");
+      ["designModes", "designModes2"].forEach(function (gid) {
+        var btns = $(gid).getElementsByTagName("button");
+        for (var i = 0; i < btns.length; i++) { btns[i].className = btns[i].getAttribute("data-dmode") === D.designMode ? "active" : ""; }
+      });
+      draw();
+    });
+  }
+  bindDMode("designModes"); bindDMode("designModes2");
+  $("btn-design-run").addEventListener("click", function () { designKeep = true; rebuild(); designKeep = true; runDesignFromUI(); });
+  $("btn-calcbook").addEventListener("click", openBookForSelected);
+  $("calcClose").addEventListener("click", closeCalcBook);
+  $("calcPrint").addEventListener("click", function () { printCalcBook(false); });
+  $("calcPdf").addEventListener("click", function () { printCalcBook(true); });
+  $("di-close").addEventListener("click", function () { $("designInfo").classList.add("hidden"); });
+  $("di-book").addEventListener("click", openBookForSelected);
+  $("ctx-clear").addEventListener("click", function () { $("ctxmenu").classList.add("hidden"); clearSel(); });
+  // 壳剖面 tab 控件（右侧菜单：截面 → 剖面 → 设计）
+  function cutCoordLive() {
+    var id = selCutId(), c = (id !== null) ? cutById(id) : null;
+    if (!c) { return; }
+    function num(el) { var v = parseFloat($(el).value); return isFinite(v) ? lenI(v) : null; }
+    var x0 = num("cut-x0"), y0 = num("cut-y0"), x1 = num("cut-x1"), y1 = num("cut-y1");
+    if (x0 == null || y0 == null || x1 == null || y1 == null) { return; }
+    if (Math.hypot(x1 - x0, y1 - y0) < 1e-9) { return; }
+    c.x0 = x0; c.y0 = y0; c.x1 = x1; c.y1 = y1;
+    var cx = num("cut-cx"), cy = num("cut-cy");
+    if (cx != null && cy != null) { c.cx = cx; c.cy = cy; c.cAuto = false; }
+    refreshCuts(true);
+  }
+  $("cut-sel").addEventListener("change", function () {
+    var id = +$("cut-sel").value;
+    selCuts = {}; if (cutById(id)) { selCuts[id] = true; }
+    draw(); updateCutPanel(false);
+  });
+  $("cut-var").addEventListener("change", function () { D.cutVar = $("cut-var").value; updateCutPanel(true); });
+  $("cut-pos").addEventListener("input", function () {
+    D.cutPos = clamp(parseFloat($("cut-pos").value) / 1000, 0, 1);
+    var c = cutById(selCutId());
+    if (c) { drawCutChart(c); updateCutRead(c); }
+    draw();
+  });
+  $("cut-snap").addEventListener("change", function () { D.cutSnap = $("cut-snap").checked; refreshModebar(); });
+  $("cut-add").addEventListener("click", function () { setMode("cut"); });
+  $("cut-del").addEventListener("click", function () {
+    var id = selCutId();
+    if (id !== null && cutById(id)) { delCut(id); rebuild(); }
+    else if ((model.cuts || []).length && confirm("未选中剖面，是否删除全部 " + model.cuts.length + " 条壳剖面？")) {
+      (model.cuts || []).slice().forEach(function (c) { delCut(c.id); });
+      rebuild();
+    }
+  });
+  ["cut-x0", "cut-y0", "cut-x1", "cut-y1", "cut-cx", "cut-cy"].forEach(function (eid) {
+    $(eid).addEventListener("change", cutCoordLive);
+  });
+  $("cut-restore").addEventListener("click", function () {
+    var id = selCutId(), c = (id !== null) ? cutById(id) : null;
+    if (!c || !c.d0) { return; }
+    c.x0 = c.d0.x0; c.y0 = c.d0.y0; c.x1 = c.d0.x1; c.y1 = c.d0.y1;
+    c.cx = c.d0.cx; c.cy = c.d0.cy; c.cAuto = true;
+    refreshCuts(false);
+  });
+  $("cut-mid").addEventListener("click", function () {
+    var id = selCutId(), c = (id !== null) ? cutById(id) : null;
+    if (!c) { return; }
+    c.cAuto = true;
+    refreshCuts(false);
+  });
+  // 剖面对齐壳中线站：把剖面移到所在矩形壳的跨中站（竖剖→壳梁跨中站，横剖→壳柱跨中站），
+  // 中轴定到截面中点；之后剖面 Fn/Fs/M 可与「内力」页壳梁/壳柱跨中值逐项对账（注意符号约定）
+  $("cut-align").addEventListener("click", function () {
+    var id = selCutId(), c = (id !== null) ? cutById(id) : null;
+    if (!c || !ana || !ana.cutResults) { return; }
+    var r = ana.cutResults[c.id];
+    if (!r || !r.hit) { alert("剖面未穿过壳/面单元"); return; }
+    var g = cutGeom(c);
+    if (!g) { return; }
+    var hr = cutHitRange(r);
+    var mx = c.x0 + g.sx * (hr[0] + hr[1]) / 2, my = c.y0 + g.sy * (hr[0] + hr[1]) / 2;
+    var found = null;
+    (model.areas || []).forEach(function (a) {
+      if (found || !a || a.etype !== "shell" || !a.nodes || a.nodes.length !== 4) { return; }
+      var pts = a.nodes.map(nodeById).filter(Boolean);
+      if (pts.length !== 4) { return; }
+      if (!pointInPoly(mx, my, pts.map(function (n) { return [n.x, n.y]; }))) { return; }
+      var gd = (ana.areaGrid || {})[a.id];
+      var ri = gd ? rectInfo(gd.P) : null;
+      if (!ri) { return; }
+      found = { P: gd.P, ri: ri };
+    });
+    if (!found) { alert("有效段中点不在矩形壳内，无法对齐"); return; }
+    var P = found.P, ri = found.ri, q0, q1;
+    if (Math.abs(c.x1 - c.x0) <= Math.abs(c.y1 - c.y0)) {
+      q0 = [P[0][0] + ri.ux * ri.Lu / 2, P[0][1] + ri.uy * ri.Lu / 2];
+      q1 = [q0[0] + ri.vx * ri.Lv, q0[1] + ri.vy * ri.Lv];
+    } else {
+      q0 = [P[0][0] + ri.vx * ri.Lv / 2, P[0][1] + ri.vy * ri.Lv / 2];
+      q1 = [q0[0] + ri.ux * ri.Lu, q0[1] + ri.uy * ri.Lu];
+    }
+    c.x0 = q0[0]; c.y0 = q0[1]; c.x1 = q1[0]; c.y1 = q1[1];
+    c.cx = (q0[0] + q1[0]) / 2; c.cy = (q0[1] + q1[1]) / 2; c.cAuto = false;
+    refreshCuts(false);
+  });
+  $("ctx-design").addEventListener("click", function () {
+    $("ctxmenu").classList.add("hidden");
+    showDesignInfoPopup();
+  });
+  function syncMagUI() { $("mag").value = D.mag; $("mag2").value = D.mag; $("v-mag").textContent = D.mag; $("v-mag2").textContent = D.mag; }
+  function syncDscaleUI() { $("dscale").value = D.dscale; $("dscale2").value = D.dscale; $("v-dscale").textContent = (+D.dscale).toFixed(1); $("v-dscale2").textContent = (+D.dscale).toFixed(1); }
+  $("mag").addEventListener("input", function () { D.mag = parseFloat($("mag").value); syncMagUI(); draw(); });
+  $("mag2").addEventListener("input", function () { D.mag = parseFloat($("mag2").value); syncMagUI(); draw(); });
+  $("dscale").addEventListener("input", function () { D.dscale = parseFloat($("dscale").value); syncDscaleUI(); draw(); });
+  $("dscale2").addEventListener("input", function () { D.dscale = parseFloat($("dscale2").value); syncDscaleUI(); draw(); });
   $("lscale").addEventListener("input", function () { D.loadScale = parseFloat($("lscale").value); $("v-lscale").textContent = D.loadScale.toFixed(1); draw(); });
   $("showLoadVals").addEventListener("change", function () { D.showLoadVals = $("showLoadVals").checked; draw(); });
   $("showMat").addEventListener("change", function () { D.showMat = $("showMat").checked; draw(); });
@@ -3102,33 +4865,78 @@
   bindForce("f-vals", "showForceVals");
   bindForce("f-extreme", "showExtreme");
   bindForce("f-areacloud", "showAreaCloud");
+  bindForce("f-shellbeam", "showShellBeamF");
+  bindForce("f-shellcol", "showShellColF");
+  bindForce("f-cuts", "showCuts");
+  $("showShellBeam").addEventListener("change", function () { D.showShellBeam = $("showShellBeam").checked; draw(); });
+  $("showShellCol").addEventListener("change", function () { D.showShellCol = $("showShellCol").checked; draw(); });
   $("showAreaMesh").addEventListener("change", function () { D.showAreaMesh = $("showAreaMesh").checked; draw(); });
   $("areaShrink").addEventListener("change", function () { D.showAreaShrink = $("areaShrink").checked; draw(); });
 
-  // 网格生成折叠
+  // 网格生成 / 建模工具折叠
   $("gridToggle").addEventListener("click", function () {
     var panel = $("gridPanel"), open = panel.classList.toggle("hidden");
     $("gridToggle").classList.toggle("open", !open);
   });
+  $("modelToggle").addEventListener("click", function () {
+    var panel = $("modelPanel"), open = panel.classList.toggle("hidden");
+    $("modelToggle").classList.toggle("open", !open);
+  });
+  // 示例统一从子文件夹 example/ 读取（file:// 下 fetch 不可用时回退到内置生成）
+  function loadExampleFile(file, fallback, name) {
+    fetch("example/" + file).then(function (r) {
+      if (!r.ok) { throw new Error("http " + r.status); }
+      return r.text();
+    }).then(function (t) { loadModelFromText(t, name); }).catch(function () { fallback(); });
+  }
+  $("btn-load-frame").addEventListener("click", function () { loadExampleFile("framelab-2026-09-15T07-26-30.json", seedDemo, "框架示例"); });
+  $("btn-load-shell").addEventListener("click", function () { loadExampleFile("framelab-2026-09-15T07-28-49.json", seedAreaDemo, "壳示例"); });
   $("cloud-var").addEventListener("change", function () { D.cloudVar = $("cloud-var").value; D.cloudLo = null; D.cloudHi = null; draw(); });
+  $("cloud-dvar").addEventListener("change", function () { D.dispVar = $("cloud-dvar").value; D.dispLo = null; D.dispHi = null; draw(); });
+  // 两级面板：按当前视图显示对应子菜单，并把共用的拉杆/选项搬到该子菜单下
+  function placeSub(elId, parentId, beforeId) {
+    var el = $(elId), p = $(parentId);
+    if (!el || !p) { return; }
+    var before = beforeId ? $(beforeId) : null;
+    if (before && before.parentNode !== p) { before = null; }
+    if (el.parentNode !== p || el.nextSibling !== before) { p.insertBefore(el, before); }
+  }
   function syncViewOpts() {
-    $("dispOpts").classList.toggle("hidden", D.view !== "disp" && D.view !== "model");
-    $("forceOpts").classList.toggle("hidden", D.view !== "force");
+    var v = D.view;
+    $("sub-geo").classList.toggle("hidden", v !== "model");
+    $("sub-disp").classList.toggle("hidden", v !== "disp");
+    $("sub-force").classList.toggle("hidden", v !== "force");
+    $("sub-design").classList.toggle("hidden", v !== "design");
+    // 位移：三个拉杆 + 显示选项 + 面网格（无面云图分量、无极值位置）
+    if (v === "disp") {
+      placeSub("magWrap", "sub-disp", "dscaleWrap2");
+      placeSub("lscaleWrap", "sub-disp", "dispCloudOpts");
+      placeSub("dispCloudOpts", "sub-disp", "dispOpts");
+      placeSub("dispOpts", "sub-disp", "meshWrap");
+      placeSub("meshWrap", "sub-disp", "extWrap");
+      placeSub("extWrap", "sub-disp", null);
+      placeSub("areaOpts", "park", null);
+    } else if (v === "force") {
+      // 内力：三个拉杆 + 内力选项 + 面云图分量 + 面网格 + 极值位置
+      placeSub("dscaleWrap", "sub-force", "magWrap2");
+      placeSub("lscaleWrap", "sub-force", "forceOpts");
+      placeSub("areaOpts", "sub-force", "meshWrap");
+      placeSub("meshWrap", "sub-force", null);
+      placeSub("extWrap", "sub-force", null);
+    } else if (v === "model") {
+      // 几何：折叠菜单 + 显示选项 + 面网格 + 帮助（无拉杆、无面云图分量、无极值位置）
+      placeSub("dispOpts", "sub-geo", "geoNote");
+      placeSub("meshWrap", "sub-geo", "geoNote");
+      placeSub("areaOpts", "park", null);
+      placeSub("extWrap", "park", null);
+    } else {
+      placeSub("areaOpts", "park", null);
+      placeSub("meshWrap", "park", null);
+      placeSub("extWrap", "park", null);
+    }
   }
   $("st-pos").addEventListener("input", function () { D.station = parseFloat($("st-pos").value) / 100; updateStation(); draw(); });
   $("fitview").addEventListener("click", function () { D.zoom = 1; D.px = 0; D.py = 0; draw(); });
-  $("demo").addEventListener("click", seedDemo);
-  $("demoArea").addEventListener("click", seedAreaDemo);
-
-  $("reset").addEventListener("click", function () {
-    D.bays = 1; D.stories = 2; D.W = 6; D.h = 4; D.NSUB = 5; D.AMESH = 2; D.mag = 1; D.dscale = 1; D.loadScale = 1; D.view = "disp";
-    D.showAxial = false; D.showMoment = true; D.showShear = false; D.showLoadVals = false; D.showForceVals = false; D.showExtreme = false;
-    D.showMat = false; D.showSec = false; D.showAreaMesh = true; D.showAreaCloud = true; D.cloudVar = "vm"; D.showAreaShrink = false;
-    D.cloudLo = null; D.cloudHi = null; D.dispLo = null; D.dispHi = null;
-    D.station = 0.5; D.zoom = 1; D.px = 0; D.py = 0;
-    applyDToUI();
-    generateModel(); rebuild(); setMode("select");
-  });
 
   // 将 D 的显示参数同步到各控件（读取模型 / 切换主题 / 单位后调用）
   function applyDToUI() {
@@ -3136,20 +4944,35 @@
     $("in-W").value = lenO(D.W); $("in-h").value = lenO(D.h);
     $("in-NSUB").value = D.NSUB; $("in-AMESH").value = D.AMESH;
     $("mag").value = D.mag; $("v-mag").textContent = D.mag;
+    if ($("mag2")) { syncMagUI(); syncDscaleUI(); }
     $("dscale").value = D.dscale; $("v-dscale").textContent = (+D.dscale).toFixed(1);
     $("lscale").value = D.loadScale; $("v-lscale").textContent = (+D.loadScale).toFixed(1);
     $("showIds").checked = !!D.showIds; $("showLoads").checked = D.showLoads !== false;
     $("showLoadVals").checked = !!D.showLoadVals; $("showMat").checked = !!D.showMat; $("showSec").checked = !!D.showSec;
     $("showAreaMesh").checked = D.showAreaMesh !== false; $("areaShrink").checked = !!D.showAreaShrink;
     $("cloud-var").value = D.cloudVar;
-    $("f-axial").checked = !!D.showAxial; $("f-moment").checked = !!D.showMoment; $("f-shear").checked = !!D.showShear;
+    $("cloud-dvar").value = D.dispVar || "mag";
+    $("cut-var").value = D.cutVar || "sx";
+    $("cut-snap").checked = D.cutSnap !== false;    $("f-axial").checked = !!D.showAxial; $("f-moment").checked = !!D.showMoment; $("f-shear").checked = !!D.showShear;
     $("f-vals").checked = !!D.showForceVals; $("f-extreme").checked = !!D.showExtreme; $("f-areacloud").checked = D.showAreaCloud !== false;
+    $("f-shellbeam").checked = !!D.showShellBeamF; $("f-shellcol").checked = !!D.showShellColF;
+    $("f-cuts").checked = D.showCuts !== false;
+    $("showShellBeam").checked = !!D.showShellBeam; $("showShellCol").checked = !!D.showShellCol;
     $("st-pos").value = Math.round(clamp(D.station, 0, 1) * 100);
     $("unit-len").value = D.lenUnit;
     $("unit-force").value = D.forceUnit;
     setLight(D.light, true);
     var btns = $("viewseg").getElementsByTagName("button");
     for (var i = 0; i < btns.length; i++) { btns[i].className = btns[i].getAttribute("data-view") === D.view ? "active" : ""; }
+    if (!$("ds-steel")) { return; }
+    $("ds-steel").value = D.designSteel || "GB50017-2017";
+    $("ds-conc").value = D.designConc || "GB50010-2010";
+    if (D.designMode === "drift" || D.designMode === "top") { D.designMode = "info"; }
+    ["designModes", "designModes2"].forEach(function (gid) {
+      var b2 = $(gid).getElementsByTagName("button");
+      for (var j = 0; j < b2.length; j++) { b2[j].className = b2[j].getAttribute("data-dmode") === D.designMode ? "active" : ""; }
+    });
+    updateDesignSummary();
     applyUnitLabels();
     syncViewOpts();
     updatePopup();
@@ -3254,15 +5077,20 @@
         mag: D.mag, dscale: D.dscale, loadScale: D.loadScale, view: D.view,
         showAxial: D.showAxial, showMoment: D.showMoment, showShear: D.showShear,
         showForceVals: D.showForceVals, showExtreme: D.showExtreme, showAreaCloud: D.showAreaCloud,
+        showShellBeam: D.showShellBeam, showShellCol: D.showShellCol,
+        showShellBeamF: D.showShellBeamF, showShellColF: D.showShellColF,
+        cutSnap: D.cutSnap, cutVar: D.cutVar, showCutPanel: D.showCutPanel, showCuts: D.showCuts,
         showLoadVals: D.showLoadVals, showMat: D.showMat, showSec: D.showSec,
         showAreaMesh: D.showAreaMesh, cloudVar: D.cloudVar, showAreaShrink: D.showAreaShrink,
+        dispVar: D.dispVar,
         showIds: $("showIds").checked, showLoads: $("showLoads").checked,
         light: D.light, lenUnit: D.lenUnit, forceUnit: D.forceUnit, cloudLo: D.cloudLo, cloudHi: D.cloudHi,
-        dispLo: D.dispLo, dispHi: D.dispHi, station: D.station
+        dispLo: D.dispLo, dispHi: D.dispHi, station: D.station,
+        designSteel: D.designSteel, designConc: D.designConc, designMode: D.designMode
       },
       model: model, memStiff: memStiff, memMat: memMat, memSec: memSec, memLoads: memLoads,
       nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads,
-      memDiv: memDiv, areaDiv: areaDiv
+      memDiv: memDiv, areaDiv: areaDiv, memRebar: memRebar, areaRebar: areaRebar
     };
   }
   function cloneSnap(s) { return JSON.parse(JSON.stringify(s)); }
@@ -3274,11 +5102,15 @@
     m.nextNode = m.nextNode != null ? m.nextNode : (m.nodes.reduce(function (a, n) { return Math.max(a, n.id + 1); }, 0));
     m.nextMember = m.nextMember != null ? m.nextMember : (m.members.reduce(function (a, n) { return Math.max(a, n.id + 1); }, 0));
     m.nextArea = m.nextArea != null ? m.nextArea : (m.areas.reduce(function (a, n) { return Math.max(a, n.id + 1); }, 0));
+    if (!m.cuts) { m.cuts = []; }
+    if (m.nextCut == null) { m.nextCut = m.cuts.reduce(function (a, n) { return Math.max(a, n.id + 1); }, 0); }
     model = m;
     memStiff = s.memStiff || {}; memMat = s.memMat || {}; memSec = s.memSec || {}; memLoads = s.memLoads || {};
     nodeLoads = s.nodeLoads || {}; areaMat = s.areaMat || {}; areaSec = s.areaSec || {}; areaLoads = s.areaLoads || {};
     memDiv = s.memDiv || {}; areaDiv = s.areaDiv || {};
-    selNodes = {}; selMembers = {}; selAreas = {}; pendingMember = null; pendingArea = []; stationM = null;
+    memRebar = s.memRebar || {}; areaRebar = s.areaRebar || {};
+    selNodes = {}; selMembers = {}; selAreas = {}; selCuts = {}; pendingMember = null; pendingArea = []; stationM = null;
+    pendingCut = null; cutHover = null; cutDrag = null;
     if (s.D) { Object.keys(s.D).forEach(function (k) { if (s.D[k] !== undefined) { D[k] = s.D[k]; } }); }
     if (D.lenUnit !== "mm") { D.lenUnit = "m"; }
     if (D.forceUnit !== "N") { D.forceUnit = "kN"; }
@@ -3287,6 +5119,12 @@
     if (D.dispLo === undefined) { D.dispLo = null; }
     if (D.dispHi === undefined) { D.dispHi = null; }
     if (!D.view) { D.view = "disp"; }
+    if (!D.dispVar) { D.dispVar = "mag"; }
+    ["showShellBeam", "showShellCol", "showShellBeamF", "showShellColF"].forEach(function (k) { if (D[k] === undefined) { D[k] = false; } });
+    if (D.cutSnap === undefined) { D.cutSnap = true; }
+    if (D.cutVar === undefined) { D.cutVar = "sx"; }
+    if (D.showCutPanel === undefined) { D.showCutPanel = true; }
+    if (D.showCuts === undefined) { D.showCuts = true; }
     applyDToUI();
     rebuild();
     drawForceCharts();
@@ -3310,10 +5148,13 @@
     captureActive();
     D.bays = 1; D.stories = 2; D.W = 6; D.h = 4; D.NSUB = 5; D.AMESH = 2; D.mag = 1; D.dscale = 1; D.loadScale = 1; D.view = "disp";
     D.showAxial = false; D.showMoment = true; D.showShear = false; D.showLoadVals = false; D.showForceVals = false; D.showExtreme = false;
+    D.showShellBeam = false; D.showShellCol = false; D.showShellBeamF = false; D.showShellColF = false;
+    D.cutSnap = true; D.cutVar = "sx"; D.showCutPanel = true; D.showCuts = true;
     D.showMat = false; D.showSec = false; D.showAreaMesh = true; D.showAreaCloud = true; D.cloudVar = "vm"; D.showAreaShrink = false;
+    D.dispVar = "mag";
     D.cloudLo = null; D.cloudHi = null; D.dispLo = null; D.dispHi = null;
     D.station = 0.5; D.zoom = 1; D.px = 0; D.py = 0;
-    memStiff = {}; memMat = {}; memSec = {}; memLoads = {}; nodeLoads = {}; areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {};
+    memStiff = {}; memMat = {}; memSec = {}; memRebar = {}; areaRebar = {}; memLoads = {}; nodeLoads = {}; areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {};
     applyDToUI();
     generateModel();
     selNodes = {}; selMembers = {}; selAreas = {}; pendingMember = null; pendingArea = []; stationM = null;
@@ -3449,6 +5290,13 @@
       var a = addAreaByIds(nodeIds, etype || "plane");
       rebuild(); return a ? a.id : null;
     },
+    cutAdd: function (x0, y0, x1, y1) {
+      var c = addCut(x0, y0, x1, y1);
+      rebuild(); return c ? c.id : null;
+    },
+    cutDel: function (id) { delCut(+id); rebuild(); },
+    listCuts: function () { return (model.cuts || []).map(function (c) { return { id: c.id, x0: c.x0, y0: c.y0, x1: c.x1, y1: c.y1, cx: c.cx, cy: c.cy }; }); },
+    cutResult: function (id) { return (ana && ana.cutResults) ? ana.cutResults[id] : null; },
     physicalMeshArea: function (id) {
       var a = areaById(+id); if (!a) { return null; }
       var ids = physicalMeshArea(a); rebuild(); return ids;
@@ -3465,10 +5313,12 @@
     },
     openTab: function (t) { showTab(t); },
     setStation: function (s) { D.station = s; $("st-pos").value = Math.round(s * 100); updateStation(); draw(); },
+    runDesign: function () { runDesignFromUI(); return designRes; },
+    designResult: function () { return designRes; },
     newDoc: newDocument,
     listDocs: function () { return docs.map(function (d) { return { id: d.id, name: d.name, active: d.id === activeDocId }; }); },
     switchDoc: switchToDoc,
-    state: function () { return { D: D, model: model, ana: ana, memStiff: memStiff, memMat: memMat, memSec: memSec, memLoads: memLoads, nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads, memDiv: memDiv, areaDiv: areaDiv }; }
+    state: function () { return { D: D, model: model, ana: ana, memStiff: memStiff, memMat: memMat, memSec: memSec, memRebar: memRebar, areaRebar: areaRebar, memLoads: memLoads, nodeLoads: nodeLoads, areaMat: areaMat, areaSec: areaSec, areaLoads: areaLoads, memDiv: memDiv, areaDiv: areaDiv, design: designRes }; }
   };
 
   initCloudDrag();
