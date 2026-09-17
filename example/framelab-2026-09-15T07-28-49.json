@@ -1,0 +1,633 @@
+{
+ "D": {
+  "bays": 1,
+  "stories": 2,
+  "W": 6,
+  "h": 4,
+  "NSUB": 5,
+  "AMESH": 3,
+  "mag": 19,
+  "dscale": 1,
+  "loadScale": 1,
+  "view": "force",
+  "showAxial": false,
+  "showMoment": true,
+  "showShear": false,
+  "showForceVals": false,
+  "showExtreme": false,
+  "showAreaCloud": true,
+  "showLoadVals": false,
+  "showMat": false,
+  "showSec": false,
+  "showAreaMesh": true,
+  "cloudVar": "sx",
+  "showAreaShrink": true,
+  "showIds": false,
+  "showLoads": true,
+  "light": true,
+  "lenUnit": "mm",
+  "forceUnit": "kN",
+  "cloudLo": -7876.522182719141,
+  "cloudHi": 7100.452795457057,
+  "dispLo": null,
+  "dispHi": null,
+  "station": 0.5
+ },
+ "model": {
+  "nodes": [
+   {
+    "id": 0,
+    "x": 0,
+    "y": 0,
+    "bc": {
+     "ux": true,
+     "uy": true,
+     "rz": true
+    }
+   },
+   {
+    "id": 1,
+    "x": 6,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 2,
+    "x": 6,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 3,
+    "x": 0,
+    "y": 4,
+    "bc": {
+     "ux": true,
+     "uy": true,
+     "rz": true
+    }
+   },
+   {
+    "id": 4,
+    "x": 6,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 5,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 6,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 7,
+    "x": 6,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 8,
+    "x": 6,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 9,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 10,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 11,
+    "x": 6,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 12,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 13,
+    "x": 18,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 14,
+    "x": 18,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 15,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 16,
+    "x": 6,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 17,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 18,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 19,
+    "x": 6,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 20,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 21,
+    "x": 18,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 22,
+    "x": 18,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 23,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 24,
+    "x": 18,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 25,
+    "x": 24,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 26,
+    "x": 24,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 27,
+    "x": 18,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 28,
+    "x": 6,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 29,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 30,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 31,
+    "x": 6,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 32,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 33,
+    "x": 18,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 34,
+    "x": 18,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 35,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 36,
+    "x": 18,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 37,
+    "x": 24,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 38,
+    "x": 24,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 39,
+    "x": 18,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 40,
+    "x": 24,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 41,
+    "x": 30,
+    "y": 0,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 42,
+    "x": 30,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 43,
+    "x": 24,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   }
+  ],
+  "members": [],
+  "areas": [
+   {
+    "id": 0,
+    "nodes": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "etype": "shell"
+   },
+   {
+    "id": 1,
+    "nodes": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "etype": "shell"
+   },
+   {
+    "id": 2,
+    "nodes": [
+     12,
+     13,
+     14,
+     15
+    ],
+    "etype": "shell"
+   },
+   {
+    "id": 3,
+    "nodes": [
+     24,
+     25,
+     26,
+     27
+    ],
+    "etype": "shell"
+   },
+   {
+    "id": 4,
+    "nodes": [
+     40,
+     41,
+     42,
+     43
+    ],
+    "etype": "shell"
+   }
+  ],
+  "nextNode": 44,
+  "nextMember": 0,
+  "nextArea": 5
+ },
+ "memStiff": {},
+ "memMat": {},
+ "memSec": {},
+ "memLoads": {},
+ "nodeLoads": {
+  "41": {
+   "fx": 0,
+   "fy": -100,
+   "mz": 0
+  },
+  "42": {
+   "fx": 0,
+   "fy": -100,
+   "mz": 0
+  }
+ },
+ "areaMat": {
+  "0": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "1": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "2": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "3": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "4": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  }
+ },
+ "areaSec": {
+  "0": {
+   "kind": "shell-thin",
+   "t": 0.25
+  },
+  "1": {
+   "kind": "shell-thin",
+   "t": 0.25
+  },
+  "2": {
+   "kind": "shell-thin",
+   "t": 0.25
+  },
+  "3": {
+   "kind": "shell-thin",
+   "t": 0.25
+  },
+  "4": {
+   "kind": "shell-thin",
+   "t": 0.25
+  }
+ },
+ "areaLoads": {},
+ "memDiv": {},
+ "areaDiv": {
+  "0": {
+   "nx": 12,
+   "ny": 8,
+   "hmax": 0
+  },
+  "1": {
+   "nx": 12,
+   "ny": 8,
+   "hmax": 0
+  },
+  "2": {
+   "nx": 12,
+   "ny": 8,
+   "hmax": 0
+  },
+  "3": {
+   "nx": 12,
+   "ny": 8,
+   "hmax": 0
+  },
+  "4": {
+   "nx": 12,
+   "ny": 8,
+   "hmax": 0
+  }
+ },
+ "app": "FrameLab",
+ "ver": 1,
+ "savedAt": "2026-09-15T07:28:49.586Z"
+}

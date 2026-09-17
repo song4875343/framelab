@@ -1,0 +1,555 @@
+{
+ "D": {
+  "bays": 2,
+  "stories": 3,
+  "W": 6,
+  "h": 4,
+  "NSUB": 6,
+  "AMESH": 2,
+  "mag": 51,
+  "dscale": 1,
+  "loadScale": 1,
+  "view": "disp",
+  "showAxial": false,
+  "showMoment": true,
+  "showShear": false,
+  "showForceVals": false,
+  "showExtreme": true,
+  "showAreaCloud": true,
+  "showLoadVals": false,
+  "showMat": false,
+  "showSec": false,
+  "showAreaMesh": true,
+  "cloudVar": "vm",
+  "showAreaShrink": false,
+  "showIds": false,
+  "showLoads": false,
+  "light": true,
+  "lenUnit": "mm",
+  "forceUnit": "kN",
+  "cloudLo": null,
+  "cloudHi": null,
+  "dispLo": null,
+  "dispHi": null,
+  "station": 0.5
+ },
+ "model": {
+  "nodes": [
+   {
+    "id": 0,
+    "x": 0,
+    "y": 0,
+    "bc": {
+     "ux": true,
+     "uy": true,
+     "rz": true
+    }
+   },
+   {
+    "id": 1,
+    "x": 6,
+    "y": 0,
+    "bc": {
+     "ux": true,
+     "uy": true,
+     "rz": true
+    }
+   },
+   {
+    "id": 2,
+    "x": 12,
+    "y": 0,
+    "bc": {
+     "ux": true,
+     "uy": true,
+     "rz": true
+    }
+   },
+   {
+    "id": 3,
+    "x": 0,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 4,
+    "x": 6,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 5,
+    "x": 12,
+    "y": 4,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 6,
+    "x": 0,
+    "y": 8,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 7,
+    "x": 6,
+    "y": 8,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 8,
+    "x": 12,
+    "y": 8,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 9,
+    "x": 0,
+    "y": 12,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 10,
+    "x": 6,
+    "y": 12,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   },
+   {
+    "id": 11,
+    "x": 12,
+    "y": 12,
+    "bc": {
+     "ux": false,
+     "uy": false,
+     "rz": false
+    }
+   }
+  ],
+  "members": [
+   {
+    "id": 0,
+    "a": 0,
+    "b": 3,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 0,
+    "y1": 0
+   },
+   {
+    "id": 1,
+    "a": 1,
+    "b": 4,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 6,
+    "y1": 0
+   },
+   {
+    "id": 2,
+    "a": 2,
+    "b": 5,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 12,
+    "y1": 0
+   },
+   {
+    "id": 3,
+    "a": 3,
+    "b": 6,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 0,
+    "y1": 4
+   },
+   {
+    "id": 4,
+    "a": 4,
+    "b": 7,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 6,
+    "y1": 4
+   },
+   {
+    "id": 5,
+    "a": 5,
+    "b": 8,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 12,
+    "y1": 4
+   },
+   {
+    "id": 6,
+    "a": 6,
+    "b": 9,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 0,
+    "y1": 8
+   },
+   {
+    "id": 7,
+    "a": 7,
+    "b": 10,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 6,
+    "y1": 8
+   },
+   {
+    "id": 8,
+    "a": 8,
+    "b": 11,
+    "type": "col",
+    "L": 4,
+    "ux": 0,
+    "uy": 1,
+    "x1": 12,
+    "y1": 8
+   },
+   {
+    "id": 9,
+    "a": 3,
+    "b": 4,
+    "type": "beam",
+    "L": 6,
+    "ux": 1,
+    "uy": 0,
+    "x1": 0,
+    "y1": 4
+   },
+   {
+    "id": 10,
+    "a": 4,
+    "b": 5,
+    "type": "beam",
+    "L": 6,
+    "ux": 1,
+    "uy": 0,
+    "x1": 6,
+    "y1": 4
+   },
+   {
+    "id": 11,
+    "a": 6,
+    "b": 7,
+    "type": "beam",
+    "L": 6,
+    "ux": 1,
+    "uy": 0,
+    "x1": 0,
+    "y1": 8
+   },
+   {
+    "id": 12,
+    "a": 7,
+    "b": 8,
+    "type": "beam",
+    "L": 6,
+    "ux": 1,
+    "uy": 0,
+    "x1": 6,
+    "y1": 8
+   },
+   {
+    "id": 13,
+    "a": 9,
+    "b": 10,
+    "type": "beam",
+    "L": 6,
+    "ux": 1,
+    "uy": 0,
+    "x1": 0,
+    "y1": 12
+   },
+   {
+    "id": 14,
+    "a": 10,
+    "b": 11,
+    "type": "beam",
+    "L": 6,
+    "ux": 1,
+    "uy": 0,
+    "x1": 6,
+    "y1": 12
+   }
+  ],
+  "areas": [],
+  "nextNode": 12,
+  "nextMember": 15,
+  "nextArea": 0
+ },
+ "memStiff": {},
+ "memMat": {
+  "0": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "1": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "2": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "3": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "4": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "5": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "6": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "7": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "8": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "9": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "10": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "11": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "12": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "13": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  },
+  "14": {
+   "label": "C30",
+   "E": 30000000,
+   "nu": 0.2
+  }
+ },
+ "memSec": {
+  "0": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "1": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "2": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "3": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "4": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "5": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "6": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "7": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "8": {
+   "type": "rect",
+   "b": 0.4,
+   "h": 0.4
+  },
+  "9": {
+   "type": "rect",
+   "b": 0.2,
+   "h": 0.6
+  },
+  "10": {
+   "type": "rect",
+   "b": 0.2,
+   "h": 0.6
+  },
+  "11": {
+   "type": "rect",
+   "b": 0.2,
+   "h": 0.6
+  },
+  "12": {
+   "type": "rect",
+   "b": 0.2,
+   "h": 0.6
+  },
+  "13": {
+   "type": "rect",
+   "b": 0.2,
+   "h": 0.6
+  },
+  "14": {
+   "type": "rect",
+   "b": 0.2,
+   "h": 0.6
+  }
+ },
+ "memLoads": {
+  "13": [
+   {
+    "type": "udl",
+    "q": 12
+   }
+  ],
+  "14": [
+   {
+    "type": "udl",
+    "q": 12
+   }
+  ]
+ },
+ "nodeLoads": {
+  "3": {
+   "fx": 14,
+   "fy": 0,
+   "mz": 0
+  },
+  "4": {
+   "fx": 14,
+   "fy": 0,
+   "mz": 0
+  },
+  "5": {
+   "fx": 14,
+   "fy": 0,
+   "mz": 0
+  },
+  "6": {
+   "fx": 22,
+   "fy": 0,
+   "mz": 0
+  },
+  "7": {
+   "fx": 22,
+   "fy": 0,
+   "mz": 0
+  },
+  "8": {
+   "fx": 22,
+   "fy": 0,
+   "mz": 0
+  },
+  "9": {
+   "fx": 30,
+   "fy": 0,
+   "mz": 0
+  },
+  "10": {
+   "fx": 30,
+   "fy": 0,
+   "mz": 0
+  },
+  "11": {
+   "fx": 30,
+   "fy": 0,
+   "mz": 0
+  }
+ },
+ "areaMat": {},
+ "areaSec": {},
+ "areaLoads": {},
+ "memDiv": {},
+ "areaDiv": {},
+ "app": "FrameLab",
+ "ver": 1,
+ "savedAt": "2026-09-15T07:26:30.242Z"
+}
