@@ -183,21 +183,31 @@
    * L: 杆长 m；kind: 'beam'|'col'|'user'
    */
   function designMember(mid, kind, L, sec, matLabel, rebar, f, codeConc, codeSteel, secs) {
-    var N = f.N || 0, V = Math.abs(f.V || 0), M = Math.abs(f.M || 0);
+    var N = f.N || 0, V = Math.abs(f.V != null ? f.V : (f.Vy || 0)), M = Math.abs(f.M || 0);
+    // 3D 双向弯曲：取 max(|M|,|My|,|Mz|) 包络验算（简化后处理，正式设计以全模型复核为准）
+    function effM(s) { return Math.max(Math.abs(s.M || 0), Math.abs(s.My || 0), Math.abs(s.Mz || 0)); }
+    var bi3d = false;
+    if (secs && secs.length === 3) {
+      secs.forEach(function (s) {
+        if (Math.abs(s.My || 0) > 1e-9 && Math.abs((s.M || 0)) > 1e-9 && Math.abs(Math.abs(s.My) - Math.abs(s.M)) > 1e-6) { bi3d = true; }
+        if (Math.abs(s.Mz || 0) > 1e-9 && Math.abs(Math.abs(s.Mz) - Math.abs(s.M)) > 1e-6) { bi3d = true; }
+      });
+    }
+    if (bi3d) { M = Math.max(M, effM(f)); }
     var isC = isConcrete(matLabel), isS = isSteel(matLabel);
     var grade = (rebar && rebar.grade) || "HRB400";
     var rb = rebarOf(grade);
     var fyk = (rebar && rebar.fyk > 0) ? rebar.fyk : rb.fyk;
     var fy = (rebar && rebar.fd > 0) ? rebar.fd : rb.fy;
     var tag = rb.tag;
-    var S3 = (secs && secs.length === 3) ? secs : [{ N: f.N || 0, V: f.V || 0, M: f.M || 0 }, { N: f.N || 0, V: f.V || 0, M: f.M || 0 }, { N: f.N || 0, V: f.V || 0, M: f.M || 0 }];
+    var S3 = (secs && secs.length === 3) ? secs.map(function (s) { return { N: s.N || 0, V: s.V != null ? s.V : (s.Vy || 0), M: effM(s), My: s.My || 0, Mz: s.Mz != null ? s.Mz : (s.M || 0) }; }) : [{ N: f.N || 0, V: f.V || 0, M: f.M || 0 }, { N: f.N || 0, V: f.V || 0, M: f.M || 0 }, { N: f.N || 0, V: f.V || 0, M: f.M || 0 }];
 
     if (isS || (!isC && sec && sec.type === "I")) {
-      // ---- 钢构件：三截面压弯应力比 ----
+      // ---- 钢构件：三截面压弯应力比（3D 取双向弯矩包络） ----
       var A = sectionA(sec), W = steelW(sec);
       var fdes = steelF(matLabel, codeSteel);
       var ratios3 = S3.map(function (s) {
-        var sg = Math.abs(s.N || 0) * 1000 / Math.max(A, 1e-9) / 1e6 + Math.abs(s.M || 0) * 1000 / Math.max(W, 1e-9) / 1e6;
+        var sg = Math.abs(s.N || 0) * 1000 / Math.max(A, 1e-9) / 1e6 + effM(s) * 1000 / Math.max(W, 1e-9) / 1e6;
         return { sigma: sg, ratio: sg / fdes };
       });
       var worst = ratios3.reduce(function (a, b) { return b.ratio > a.ratio ? b : a; }, ratios3[0]);
@@ -310,7 +320,7 @@
     };
   }
 
-  /* 从分析结果提取每根杆件控制内力：取 |M| 最大截面处的同期 N、V */
+  /* 从分析结果提取每根杆件控制内力：取 max(|M|,|My|,|Mz|) 最大截面处的同期 N、V（3D 兼容） */
   function ctrlForces(ana) {
     var out = {};
     if (!ana || !ana.byMember) { return out; }
@@ -318,7 +328,8 @@
       var els = ana.byMember[key], best = { N: 0, V: 0, M: 0 }, bm = -1;
       els.forEach(function (el) {
         (el.forces || []).forEach(function (p) {
-          if (Math.abs(p.M) > bm) { bm = Math.abs(p.M); best = { N: el.axial || 0, V: p.S || 0, M: p.M || 0 }; }
+          var mAbs = Math.max(Math.abs(p.M || 0), Math.abs(p.My || 0), Math.abs(p.Mz || 0));
+          if (mAbs > bm) { bm = mAbs; best = { N: el.axial || 0, V: p.S != null ? p.S : (p.Vy || 0), M: (p.Mz != null ? p.Mz : p.M) || 0 }; }
         });
       });
       out[key] = best;
@@ -328,9 +339,12 @@
 
   function storyDrift(ana, model, H) {
     if (!ana || !model) { return { stories: [], maxRatio: 0 }; }
+    var st = (ana.all && ana.all.length && ana.u && ana.u.length >= ana.all.length * 6 - 1e-9) ? 6 : 3;
+    var hasZ = (model.nodes || []).some(function (n) { return Math.abs(n.z || 0) > 1e-9; });
     var ys = {};
     model.nodes.forEach(function (n) {
-      var k = Math.round(n.y * 1e6) / 1e6;
+      var lvl = hasZ ? (n.z || 0) : n.y;
+      var k = Math.round(lvl * 1e6) / 1e6;
       (ys[k] = ys[k] || []).push(n.id);
     });
     var levels = Object.keys(ys).map(Number).sort(function (a, b) { return a - b; });
@@ -347,7 +361,7 @@
       var s = 0, n = 0;
       ids.forEach(function (id) {
         var gi = ana.idx[id];
-        if (gi !== undefined) { s += ana.u[3 * gi] || 0; n++; }
+        if (gi !== undefined) { s += ana.u[st * gi] || 0; n++; }
       });
       return n ? s / n : 0;
     }
