@@ -1052,7 +1052,8 @@
         var Mz = -(Mz1a - Vy1a * t - J);
         // 与内置求解同式：右手系下 My 取 + 号（见 solver solve3D 注释），否则子单元交界跳变
         var My = -(My1 + Vz1 * t);
-        el.forces.push({ t: t, S: Vy, M: Mz, Vy: Vy, Vz: Vz1, My: My, Mz: Mz, T: T1 });
+        // M2=My(绕局部2轴), M3=Mz(绕局部3轴)；M/S 仅 2D 兼容别名，3D 显示用 M2/M3
+        el.forces.push({ t: t, S: Vy, M: Mz, Vy: Vy, Vz: Vz1, My: My, Mz: Mz, T: T1, V2: Vy, V3: Vz1, M2: My, M3: Mz });
         maxM = Math.max(maxM, Math.abs(Mz), Math.abs(My)); maxV = Math.max(maxV, Math.abs(Vy), Math.abs(Vz1));
       }
       elems.push(el);

@@ -84,8 +84,10 @@
   .statusbar { position: relative; }
   .sb-planes { position: absolute; left: 50%; transform: translateX(-50%); display: none; gap: 12px; align-items: center; font-size: 10.5px; color: #9fb0d6; white-space: nowrap; }
   body.mode3d .sb-planes { display: flex; }
-  /* 3D 下状态条正中间只放平面/剖面信息，帮助文本隐藏以免重叠 */
+  /* 3D 下状态条正中间只放平面/剖面信息，帮助文本隐藏以免重叠；
+     此时 flex 伸缩占位消失，坐标需 margin-left:auto 顶到右下角 */
   body.mode3d #status-help { display: none; }
+  body.mode3d .sb-coord { margin-left: auto; }
   .sb-planes label { display: flex; align-items: center; gap: 4px; }
   .sb-planes input { width: 56px; padding: 1px 4px; font-size: 10.5px; background: rgba(10,16,30,.85); border: 1px solid rgba(90,120,190,.4); border-radius: 5px; color: #dbe4f5; font-family: inherit; }
   body.light .sb-planes input { background: #fff; border-color: rgba(90,120,190,.45); color: #22304c; }
@@ -381,7 +383,7 @@
         <div class="note" id="geoNote">
           <b style="color:#9fd0ff">操作：</b>“新增节点”后点击放置；“新增杆件”依次点两节点；“新增平面/壳”依次点 3~4 个节点后点“完成”（或第 4 点自动闭合）。
           选择模式左键多选、右键取消。选中后在右上角窗口分「单元 / 细分 / 荷载 / 内力 / 材料 / 截面 / 设计」编辑。细分页对杆件按等分、对面按 nx×ny 分别处理。
-          <br /><b style="color:#9fd0ff">说明：</b>2D 下为平面分析（Timoshenko 梁 + Q4/CST 平面应力/应变）；壳单元按“膜 + 厚度”处理（N=σ·t），不含板弯曲（面外）自由度。顶部 2D/3D 可切换三维建模：3D 下内置求解为 6 自由度/节点空间杆系（轴向+扭转+双向弯曲，梁均布沿竖向、向下取负），共 XY 平面（等 z）的面单元参与计算，空间斜面单元由内置求解跳过（精确分析请用 OpenSees 真 3D 路径，自动切换）。四窗口均支持滚轮缩放、中键/Shift+左键拖动平移、双击复位/互换；3D结构窗在选择模式下左键点空处拖动可绕屏幕中点旋转。
+          <br /><b style="color:#9fd0ff">说明：</b>2D 下为平面分析（Timoshenko 梁 + Q4/CST 平面应力/应变）；壳单元按“膜 + 厚度”处理（N=σ·t），不含板弯曲（面外）自由度。顶部 2D/3D 可切换三维建模：3D 下内置求解为 6 自由度/节点空间杆系（轴向+扭转+双向弯曲，梁均布沿竖向、向下取负），共面（XY 等 z / XZ 等 y / YZ 等 x）的面单元均以膜刚度参与计算（含竖向墙，与共边杆件共享节点、变形协调），仅真斜面单元由内置求解跳过（精确分析请用 OpenSees 真 3D 路径，自动切换）。四窗口均支持滚轮缩放、中键/Shift+左键拖动平移、双击复位/互换；3D结构窗在选择模式下左键点空处拖动可绕屏幕中点旋转。
           <br /><b style="color:#9fd0ff">节点消重：</b>容差内（默认 2mm，「设置」面板可调）同一位置只保留一个节点，新增 / 导入 / 移动复制时自动合并。
           <br /><b style="color:#9fd0ff">壳梁/壳柱：</b>仅矩形壳单元在母单元中线生成参考线（梁=橙色X向中线，柱=青色Y向中线），全部分细分单元应力沿线积分；几何菜单控制参考线显示，内力菜单将其当框架构件显示 M/V/N 图（受轴力/弯矩/剪力开关控制）。选中面后在「内力」页可查看参考线端-中-端内力。
           <br /><b style="color:#9fd0ff">拉伸截面：</b>仅 3D 模式显示，勾选后 3D 结构窗内杆件按截面（矩形/圆形/工字形）拉伸成 3D 实体、壳按厚度显示为实体板（SAP2000 风格，含光照明暗与遮挡关系），位移/内力视图下跟随变形显示。
@@ -2338,11 +2340,12 @@
         ctx.lineWidth = isMain ? 2.4 : 1.2;
         ctx.stroke();
         if (m && selMembers[m.id]) { selSegs3.push({ x1: sA[0], y1: sA[1], x2: sB[0], y2: sB[1] }); }
-        // 细分分割点：子段端点中非模型节点的中间点画暗色小点（主窗），与白色模型节点区分
-        if (isMain && hasAna3) {
+        // 细分分割点：仅几何视图在主窗画暗黄色小点（非模型节点的中间点），与白色模型节点区分；
+        // 位移/内力/设计视图不再显示（分缝/云图已足够清晰，避免喧宾夺主）
+        if (isMain && hasAna3 && D.view === "model") {
           var _sg = [[el.a, sA], [el.b, sB]], _gi2, _pp2;
-          ctx.fillStyle = "rgba(28,40,68,0.92)";
-          ctx.strokeStyle = "rgba(150,180,230,0.85)"; ctx.lineWidth = 1;
+          ctx.fillStyle = "rgba(140,110,0,0.92)";
+          ctx.strokeStyle = "rgba(140,110,0,0.55)"; ctx.lineWidth = 1;
           for (_gi2 = 0; _gi2 < 2; _gi2++) {
             if (isModelAi3[_sg[_gi2][0]]) { continue; }
             _pp2 = _sg[_gi2][1];
@@ -2350,18 +2353,20 @@
             ctx.fill(); ctx.stroke();
           }
         }
-        // 内力图（投影弦长过短的不画；弯矩图画在受拉侧，与 2D 一致即下缘受拉为正：
-        // Mz>0（求解器 Mz=+EI·v''）即局部 -Y 侧受拉，红色沿局部 -Y 投影方向；
-        // My>0（My=-EI·w''）即局部 +Z 侧受拉，橙色沿局部 +Z 投影方向。红色 Mz 优先：
-        // Y 方向退化时（如平面窗看梁，竖向俯视成点）借用面内横向（Z 投影）画红色量级（此时受拉方向
-        // 垂直于画面无法表示，借用方向保持与立面窗同一屏幕侧），橙色 My 让位，避免重叠）
+        // 内力图（3D 局部坐标：1=杆轴, 2=局部y, 3=局部z；M3=绕3轴/红, M2=绕2轴/橙；
+        // 与 SAP2000 一致：非竖杆 2 轴取竖向平面内方向，竖杆 2 轴取整体 X（柱 h 沿 X，即主轴与 X 一致）；
+        // Mx/My/Mz 仅为节点荷载的世界坐标，杆件弯矩一律用 M2/M3，不得混用。
+        // 弯矩画在受拉侧：M3>0 即局部 -Y 侧受拉，红色沿局部 -Y 投影；M2>0 即局部 +Z 侧受拉，橙色沿 +Z 投影。
+        // 剖面窗（secX/secY）不借用方向：面内/面外弯矩各画各的，退化即不画——
+        // X 向剖面（X-Z）在面杆为 M3（柱 M3/梁 M3），Y 向剖面（Y-Z）在面杆：梁仍为 M3、柱为 M2；
+        // 若借用会把面外 M3 量级画到面内并压制真正的面内 M2。仅 plan/persp 允许借用显示量级。）
         if (isForce3 && el.forces && el.forces.length && chordLen >= 3) {
           var ax = axes3(AU[0], AU[1], AU[2], BU[0], BU[1], BU[2]);
           var r0 = scr3(AU), rY = scr3([AU[0] + ax.y[0], AU[1] + ax.y[1], AU[2] + ax.y[2]]);
           var dx = rY[0] - r0[0], dy = rY[1] - r0[1];
           var dl = Math.hypot(dx, dy), hasY = dl > 1e-6;
           if (hasY) { dx /= dl; dy /= dl; }
-          // 面外弯矩 My 沿局部 Z 投影方向（有限元常规画法：绕哪轴的弯矩画在与之垂直的平面方向上）
+          // M2 沿局部 Z 投影方向（有限元常规画法：绕哪轴的弯矩画在与之垂直的平面方向上）
           var rZ = scr3([AU[0] + ax.z[0], AU[1] + ax.z[1], AU[2] + ax.z[2]]);
           var ezx = rZ[0] - r0[0], ezy = rZ[1] - r0[1];
           var zl = Math.hypot(ezx, ezy), hasZ = zl > 1e-6;
@@ -2369,20 +2374,23 @@
           var F = el.forces, chord = [], offM = null, offV = null, offN = null, offMy = null;
           var needM = !!D.showMoment, needV = !!D.showShear, needN = !!D.showAxial;
           var mDirX = dx, mDirY = dy, mBorrowZ = false;
+          var canBorrow = (kind === "plan" || kind === "persp");
           if (needM) {
             if (hasY) { offM = []; }
-            else if (hasZ) { offM = []; mDirX = ezx; mDirY = ezy; mBorrowZ = true; }
+            else if (canBorrow && hasZ) { offM = []; mDirX = ezx; mDirY = ezy; mBorrowZ = true; }
           }
           if (needM && hasZ && !mBorrowZ) { offMy = []; }
           if (needV && hasY) { offV = []; }
           if (needN && hasY) { offN = []; }
+          function fM3(ff) { return (ff.M3 != null) ? ff.M3 : ((ff.Mz != null) ? ff.Mz : (ff.M || 0)); }
+          function fM2(ff) { return (ff.M2 != null) ? ff.M2 : ((ff.My != null) ? ff.My : 0); }
           var k, f;
           for (k = 0; k <= NST3; k++) {
             f = F[Math.round(k * (F.length - 1) / NST3)];
             var sc = scr3([A3[0] + (B3[0] - A3[0]) * k / NST3, A3[1] + (B3[1] - A3[1]) * k / NST3, A3[2] + (B3[2] - A3[2]) * k / NST3]);
             chord.push(sc);
-            if (offM) { var vm = f.M || 0; offM.push(mBorrowZ ? [sc[0] + mDirX * vm * dscM3, sc[1] + mDirY * vm * dscM3] : [sc[0] - mDirX * vm * dscM3, sc[1] - mDirY * vm * dscM3]); }
-            if (offMy) { var vmy = f.My || 0; offMy.push([sc[0] + ezx * vmy * dscM3, sc[1] + ezy * vmy * dscM3]); }
+            if (offM) { var vm = fM3(f); offM.push(mBorrowZ ? [sc[0] + mDirX * vm * dscM3, sc[1] + mDirY * vm * dscM3] : [sc[0] - mDirX * vm * dscM3, sc[1] - mDirY * vm * dscM3]); }
+            if (offMy) { var vmy = fM2(f); offMy.push([sc[0] + ezx * vmy * dscM3, sc[1] + ezy * vmy * dscM3]); }
             if (offV) { var vv = (f.S !== undefined ? f.S : f.Vy) || 0; offV.push([sc[0] + dx * vv * dscV3, sc[1] + dy * vv * dscV3]); }
             if (offN) { var vn = el.axial || 0; offN.push([sc[0] + dx * vn * dscN3, sc[1] + dy * vn * dscN3]); }
           }
@@ -2393,9 +2401,9 @@
           // 极值跟踪只跟值有关（位置取弦上点），方向退化不影响
           for (k = 0; k <= NST3; k++) {
             f = F[Math.round(k * (F.length - 1) / NST3)];
-            var am = Math.abs(f.M || 0);
+            var am = Math.abs(fM3(f));
             if (!peakM3 || am > peakM3.v) { peakM3 = { v: am, x: chord[k][0], y: chord[k][1] }; }
-            var amy = Math.abs(f.My || 0);
+            var amy = Math.abs(fM2(f));
             if (!peakMy3 || amy > peakMy3.v) { peakMy3 = { v: amy, x: chord[k][0], y: chord[k][1] }; }
             var av = Math.abs((f.S !== undefined ? f.S : f.Vy) || 0);
             if (!peakV3 || av > peakV3.v) { peakV3 = { v: av, x: chord[k][0], y: chord[k][1] }; }
@@ -2404,8 +2412,9 @@
           if (!peakN3 || an > peakN3.v) { var mid = chord[Math.floor(chord.length / 2)]; peakN3 = { v: an, x: mid[0], y: mid[1] }; }
         }
       });
-      // 内力数值（主窗，与 2D 同配色标各杆峰值）
+      // 内力数值（主窗，SAP2000 式：标在各杆峰值图位置，沿杆法向偏置 + 碰撞避让）
       if (isMain && isForce3 && D.showForceVals && ana.byMember) {
+        var pendingTags3 = [];
         Object.keys(ana.byMember).forEach(function (mid) {
           var els = ana.byMember[mid];
           if (!els || !els.length) { return; }
@@ -2415,29 +2424,76 @@
           var pF = anaP3(eF.a, defAmpB), pL = anaP3(eL.b, defAmpB);
           if (!pF || !pL) { return; }
           var sF = scr3(pF), sL = scr3(pL);
-          if (Math.hypot(sL[0] - sF[0], sL[1] - sF[1]) < 3) { return; }
-          var bM = 0, bV = 0, bMy = 0, bx = 0, by = 0, vx = 0, vy = 0, myx = 0, myy = 0;
+          var chx = sL[0] - sF[0], chy = sL[1] - sF[1];
+          var chLen = Math.hypot(chx, chy);
+          if (chLen < 3) { return; }
+          chx /= chLen; chy /= chLen;
+          var nnx = -chy, nny = chx;
+          var midX = (sF[0] + sL[0]) / 2, midY = (sF[1] + sL[1]) / 2;
+          var bM = 0, bMs = 0, bV = 0, bVs = 0, bMy = 0, bMys = 0, bx = 0, by = 0, vx = 0, vy = 0, myx = 0, myy = 0;
           els.forEach(function (el) {
             (el.forces || []).forEach(function (f, fi) {
               var A3 = anaP3(el.a, defAmpB), B3 = anaP3(el.b, defAmpB);
               if (!A3 || !B3) { return; }
               var t = (el.forces.length <= 1) ? 0 : fi / (el.forces.length - 1);
               var sc = scr3([A3[0] + (B3[0] - A3[0]) * t, A3[1] + (B3[1] - A3[1]) * t, A3[2] + (B3[2] - A3[2]) * t]);
-              if (Math.abs(f.M || 0) > bM) { bM = Math.abs(f.M || 0); bx = sc[0]; by = sc[1]; }
-              if (Math.abs(f.My || 0) > bMy) { bMy = Math.abs(f.My || 0); myx = sc[0]; myy = sc[1]; }
-              var sv = Math.abs((f.S !== undefined ? f.S : f.Vy) || 0);
-              if (sv > bV) { bV = sv; vx = sc[0]; vy = sc[1]; }
+              var vM3 = (f.M3 != null) ? f.M3 : ((f.Mz != null) ? f.Mz : (f.M || 0));
+              var vM2 = (f.M2 != null) ? f.M2 : ((f.My != null) ? f.My : 0);
+              if (Math.abs(vM3) > bM) { bM = Math.abs(vM3); bMs = vM3; bx = sc[0]; by = sc[1]; }
+              if (Math.abs(vM2) > bMy) { bMy = Math.abs(vM2); bMys = vM2; myx = sc[0]; myy = sc[1]; }
+              var sv = (f.S !== undefined ? f.S : f.Vy) || 0;
+              if (Math.abs(sv) > bV) { bV = Math.abs(sv); bVs = sv; vx = sc[0]; vy = sc[1]; }
             });
           });
+          function towardMid(px, py) {
+            var dx = midX - px, dy = midY - py, l = Math.hypot(dx, dy);
+            if (l < 1e-9) { return [px, py]; }
+            var sh = Math.min(12, l * 0.25);
+            return [px + dx / l * sh, py + dy / l * sh];
+          }
           var bN = els.length ? Math.abs(els[0].axial || 0) : 0;
-          if (D.showMoment && bM > 0) { tag(ctx, "Mz" + momO(bM).toFixed(1), bx, by - 8, 9, "#ff8080"); }
-          if (D.showMoment && bMy > 0) { tag(ctx, "My" + momO(bMy).toFixed(1), myx, myy - 8, 9, "#ffa040"); }
-          if (D.showShear && bV > 0) { tag(ctx, "V" + fO(bV).toFixed(1), vx, vy - 8, 9, "#4fd1ff"); }
+          if (D.showMoment && bM > 0) {
+            var sgnM = bMs >= 0 ? 1 : -1, pm = towardMid(bx, by);
+            pendingTags3.push({ x: pm[0] + nnx * 16 * sgnM, y: pm[1] + nny * 16 * sgnM, txt: "M3 " + momO(bM).toFixed(1), color: "#ff8080" });
+          }
+          if (D.showMoment && bMy > 0) {
+            var sgnMy = bMys >= 0 ? 1 : -1, qm = towardMid(myx, myy);
+            pendingTags3.push({ x: qm[0] + nnx * 30 * sgnMy, y: qm[1] + nny * 30 * sgnMy, txt: "M2 " + momO(bMy).toFixed(1), color: "#ffa040" });
+          }
+          if (D.showShear && bV > 0) {
+            var sgnV = bVs >= 0 ? 1 : -1, pv = towardMid(vx, vy);
+            pendingTags3.push({ x: pv[0] + nnx * 44 * sgnV, y: pv[1] + nny * 44 * sgnV, txt: "V" + fO(bV).toFixed(1), color: "#4fd1ff" });
+          }
           if (D.showAxial && bN > 0) {
             var e0 = els[Math.floor(els.length / 2)], A0 = anaP3(e0.a, defAmpB), B0 = anaP3(e0.b, defAmpB);
-            if (A0 && B0) { var s0 = scr3([(A0[0] + B0[0]) / 2, (A0[1] + B0[1]) / 2, (A0[2] + B0[2]) / 2]); tag(ctx, "N" + fO(bN).toFixed(1), s0[0], s0[1] - 8, 9, "#63e06a"); }
+            if (A0 && B0) { var s0 = scr3([(A0[0] + B0[0]) / 2, (A0[1] + B0[1]) / 2, (A0[2] + B0[2]) / 2]); pendingTags3.push({ x: s0[0], y: s0[1] - 8, txt: "N" + fO(bN).toFixed(1), color: "#63e06a" }); }
           }
         });
+        // 碰撞避让：按 y 排序，仅 x 方向重叠的标签才做最小间距避让（否则多杆 y 相近会级联把标签顶到结构下方）；
+        // 最后钳制 y 不出画布，避免被顶飞
+        try { ctx.font = "600 9px Segoe UI, Microsoft YaHei"; } catch (eF3) {}
+        pendingTags3.forEach(function (tg) {
+          try { tg._w = ctx.measureText(tg.txt).width; } catch (eM3) { tg._w = String(tg.txt || "").length * 6; }
+        });
+        pendingTags3.sort(function (a, b) { return a.y - b.y; });
+        var _placed3 = [];
+        pendingTags3.forEach(function (tg) {
+          var guard = 0;
+          while (guard++ < 24) {
+            var hit = null, hy = -1e9;
+            for (var _pj = 0; _pj < _placed3.length; _pj++) {
+              var q = _placed3[_pj];
+              if (Math.abs(tg.y - q.y) < 12 && Math.abs(tg.x - q.x) < (tg._w + q._w) / 2 + 6) {
+                if (q.y > hy) { hy = q.y; hit = q; }
+              }
+            }
+            if (!hit) { break; }
+            tg.y = hit.y + 12;
+          }
+          tg.y = clamp(tg.y, 10, ch - 8);
+          _placed3.push(tg);
+        });
+        pendingTags3.forEach(function (tg) { tag(ctx, tg.txt, tg.x, tg.y, 9, tg.color); });
       }
     } else {
       // 无分析结果：退化为模型杆件直线
@@ -2559,12 +2615,39 @@
           return null;
         }
         var faces = [];
-        // 杆件实体
-        (model.members || []).forEach(function (m) {
-          var A = p3OfNode(m.a), B = p3OfNode(m.b);
-          if (!A || !B) { return; }
+        // 杆件实体：优先按分析子单元分段拉伸（跟随 NSUB/memDiv 细分与变形曲线；
+        // 否则整杆直线会吃掉内分点、位移放大后仍显示为一根直杆）。无分析结果时退化为整杆。
+        var segsX = [];
+        try {
+          if (typeof elems3 !== "undefined" && elems3 && elems3.length && hasAna3 && ana && ana.idx && typeof anaP3 === "function") {
+            elems3.forEach(function (el) {
+              var pm = el.member || ((typeof memberById === "function") ? memberById(el.key) : null);
+              if (!pm) { return; }
+              var vv = 2;
+              try { vv = visMember3(pm); } catch (eVV) { vv = 2; }
+              if (!vv || vv === 1) { return; }
+              var A = anaP3(el.a, defAmpB), B = anaP3(el.b, defAmpB);
+              var AU = anaP3(el.a, 0), BU = anaP3(el.b, 0);
+              if (!A || !B || !AU || !BU) { return; }
+              segsX.push({ m: pm, A: A, B: B, AU: AU, BU: BU, ia: el.a, ib: el.b });
+            });
+          }
+        } catch (eSX) {}
+        if (!segsX.length) {
+          (model.members || []).forEach(function (m) {
+            var A0 = p3OfNode(m.a), B0 = p3OfNode(m.b);
+            if (!A0 || !B0) { return; }
+            segsX.push({ m: m, A: A0, B: B0, AU: A0, BU: B0, ia: -1, ib: -1 });
+          });
+        }
+        // 同一杆件首尾端盖只画一次（中间分段接头不画内墙，避免接缝闪烁）
+        var capDoneX = {};
+        segsX.forEach(function (sg) {
+          var m = sg.m;
+          var A = sg.A, B = sg.B;
           if (m && typeof visMember3 === "function") { try { if (visMember3(m) === 0) { return; } } catch (eV) {} }
-          var ax = axes3(A[0], A[1], A[2], B[0], B[1], B[2]);
+          // 坐标架按未变形弦计算（稳定不抖），位置按变形后，保证位移曲线正确
+          var ax = axes3(sg.AU[0], sg.AU[1], sg.AU[2], sg.BU[0], sg.BU[1], sg.BU[2]);
           if (!ax || !ax.L || ax.L < 1e-9) { return; }
           var Y = ax.y, Z = ax.z;
           var sec = (typeof memSec !== "undefined") ? memSec[m.id] : null;
@@ -2578,8 +2661,15 @@
             Bc.push([B[0] + Y[0] * yy + Z[0] * zz, B[1] + Y[1] * yy + Z[1] * zz, B[2] + Y[2] * yy + Z[2] * zz]);
           }
           var base = TH().modelMem;
-          try { if (m && typeof skelCol3 === "function") { var sc = skelCol3(true, m); if (sc) { base = sc; } } } catch (eC) {}
-          var mid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2];
+          // 位移云图按子段两端分析节点值逐段着色（与骨架 segCol3 同逻辑）；
+          // 之前用整杆两端模型节点均值，整根杆一个色，细分位移显示不出来。
+          try {
+            if (D.view === "disp" && hasAna3 && typeof DCV !== "undefined" && DCV && DCV.length && sg.ia >= 0 && typeof cloudColor === "function") {
+              var vva = DCV[sg.ia], vvb = DCV[sg.ib];
+              if (isFinite(vva) && isFinite(vvb)) { base = cloudColor((vva + vvb) / 2); }
+              else if (m && typeof skelCol3 === "function") { var sc0 = skelCol3(true, m); if (sc0) { base = sc0; } }
+            } else if (m && typeof skelCol3 === "function") { var sc = skelCol3(true, m); if (sc) { base = sc; } }
+          } catch (eC) {}
           var ex = [B[0] - A[0], B[1] - A[1], B[2] - A[2]];
           function pushFace(pts, nOut) {
             var n = vNorm(nOut), f = 0.62 + 0.48 * Math.max(0, vDot(n, lightDir));
@@ -2596,88 +2686,170 @@
             faces.push({ pts: pts, d: d, fill: sel ? shadeAny("#ffe066", f) : shadeAny(base, f), stroke: sel ? "#ff9f43" : "rgba(20,28,48,0.55)" });
           }
           var nA = [-ex[0], -ex[1], -ex[2]], nB = [ex[0], ex[1], ex[2]];
-          pushFace(Ac.slice().reverse(), nA);
-          pushFace(Bc.slice(), nB);
+          // 端盖只在杆件首尾画（中间分段接头跳过，避免内部隔墙与接缝闪烁）
+          var needS = true, needE = true, ck = m ? m.id : 0;
+          try {
+            if (sg.ia === -1) { needS = !capDoneX[ck + ":s"]; needE = !capDoneX[ck + ":e"]; }
+            else if (hasAna3 && ana && ana.idx && m) {
+              var sAi = ana.idx[m.a], eAi = ana.idx[m.b];
+              needS = (sg.ia === sAi || sg.ib === sAi) && !capDoneX[ck + ":s"];
+              needE = (sg.ia === eAi || sg.ib === eAi) && !capDoneX[ck + ":e"];
+            }
+          } catch (eCap) { needS = true; needE = true; }
+          if (needS) { pushFace(Ac.slice().reverse(), nA); capDoneX[ck + ":s"] = true; }
+          if (needE) { pushFace(Bc.slice(), nB); capDoneX[ck + ":e"] = true; }
           for (i = 0; i < out.length; i++) {
             var j = (i + 1) % out.length;
             var quad = [Ac[i], Bc[i], Bc[j], Ac[j]];
             var e1 = vSub(Bc[i], Ac[i]), e2 = vSub(Ac[j], Ac[i]);
+            // 外法向：截面轮廓为 CCW（见 secOutline），侧面外法向恒为 -cross(e1,e2)，
+            // 凹/凸均成立。原“径向校正”对工字形翼缘内凹面会翻转向内，导致翼缘面被
+            // 背面剔除、只剩薄边显示成一根线，故改用绕向确定性外法向。
             var nn = vCross(e1, e2);
-            // 外法向校正：与径向（面心-轴心）同向
-            var fc = [(quad[0][0] + quad[1][0] + quad[2][0] + quad[3][0]) / 4,
-                      (quad[0][1] + quad[1][1] + quad[2][1] + quad[3][1]) / 4,
-                      (quad[0][2] + quad[1][2] + quad[2][2] + quad[3][2]) / 4];
-            var t = ((fc[0] - mid[0]) * ex[0] + (fc[1] - mid[1]) * ex[1] + (fc[2] - mid[2]) * ex[2]) / (ax.L * ax.L);
-            var axc = [mid[0], mid[1], mid[2]];
-            var rad = [fc[0] - (A[0] + ex[0] * clamp(t, 0, 1)) - 0, fc[1] - (A[1] + ex[1] * clamp(t, 0, 1)), fc[2] - (A[2] + ex[2] * clamp(t, 0, 1))];
-            void axc;
-            if (vDot(nn, rad) < 0) { nn = [-nn[0], -nn[1], -nn[2]]; }
+            nn = [-nn[0], -nn[1], -nn[2]];
             pushFace(quad, nn);
           }
         });
-        // 壳厚度实体（父单元整体，按厚度 t 双向偏移）
-        (model.areas || []).forEach(function (a) {
+        // 壳厚度实体（按分析子单元逐格拉伸，与非拉伸细分网格同源；位移/应力逐格着色；
+        // 共边网格点吸附分析节点，与杆件拉伸体严格共边、不整块糊）
+        // 分析节点快照：未变形坐标 -> {变形后, DCV}
+        var snapX = {};
+        try {
+          var _allX = (ana && (ana.all3 || ana.all)) || [];
+          for (var _si = 0; _si < _allX.length; _si++) {
+            var _bp = _allX[_si]; if (!_bp) { continue; }
+            var _key = Math.round(_bp[0] * 1e6) + "," + Math.round(_bp[1] * 1e6) + "," + Math.round((_bp[2] || 0) * 1e6);
+            snapX[_key] = { p: anaP3(_si, defAmpB), v: ((typeof DCV !== "undefined") && DCV && isFinite(DCV[_si])) ? DCV[_si] : null };
+          }
+        } catch (eSnX) {}
+        function snapDeformX(pu) {
+          var k = Math.round(pu[0] * 1e6) + "," + Math.round(pu[1] * 1e6) + "," + Math.round((pu[2] || 0) * 1e6);
+          return snapX[k] || null;
+        }
+        function pushShell(pts, nOut, baseCol) {
+          var nn2 = vNorm(nOut), rn2 = nn2;
+          if (_rt) { rn2 = [nn2[0] * _ct - nn2[1] * _st, nn2[0] * _st + nn2[1] * _ct, nn2[2]]; }
+          if (vDot(rn2, viewDir) <= 1e-6) { return; }
+          var f = 0.62 + 0.48 * Math.max(0, vDot(nn2, lightDir));
+          var d = 0, xi;
+          for (xi = 0; xi < pts.length; xi++) { d += closeOf(pts[xi]); }
+          d /= pts.length;
+          faces.push({ pts: pts, d: d, fill: shadeAny(baseCol, f), stroke: "rgba(20,28,48,0.5)" });
+        }
+        function cellBaseX(vals, sObj, etype) {
           try {
-            if (!a.nodes || a.nodes.length < 3) { return; }
+            if (D.view === "disp" && vals && vals.length && typeof cloudColor === "function") {
+              var s = 0, c = 0, ii;
+              for (ii = 0; ii < vals.length; ii++) { if (isFinite(vals[ii])) { s += vals[ii]; c++; } }
+              if (c) { var cc = cloudColor(s / c); if (cc) { return cc; } }
+            } else if (D.view === "force" && D.showAreaCloud && sObj && typeof cloudColor === "function" && typeof areaStressPick === "function") {
+              var cc2 = cloudColor(areaStressPick(sObj, D.cloudVar)); if (cc2) { return cc2; } }
+            else if (D.view === "design") { return "rgba(150,170,200,0.9)"; }
+            else if (D.view === "model") { return TH().modelArea; }
+          } catch (eCB) {}
+          return "rgba(226,90,70,0.92)";
+        }
+        function pushCellX(P, V, sObj, aid, etype) {
+          if (!P || P.length < 3) { return; }
+          var n = [0, 0, 0], k2;
+          for (k2 = 0; k2 < P.length; k2++) {
+            var p0 = P[k2], p1 = P[(k2 + 1) % P.length];
+            n[0] += (p0[1] - p1[1]) * (p0[2] + p1[2]);
+            n[1] += (p0[2] - p1[2]) * (p0[0] + p1[0]);
+            n[2] += (p0[0] - p1[0]) * (p0[1] + p1[1]);
+          }
+          if (vLen(n) < 1e-12) { return; }
+          n = vNorm(n);
+          var secA = (typeof areaSecOf === "function") ? areaSecOf(aid) : null;
+          var t = (secA && isFinite(secA.t) && secA.t > 1e-6) ? secA.t : 0.2;
+          t = Math.min(Math.max(t, 0.02), 2);
+          var Top = P.map(function (p) { return [p[0] + n[0] * t / 2, p[1] + n[1] * t / 2, p[2] + n[2] * t / 2]; });
+          var Bot = P.map(function (p) { return [p[0] - n[0] * t / 2, p[1] - n[1] * t / 2, p[2] - n[2] * t / 2]; });
+          var base = cellBaseX(V, sObj, etype);
+          pushShell(Top.slice(), n, base);
+          pushShell(Bot.slice().reverse(), [-n[0], -n[1], -n[2]], base);
+          for (var e = 0; e < P.length; e++) {
+            var f2 = (e + 1) % P.length;
+            var quad2 = [Top[e], Top[f2], Bot[f2], Bot[e]];
+            var se = vSub(Top[f2], Top[e]), ve = vSub(Bot[e], Top[e]);
+            var nn3 = vCross(se, ve);
+            if (vLen(nn3) < 1e-12) { continue; }
+            pushShell(quad2, nn3, base);
+          }
+        }
+        try {
+          var coveredX = {};
+          // 参与计算的面：直接用分析子单元（与非拉伸网格同源，天然与杆件共享节点）
+          (ana.areaElems || []).forEach(function (ae) {
+            if (typeof hiddenAid3 !== "undefined" && hiddenAid3[ae.aid]) { return; }
+            coveredX[ae.aid] = true;
+            var P = [], V = [], ok = true, k;
+            for (k = 0; k < (ae.g || []).length; k++) {
+              var pp = anaP3(ae.g[k], defAmpB); if (!pp) { ok = false; break; }
+              P.push(pp);
+              V.push(((typeof DCV !== "undefined") && DCV && isFinite(DCV[ae.g[k]])) ? DCV[ae.g[k]] : null);
+            }
+            if (ok && P.length >= 3) { pushCellX(P, V, ae.s || null, ae.aid, ae.etype); }
+          });
+          // 仍被跳过的真斜面：显示细分（角点插值 + 分析节点吸附），四个窗口都可见
+          (model.areas || []).forEach(function (a) {
+            if (coveredX[a.id]) { return; }
             if (typeof hiddenAid3 !== "undefined" && hiddenAid3[a.id]) { return; }
-            var P = [];
-            for (var i = 0; i < a.nodes.length; i++) { var q = p3OfNode(a.nodes[i]); if (!q) { return; } P.push(q); }
-            // 法向（Newell）
-            var n = [0, 0, 0], k2;
-            for (k2 = 0; k2 < P.length; k2++) {
-              var p0 = P[k2], p1 = P[(k2 + 1) % P.length];
-              n[0] += (p0[1] - p1[1]) * (p0[2] + p1[2]);
-              n[1] += (p0[2] - p1[2]) * (p0[0] + p1[0]);
-              n[2] += (p0[0] - p1[0]) * (p0[1] + p1[1]);
+            var cn = (a.nodes || []).length;
+            if (cn < 3) { return; }
+            var cu = [], cd = [], cv = [], ok = true, ni;
+            for (ni = 0; ni < cn; ni++) {
+              var nd = (typeof nodeById === "function") ? nodeById(a.nodes[ni]) : null;
+              if (!nd) { ok = false; break; }
+              cu.push([nd.x, nd.y, (typeof nz === "function") ? nz(nd) : (nd.z || 0)]);
+              var qp = p3OfNode(a.nodes[ni]);
+              if (!qp) { ok = false; break; }
+              cd.push(qp);
+              var _gi = (ana.idx || {})[a.nodes[ni]];
+              cv.push((_gi !== undefined && (typeof DCV !== "undefined") && DCV && isFinite(DCV[_gi])) ? DCV[_gi] : null);
             }
-            if (vLen(n) < 1e-12) { return; }
-            n = vNorm(n);
-            var secA = (typeof areaSecOf === "function") ? areaSecOf(a.id) : null;
-            var t = (secA && isFinite(secA.t) && secA.t > 1e-6) ? secA.t : 0.2;
-            t = Math.min(Math.max(t, 0.02), 2);
-            var Top = P.map(function (p) { return [p[0] + n[0] * t / 2, p[1] + n[1] * t / 2, p[2] + n[2] * t / 2]; });
-            var Bot = P.map(function (p) { return [p[0] - n[0] * t / 2, p[1] - n[1] * t / 2, p[2] - n[2] * t / 2]; });
-            // 顶面颜色：模型视图用壳色，位移/内力视图尽量沿用云图平均色
-            var topBase = "rgba(226,90,70,0.92)";
-            try {
-              if (D.view === "disp" && typeof DCV !== "undefined" && DCV && DCV.length && hasAna3 && ana && ana.idx) {
-                var s = 0, c = 0, ii;
-                for (ii = 0; ii < a.nodes.length; ii++) {
-                  var gi = ana.idx[a.nodes[ii]];
-                  if (gi !== undefined && isFinite(DCV[gi])) { s += DCV[gi]; c++; }
-                }
-                if (c && typeof cloudColor === "function") { var cc = cloudColor(s / c); if (cc) { topBase = cc; } }
-              } else if (D.view === "force" && D.showAreaCloud && hasAna3 && ana && ana.areaElems && typeof cloudColor === "function" && typeof areaStressPick === "function") {
-                var vs = 0, cn = 0, ie;
-                for (ie = 0; ie < ana.areaElems.length; ie++) {
-                  var ae = ana.areaElems[ie];
-                  if (ae.aid === a.id && ae.s) { vs += areaStressPick(ae.s, D.cloudVar); cn++; }
-                }
-                if (cn) { var cc2 = cloudColor(vs / cn); if (cc2) { topBase = cc2; } }
-              } else if (D.view === "design") { topBase = "rgba(150,170,200,0.9)"; }
-            } catch (eCol) {}
-            function pushShell(pts, nOut, baseCol) {
-              var nn2 = vNorm(nOut), rn2 = nn2;
-              if (_rt) { rn2 = [nn2[0] * _ct - nn2[1] * _st, nn2[0] * _st + nn2[1] * _ct, nn2[2]]; }
-              if (vDot(rn2, viewDir) <= 1e-6) { return; }
-              var f = 0.62 + 0.48 * Math.max(0, vDot(nn2, lightDir));
-              var d = 0, xi;
-              for (xi = 0; xi < pts.length; xi++) { d += closeOf(pts[xi]); }
-              d /= pts.length;
-              faces.push({ pts: pts, d: d, fill: shadeAny(baseCol, f), stroke: "rgba(20,28,48,0.5)" });
+            if (!ok) { return; }
+            var dvx = (typeof effAreaDiv === "function") ? effAreaDiv(a) : { nx: D.AMESH || 2, ny: D.AMESH || 2 };
+            var nx = Math.max(1, Math.min(50, dvx.nx || 1)), ny = Math.max(1, Math.min(50, dvx.ny || 1));
+            function mixPt(ss, tt) {
+              var U, Dd, Vv;
+              if (cn >= 4) {
+                U = [(1 - ss) * (1 - tt) * cu[0][0] + ss * (1 - tt) * cu[1][0] + ss * tt * cu[2][0] + (1 - ss) * tt * cu[3][0],
+                     (1 - ss) * (1 - tt) * cu[0][1] + ss * (1 - tt) * cu[1][1] + ss * tt * cu[2][1] + (1 - ss) * tt * cu[3][1],
+                     (1 - ss) * (1 - tt) * cu[0][2] + ss * (1 - tt) * cu[1][2] + ss * tt * cu[2][2] + (1 - ss) * tt * cu[3][2]];
+                Dd = [(1 - ss) * (1 - tt) * cd[0][0] + ss * (1 - tt) * cd[1][0] + ss * tt * cd[2][0] + (1 - ss) * tt * cd[3][0],
+                      (1 - ss) * (1 - tt) * cd[0][1] + ss * (1 - tt) * cd[1][1] + ss * tt * cd[2][1] + (1 - ss) * tt * cd[3][1],
+                      (1 - ss) * (1 - tt) * cd[0][2] + ss * (1 - tt) * cd[1][2] + ss * tt * cd[2][2] + (1 - ss) * tt * cd[3][2]];
+                Vv = (cv[0] == null || cv[1] == null || cv[2] == null || cv[3] == null) ? null :
+                  (1 - ss) * (1 - tt) * cv[0] + ss * (1 - tt) * cv[1] + ss * tt * cv[2] + (1 - ss) * tt * cv[3];
+              } else {
+                var ii = 1 - ss - tt, jj = ss, kk = tt;
+                U = [cu[0][0] * ii + cu[1][0] * jj + cu[2][0] * kk, cu[0][1] * ii + cu[1][1] * jj + cu[2][1] * kk, cu[0][2] * ii + cu[1][2] * jj + cu[2][2] * kk];
+                Dd = [cd[0][0] * ii + cd[1][0] * jj + cd[2][0] * kk, cd[0][1] * ii + cd[1][1] * jj + cd[2][1] * kk, cd[0][2] * ii + cd[1][2] * jj + cd[2][2] * kk];
+                Vv = (cv[0] == null || cv[1] == null || cv[2] == null) ? null : cv[0] * ii + cv[1] * jj + cv[2] * kk;
+              }
+              var sn = snapDeformX(U);
+              if (sn && sn.p) { Dd = sn.p; Vv = sn.v; }
+              return { p: Dd, v: Vv };
             }
-            pushShell(Top.slice(), n, topBase);
-            pushShell(Bot.slice().reverse(), [-n[0], -n[1], -n[2]], topBase);
-            for (var e = 0; e < P.length; e++) {
-              var f2 = (e + 1) % P.length;
-              var quad2 = [Top[e], Top[f2], Bot[f2], Bot[e]];
-              var se = vSub(Top[f2], Top[e]), ve = vSub(Bot[e], Top[e]);
-              var nn3 = vCross(se, ve);
-              if (vLen(nn3) < 1e-12) { continue; }
-              pushShell(quad2, nn3, topBase);
+            var r, c;
+            if (cn >= 4) {
+              var G = [], W = [];
+              for (r = 0; r <= ny; r++) { G[r] = []; W[r] = []; for (c = 0; c <= nx; c++) { var q = mixPt(c / nx, r / ny); G[r][c] = q.p; W[r][c] = q.v; } }
+              for (r = 0; r < ny; r++) { for (c = 0; c < nx; c++) {
+                pushCellX([G[r][c], G[r][c + 1], G[r + 1][c + 1], G[r + 1][c]], [W[r][c], W[r][c + 1], W[r + 1][c + 1], W[r + 1][c]], null, a.id, a.etype);
+              } }
+            } else {
+              var ntri = nx, P3 = [], V3 = [], kk, jj, ii;
+              for (kk = 0; kk <= ntri; kk++) { for (jj = 0; jj <= ntri - kk; jj++) {
+                ii = ntri - jj - kk;
+                var qq = mixPt(jj / ntri, kk / ntri); P3.push(qq.p); V3.push(qq.v);
+              } }
+              var topo = triSubCells([[0, 0], [1, 0], [0, 1]], ntri).tris;
+              topo.forEach(function (tr) { pushCellX([P3[tr[0]], P3[tr[1]], P3[tr[2]]], [V3[tr[0]], V3[tr[1]], V3[tr[2]]], null, a.id, a.etype); });
             }
-          } catch (eA) {}
-        });
+          });
+        } catch (eCX) {}
         faces.sort(function (p, q) { return p.d - q.d; });
         faces.forEach(function (f) {
           try {
@@ -2906,8 +3078,8 @@
         if (label && isMain) { tag(ctx, label, x + 7, y - 6, 9, color); }
       }
       if (isForce3) {
-        if (D.showMoment && peakM3 && peakM3.v > 0) { marker3(peakM3.x, peakM3.y, "#ff8080", "Mz" + momO(peakM3.v).toFixed(1)); }
-        if (D.showMoment && peakMy3 && peakMy3.v > 0) { marker3(peakMy3.x, peakMy3.y, "#ffa040", "My" + momO(peakMy3.v).toFixed(1)); }
+        if (D.showMoment && peakM3 && peakM3.v > 0) { marker3(peakM3.x, peakM3.y, "#ff8080", "M3 " + momO(peakM3.v).toFixed(1)); }
+        if (D.showMoment && peakMy3 && peakMy3.v > 0) { marker3(peakMy3.x, peakMy3.y, "#ffa040", "M2 " + momO(peakMy3.v).toFixed(1)); }
         if (D.showShear && peakV3 && peakV3.v > 0) { marker3(peakV3.x, peakV3.y, "#4fd1ff", "V" + fO(peakV3.v).toFixed(1)); }
         if (D.showAxial && peakN3 && peakN3.v > 0) { marker3(peakN3.x, peakN3.y, "#63e06a", "N" + fO(peakN3.v).toFixed(1)); }
       }
@@ -3101,7 +3273,7 @@
               ctx.save();
               ctx.fillStyle = "#ffe066"; ctx.strokeStyle = "#ff9f43"; ctx.lineWidth = 1.5;
               ctx.beginPath(); ctx.arc(pxm, pym, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-              tag(ctx, "x=" + xx.toFixed(2) + " N=" + fO(vv3.N || 0).toFixed(1) + " V=" + fO(vv3.V || 0).toFixed(1) + " M=" + momO(vv3.M || 0).toFixed(1), pxm + 8, pym - 10, 9, "#ffe9a8");
+              tag(ctx, "x=" + xx.toFixed(2) + " N=" + fO(vv3.N || 0).toFixed(1) + " V=" + fO(vv3.V || 0).toFixed(1) + " M3=" + momO((vv3.M3 != null ? vv3.M3 : vv3.M) || 0).toFixed(1) + " M2=" + momO((vv3.M2 != null ? vv3.M2 : vv3.My) || 0).toFixed(1), pxm + 8, pym - 10, 9, "#ffe9a8");
               ctx.restore();
             }
           }
@@ -3145,7 +3317,7 @@
           } else if (D.view === "force") {
             var nms = [];
             if (D.showAxial) { nms.push("轴力 N"); }
-            if (D.showMoment) { nms.push("弯矩 M"); }
+            if (D.showMoment) { nms.push("弯矩 M3(红)·M2(橙)"); }
             if (D.showShear) { nms.push("剪力 V"); }
             if (D.showShellBeamF) { nms.push("壳梁"); }
             if (D.showShellColF) { nms.push("壳柱"); }
@@ -3268,21 +3440,32 @@
         }
       } catch (eInd) {}
     })();
-    // 内置 3D 跳过的竖向/斜面单元提示（主窗左下角）：这些面的细分网格仅显示、无刚度不参与云图，精确分析请用 OpenSees 真 3D
-    if (isMain && ana && ana.skippedArea3D) {
+    // （内置 3D 跳过提示已移除：仅真斜面跳过，竖向共面墙已按膜刚度参与计算）
+    // 四窗口联动：其它窗口悬停点在本窗的投影十字标记（切片窗外点显示为灰色）
+    if (typeof hover3 !== "undefined" && hover3 && hover3.m) {
       try {
+        var _hx = hover3.m[0], _hy = hover3.m[1], _hz = hover3.m[2];
+        var _hp = scr3([_hx, _hy, _hz]);
+        var _onS = true;
+        if (isSlice3) {
+          var _pv = kind === "plan" ? (D.planeZ || 0) : kind === "secX" ? (D.secY0 || 0) : (D.secX0 || 0);
+          var _cc = kind === "plan" ? _hz : kind === "secX" ? _hy : _hx;
+          var _ee = 1e-6;
+          try { _ee = Math.max(nodeTol(), 1e-6) + 1e-9; } catch (_e2) {}
+          _onS = Math.abs(_cc - _pv) <= _ee;
+        }
         ctx.save();
-        ctx.font = "11px Segoe UI, Microsoft YaHei"; ctx.textAlign = "left";
-        var _wm = "内置3D跳过 " + ana.skippedArea3D + " 个竖向/斜面单元（细分网格仅显示、无刚度不参与云图；精确解请用 OpenSees 分析）";
-        var _tw = ctx.measureText(_wm).width;
-        ctx.fillStyle = "rgba(8,12,24,0.72)";
-        ctx.fillRect(8, ch - 26, _tw + 16, 20);
-        ctx.strokeStyle = "rgba(255,207,51,0.65)"; ctx.lineWidth = 1;
-        ctx.strokeRect(8, ch - 26, _tw + 16, 20);
-        ctx.fillStyle = "#ffdf8a";
-        ctx.fillText(_wm, 16, ch - 12);
+        ctx.strokeStyle = _onS ? "#ffcf33" : "rgba(255,207,51,0.45)";
+        ctx.lineWidth = 1.2;
+        if (!_onS) { ctx.setLineDash([4, 3]); }
+        ctx.beginPath(); ctx.arc(_hp[0], _hp[1], isMain ? 7 : 6, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(_hp[0] - 11, _hp[1]); ctx.lineTo(_hp[0] + 11, _hp[1]);
+        ctx.moveTo(_hp[0], _hp[1] - 11); ctx.lineTo(_hp[0], _hp[1] + 11);
+        ctx.stroke();
         ctx.restore();
-      } catch (eWn) {}
+      } catch (eHv) {}
     }
     // 主窗命中表（供选择 / 新建节点反算）
     if (isMain) {
@@ -4333,9 +4516,11 @@
         var t = clamp(x - el.xa, 0, el.Lsub), f = el.forces;
         var tt = t / el.Lsub * 12, i0 = Math.floor(tt), i1 = Math.min(12, i0 + 1), fr = tt - i0;
         function lin(g) { return f[i0][g] + ((f[i1][g] || 0) - (f[i0][g] || 0)) * fr; }
-        var Mz = (f[i0].Mz != null) ? lin("Mz") : lin("M");
-        var My = (f[i0].My != null) ? lin("My") : lin("M");
-        return { N: el.axial, V: lin("S"), M: Mz, Vy: lin("S"), Vz: (f[i0].Vz != null) ? lin("Vz") : 0, My: My, Mz: Mz, T: (f[i0].T != null) ? lin("T") : 0 };
+        var Mz = (f[i0].Mz != null) ? lin("Mz") : ((f[i0].M3 != null) ? lin("M3") : lin("M"));
+        var My = (f[i0].My != null) ? lin("My") : ((f[i0].M2 != null) ? lin("M2") : lin("M"));
+        var M2v = (f[i0].M2 != null) ? lin("M2") : My;
+        var M3v = (f[i0].M3 != null) ? lin("M3") : Mz;
+        return { N: el.axial, V: lin("S"), M: Mz, Vy: lin("S"), Vz: (f[i0].Vz != null) ? lin("Vz") : 0, My: My, Mz: Mz, T: (f[i0].T != null) ? lin("T") : 0, M2: M2v, M3: M3v };
       }
     }
     return { N: 0, V: 0, M: 0, Vy: 0, Vz: 0, My: 0, Mz: 0, T: 0 };
@@ -4358,13 +4543,14 @@
   }
 
   function drawForceValues(ctx, small) {
+    var pending = [];
     model.members.forEach(function (m) {
       var els = ana.byMember[m.id];
       if (!els || !els.length || m.L == null) { return; }
       var nd = memDirNormal(m), nX = nd.x, nY = nd.y;
       function place(xm, val, label, color, off) {
         var ps = memScreenPoint(m, xm), px = ps[0], py = ps[1];
-        tag(ctx, label + "=" + fO(val).toFixed(1), px + nX * off, py + nY * off, small, color);
+        pending.push({ x: px + nX * off, y: py + nY * off, txt: label + "=" + fO(val).toFixed(1), color: color });
       }
       if (D.showMoment) {
         var bM = 0, xM = 0;
@@ -4378,6 +4564,31 @@
       }
       if (D.showAxial) { place(m.L / 2, Math.abs(els[0].axial), "N", "#63e06a", 52); }
     });
+    // 交汇节点多杆标签防重叠：按 y 排序，仅 x 重叠才避让（否则会级联下移），y 钳制不出画布
+    try { ctx.font = "600 " + small + "px Segoe UI, Microsoft YaHei"; } catch (eF2) {}
+    pending.forEach(function (tg) {
+      try { tg._w = ctx.measureText(tg.txt).width; } catch (eM2) { tg._w = String(tg.txt || "").length * small * 0.6; }
+    });
+    pending.sort(function (a, b) { return a.y - b.y; });
+    var _placed2 = [], _ch2 = (typeof T !== "undefined" && T.ch) ? T.ch : 600;
+    var _gap2 = small + 3;
+    pending.forEach(function (tg) {
+      var guard = 0;
+      while (guard++ < 24) {
+        var hit = null, hy = -1e9, _pj;
+        for (_pj = 0; _pj < _placed2.length; _pj++) {
+          var q = _placed2[_pj];
+          if (Math.abs(tg.y - q.y) < _gap2 && Math.abs(tg.x - q.x) < (tg._w + q._w) / 2 + 6) {
+            if (q.y > hy) { hy = q.y; hit = q; }
+          }
+        }
+        if (!hit) { break; }
+        tg.y = hit.y + _gap2;
+      }
+      tg.y = clamp(tg.y, 10, _ch2 - 8);
+      _placed2.push(tg);
+    });
+    pending.forEach(function (tg) { tag(ctx, tg.txt, tg.x, tg.y, small, tg.color); });
   }
 
   // 内力极值：在极值所在截面画标记点并标注数值（M / V / N）
@@ -4776,7 +4987,7 @@
       el.forces.forEach(function (p) {
         var x = el.xa + p.t;
         if (x - lastX < 1e-6) { return; }
-        lastX = x; pts.push({ x: x, N: el.axial, V: p.S, M: p.M, Vy: p.S, Vz: p.Vz != null ? p.Vz : 0, My: p.My != null ? p.My : p.M, Mz: p.Mz != null ? p.Mz : p.M, T: p.T || 0 });
+        lastX = x; pts.push({ x: x, N: el.axial, V: p.S, M: p.M, Vy: p.S, Vz: p.Vz != null ? p.Vz : 0, My: p.My != null ? p.My : p.M, Mz: p.Mz != null ? p.Mz : p.M, T: p.T || 0, M2: (p.M2 != null ? p.M2 : (p.My != null ? p.My : p.M)), M3: (p.M3 != null ? p.M3 : (p.Mz != null ? p.Mz : p.M)) });
       });
     });
     var loads = memLoads[mid] || [], loadPts = [], nn = 60;
@@ -4802,7 +5013,9 @@
   function drawForceCharts() {
     var cv = $("fchart"); if (!cv || !cv.getContext) { return; }
     var ctx = cv.getContext("2d");
-    var W = Math.max(120, cv.clientWidth || 240), H = 304;
+    var is3Dch = (D.dim || "2d") === "3d";
+    var nChart = is3Dch ? 5 : 4;
+    var W = Math.max(120, cv.clientWidth || 240), H = is3Dch ? 376 : 304;
     var dpr = window.devicePixelRatio || 1;
     if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) {
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.height = H + "px";
@@ -4821,7 +5034,7 @@
     var L = ser.L, stationX = clamp(D.station, 0, 1) * L, st = sampleMember(mid, stationX);
     var loadVal = 0;
     (ser.loads || []).forEach(function (ld) { if (ld.type !== "point") { loadVal += memberLoadValue(ld, stationX); } });
-    var gap = 6, chH = (H - gap * 5) / 4, ypos = gap;
+    var gap = 6, chH = (H - gap * (nChart + 1)) / nChart, ypos = gap;
 
     function mini(y0, title, series, Yv, value, color, isLoad, dispFactor, flip) {
       var x0 = 0, w = W, h = chH;
@@ -4896,7 +5109,12 @@
     mini(ypos, "荷载 (" + lineU() + ")", ser.loadPts, function (p) { return p.q; }, loadVal, "#7bf7c9", true, FU() / LU()); ypos += chH + gap;
     mini(ypos, "轴力 N (" + forceU() + ")", ser.pts, function (p) { return p.N; }, st.N, "#63e06a", false, FU()); ypos += chH + gap;
     mini(ypos, "剪力 V (" + forceU() + ")", ser.pts, function (p) { return p.V; }, st.V, "#4fd1ff", false, FU()); ypos += chH + gap;
-    mini(ypos, "弯矩 M (" + momU() + ")", ser.pts, function (p) { return p.M; }, st.M, "#ff8080", false, FU(), true);
+    if (is3Dch) {
+      mini(ypos, "弯矩 M3 (" + momU() + ")", ser.pts, function (p) { return (p.M3 != null ? p.M3 : p.M); }, (st.M3 != null ? st.M3 : st.M), "#ff8080", false, FU(), true); ypos += chH + gap;
+      mini(ypos, "弯矩 M2 (" + momU() + ")", ser.pts, function (p) { return (p.M2 != null ? p.M2 : 0); }, (st.M2 != null ? st.M2 : 0), "#ffa040", false, FU(), true);
+    } else {
+      mini(ypos, "弯矩 M (" + momU() + ")", ser.pts, function (p) { return p.M; }, st.M, "#ff8080", false, FU(), true);
+    }
   }
 
   function zoomAt(cx, cy, factor) {
@@ -4916,7 +5134,7 @@
       "计算结果",
       "顶点侧移　 " + res.roof.toFixed(2) + " mm",
       "最大总位移 " + res.maxDisp.toFixed(2) + " mm",
-      "最大弯矩 |M|  " + fO(res.maxM).toFixed(2) + " " + momU(),
+      (((D.dim || "2d") === "3d") ? "最大弯矩 |M3/M2|  " : "最大弯矩 |M|  ") + fO(res.maxM).toFixed(2) + " " + momU(),
       "最大剪力 |V|  " + fO(res.maxV).toFixed(2) + " " + forceU(),
       "最大轴力 |N|  " + fO(res.maxN).toFixed(2) + " " + forceU()
     ] : ["计算结果", "模型奇异：结构为机构或约束不足"];
@@ -5103,8 +5321,54 @@
     return null;
   }
 
+  // 四窗口联动悬停点（模型坐标），各窗口投影为十字标记
+  var hover3 = null;
+  var hover3Raf = false;
+  function queueHover3Draw() {
+    if (hover3Raf) { return; }
+    hover3Raf = true;
+    requestAnimationFrame(function () {
+      hover3Raf = false;
+      try { draw(); } catch (e) {}
+    });
+  }
+  function onCanvasMove3D(cvId, ev) {
+    if (!ana) { return; }
+    var q = canvasPosIn(cvId, ev);
+    var mc = null;
+    try { mc = screenToModel3In(cvId, q.x, q.y); } catch (e) { mc = null; }
+    if (mc) {
+      updateStatusCoord(mc[0], mc[1], mc[2]);
+      hover3 = { m: [mc[0], mc[1], mc[2]], src: cvId };
+    }
+    var box = $("hoverbox");
+    if (box) { box.style.display = "none"; }
+    queueHover3Draw();
+  }
+  function onCanvasLeave3D() {
+    hover3 = null;
+    var box = $("hoverbox");
+    if (box) { box.style.display = "none"; }
+    updateStatusCoord(null, null);
+    try { draw(); } catch (e) {}
+  }
+
   function onCanvasMove(ev) {
     if (!ana) { return; }
+    // 3D 下用主窗投影反算（含相机），数值写入右下角状态栏（与 2D 同位置）
+    if ((D.dim || "2d") === "3d") {
+      var q0 = canvasPos(ev);
+      var mc0 = null;
+      try { mc0 = screenToModel3In("cv", q0.x, q0.y); } catch (e) { mc0 = null; }
+      if (mc0) {
+        updateStatusCoord(mc0[0], mc0[1], mc0[2]);
+        hover3 = { m: [mc0[0], mc0[1], mc0[2]], src: "cv" };
+      }
+      var box0 = $("hoverbox");
+      if (box0) { box0.style.display = "none"; }
+      queueHover3Draw();
+      return;
+    }
     var p = canvasPos(ev);
     updateStatusCoord(fromX(p.x), fromY(p.y));
     var info = hoverContent(p);
@@ -5121,7 +5385,7 @@
     box.style.top = Math.max(4, ly) + "px";
   }
 
-  function onCanvasLeave() { $("hoverbox").style.display = "none"; updateStatusCoord(null, null); }
+  function onCanvasLeave() { $("hoverbox").style.display = "none"; updateStatusCoord(null, null); hover3 = null; if ((D.dim || "2d") === "3d") { try { draw(); } catch (e) {} } }
 
   /* ================= 底部状态栏 ================= */
 
@@ -5510,13 +5774,35 @@
     function SX(u) { return v.cw / 2 + (xb0 + (u - v.X0) * v.bs0 - v.cw / 2) * z + (cam.px || 0); }
     function SY(w) { return v.ch / 2 + (yb0 + (v.Y1 - w) * v.bs0 - v.ch / 2) * z + (cam.py || 0); }
     var best = null, bd = 10;
+    var isSliceV = (v.kind === "plan" || v.kind === "secX" || v.kind === "secY");
+    var pvV = v.kind === "plan" ? (D.planeZ || 0) : v.kind === "secX" ? (D.secY0 || 0) : (D.secX0 || 0);
+    var epsV = 2e-3;
+    try { epsV = Math.max(nodeTol(), 1e-6) + 1e-9; } catch (eEv) {}
+    function nodeOnSliceV(n) {
+      if (!isSliceV) { return true; }
+      var c = v.kind === "plan" ? nz(n) : v.kind === "secX" ? n.y : n.x;
+      return Math.abs(c - pvV) <= epsV;
+    }
+    function memberVisV(m) {
+      if (!isSliceV) { return 2; }
+      var A = nodeById(m.a), B = nodeById(m.b);
+      if (!A || !B) { return 0; }
+      var ca = v.kind === "plan" ? nz(A) : v.kind === "secX" ? A.y : A.x;
+      var cb = v.kind === "plan" ? nz(B) : v.kind === "secX" ? B.y : B.x;
+      var da = ca - pvV, db = cb - pvV;
+      if (Math.abs(da) <= epsV && Math.abs(db) <= epsV) { return 2; }
+      if (da * db < 0 || Math.abs(da) <= epsV || Math.abs(db) <= epsV) { return 1; }
+      return 0;
+    }
     model.nodes.forEach(function (n) {
+      if (!nodeOnSliceV(n)) { return; }
       var pr = proj3(v.kind, n.x, n.y, nz(n));
       var d = Math.hypot(px - SX(pr[0]), py - SY(pr[1]));
       if (d <= bd) { bd = d; best = n.id; }
     });
     var bm = null, bmd = 8;
     (model.members || []).forEach(function (m) {
+      if (memberVisV(m) === 0) { return; }
       var A = nodeById(m.a), B = nodeById(m.b);
       if (!A || !B) { return; }
       var pa = proj3(v.kind, A.x, A.y, nz(A)), pb = proj3(v.kind, B.x, B.y, nz(B));
@@ -6037,7 +6323,10 @@
     stationM = +ids[0]; sb.disabled = false;
     var m = memberById(stationM), L = (m && m.L) ? m.L : 1;
     var x = clamp(D.station, 0, 1) * L, v = sampleMember(stationM, x);
-    rd.textContent = "x = " + fmtLen(x) + " " + D.lenUnit + " ｜ N " + fO(v.N).toFixed(1) + " ｜ V " + fO(v.V).toFixed(1) + " ｜ M " + momO(v.M).toFixed(1);
+    var is3D = (D.dim || "2d") === "3d";
+    rd.textContent = is3D ?
+      ("x = " + fmtLen(x) + " " + D.lenUnit + " ｜ N " + fO(v.N).toFixed(1) + " ｜ M3 " + momO((v.M3 != null ? v.M3 : v.M)).toFixed(1) + " ｜ M2 " + momO((v.M2 != null ? v.M2 : v.My)).toFixed(1)) :
+      ("x = " + fmtLen(x) + " " + D.lenUnit + " ｜ N " + fO(v.N).toFixed(1) + " ｜ V " + fO(v.V).toFixed(1) + " ｜ M " + momO(v.M).toFixed(1));
     drawForceCharts();
     if (D.view === "force") { draw(); }
   }
@@ -6852,8 +7141,8 @@
   $("showLoadVals").addEventListener("change", function () { D.showLoadVals = $("showLoadVals").checked; draw(); });
   $("showMat").addEventListener("change", function () { D.showMat = $("showMat").checked; draw(); });
   $("showSec").addEventListener("change", function () { D.showSec = $("showSec").checked; draw(); });
-  $("showIds").addEventListener("change", draw);
-  $("showLoads").addEventListener("change", draw);
+  $("showIds").addEventListener("change", function () { D.showIds = $("showIds").checked; draw(); });
+  $("showLoads").addEventListener("change", function () { D.showLoads = $("showLoads").checked; draw(); });
 
   function bindForce(id, key) { $(id).addEventListener("change", function () { D[key] = $(id).checked; draw(); }); }
   bindForce("f-axial", "showAxial");
@@ -7329,9 +7618,22 @@
     openDocument(name || "导入的模型", s);
   }
 
-  // 鼠标悬停：坐标 + 云图数值
-  $("cv").addEventListener("mousemove", function (ev) { if (pan) { return; } onCanvasMove(ev); });
+  // 鼠标悬停：坐标 + 云图数值（2D/3D 共用右下角状态栏；3D 四窗联动悬停标记）
+  $("cv").addEventListener("mousemove", function (ev) { if (pan || pan3) { return; } onCanvasMove(ev); });
   $("cv").addEventListener("mouseleave", onCanvasLeave);
+  ["cv1", "cv2", "cv3"].forEach(function (cvId) {
+    var el = $(cvId);
+    if (!el) { return; }
+    el.addEventListener("mousemove", function (ev) {
+      if ((D.dim || "2d") !== "3d") { return; }
+      if (pan3 || rot3 || rotCand3) { return; }
+      onCanvasMove3D(cvId, ev);
+    });
+    el.addEventListener("mouseleave", function () {
+      if ((D.dim || "2d") !== "3d") { return; }
+      onCanvasLeave3D();
+    });
+  });
 
   var rafId = null;
   function scheduleDraw() { if (rafId) { cancelAnimationFrame(rafId); } rafId = requestAnimationFrame(function () { if (ana) { draw(); } }); }

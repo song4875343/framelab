@@ -139,11 +139,22 @@ const rgbStrokes = new Set(
 check("主窗云图出现 ≥3 种杆段颜色（旧逻辑恒为 1 种整杆色）",
   rgbStrokes.size >= 3, "distinct=" + rgbStrokes.size);
 
-console.log("## Case 2 细分分割点（暗色小点）");
-const DOTFILL = "rgba(28,40,68,0.92)";
+console.log("## Case 2 细分分割点（暗黄色小点，仅几何视图）");
+st.D.view = "model";
+drawOps.length = 0;
+FL.rebuild();
+st = FL.state();
+const DOTFILL = "rgba(140,110,0,0.92)";
 const dotArcs = drawOps.filter((o) => o.el === "cv" && o.op === "arc" && o.r === 2 && o.fill === DOTFILL);
-check("4 个中间细分点各绘制（每点被相邻两子段各画一次，共 8 个圆）",
+check("几何视图下 4 个中间细分点各绘制（每点被相邻两子段各画一次，共 8 个圆）",
   dotArcs.length === 8, "dotArcs=" + dotArcs.length);
+drawOps.length = 0;
+st.D.view = "disp";
+FL.rebuild();
+st = FL.state();
+check("位移视图下细分点不再绘制",
+  drawOps.filter((o) => o.el === "cv" && o.op === "arc" && o.r === 2 && o.fill === DOTFILL).length === 0,
+  "dotArcs=" + drawOps.filter((o) => o.el === "cv" && o.op === "arc" && o.r === 2 && o.fill === DOTFILL).length);
 
 // ---------- 加顶层楼面壳（共面 XY@z=4，参与内置 3D） + areaDiv 3x2 ----------
 console.log("## Case 3/4 壳选中与细分线");
