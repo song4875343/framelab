@@ -33,8 +33,8 @@ function check(name, cond, detail) {
   if (cond) { console.log("  PASS " + name + (detail ? "  [" + detail + "]" : "")); }
   else { nFail++; console.log("  FAIL " + name + (detail ? "  [" + detail + "]" : "")); }
 }
-function bcOf(snap, x, y) {
-  const n = snap.model.nodes.find((nn) => Math.abs(nn.x - x) < 1e-9 && Math.abs(nn.y - y) < 1e-9);
+function bcOf(snap, x, z) {
+  const n = snap.model.nodes.find((nn) => (Math.abs(nn.x - x) < 1e-9 && Math.abs(((nn.z!=null)?nn.z:nn.y) - z) < 1e-9));
   return n ? n.bc : null;
 }
 
@@ -52,7 +52,7 @@ if (py) {
   check("节点数 4", s.model.nodes.length === 4, s.model.nodes.length);
   check("杆件数 3", s.model.members.length === 3, s.model.members.length);
   const b1 = bcOf(s, 0, 0), b3 = bcOf(s, 6, 0);
-  check("柱底固定", !!(b1 && b1.ux && b1.uy && b1.rz && b3 && b3.ux && b3.uy && b3.rz));
+  check("柱底固定", !!(b1 && b1.ux && (b1.uz||b1.uy) && (b1.ry||b1.rz) && b3 && b3.ux && (b3.uz||b3.uy) && (b3.ry||b3.rz)));
   const udls = Object.values(s.memLoads).flat().filter((l) => l.type === "udl");
   check("梁均布 -12", udls.length === 1 && Math.abs(udls[0].q + 12) < 1e-9, JSON.stringify(udls));
   check("节点荷载 2 处", Object.keys(s.nodeLoads).length === 2);
@@ -82,8 +82,8 @@ if (tc) {
   check("节点数 3", s.model.nodes.length === 3, s.model.nodes.length);
   check("杆件数 2", s.model.members.length === 2, s.model.members.length);
   const bl = bcOf(s, 0, 0), br = bcOf(s, 6, 0);
-  check("左铰支", !!(bl && bl.ux && bl.uy && !bl.rz), JSON.stringify(bl));
-  check("右辊轴", !!(br && !br.ux && br.uy && !br.rz), JSON.stringify(br));
+  check("左铰支", !!(bl && bl.ux && (bl.uz||bl.uy) && !(bl.ry||bl.rz)), JSON.stringify(bl));
+  check("右辊轴", !!(br && !br.ux && (br.uz||br.uy) && !(br.ry||br.rz)), JSON.stringify(br));
   const mid = s.model.nodes.find((n) => Math.abs(n.x - 3) < 1e-9);
   check("[expr]/$变量求值", !!mid, "x=3 节点" + (mid ? "存在" : "缺失"));
   const udls = Object.values(s.memLoads).flat().filter((l) => l.type === "udl");
@@ -117,10 +117,10 @@ else {
     D: { NSUB: 5, AMESH: 2 },
     model: {
       nodes: [
-        { id: 1, x: 0, y: 0, bc: { ux: 1, uy: 1, rz: 1 } },
-        { id: 2, x: 0, y: 4, bc: {} },
-        { id: 3, x: 6, y: 0, bc: { ux: 1, uy: 1, rz: 1 } },
-        { id: 4, x: 6, y: 4, bc: {} },
+        { id: 1, x: 0, z: 0, bc: { ux: 1, uz: 1, ry: 1 } },
+        { id: 2, x: 0, z: 4, bc: {} },
+        { id: 3, x: 6, z: 0, bc: { ux: 1, uz: 1, ry: 1 } },
+        { id: 4, x: 6, z: 4, bc: {} },
       ],
       members: [
         { id: 11, a: 1, b: 2, type: "col" },
@@ -130,7 +130,7 @@ else {
       areas: [], cuts: [],
     },
     memStiff: {}, memMat: {}, memSec: {}, memLoads: { 13: [{ type: "udl", q: -12 }] },
-    nodeLoads: { 2: { fx: 10, fy: 0, mz: 0 } },
+    nodeLoads: { 2: { fx: 10, fz: 0, my: 0 } },
     areaMat: {}, areaSec: {}, areaLoads: {}, memDiv: {}, areaDiv: {},
   };
   const built = globalThis.FrameXara.buildScript(st, {});

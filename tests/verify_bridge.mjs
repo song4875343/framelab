@@ -289,9 +289,14 @@ function verifyContinuum(tag, state, opts) {
   if (opts.equil) {
     let fx = 0, fy = 0, m0 = 0;
     const all = run.meta.all, reacts = (xa.xaraLog || {}).reactions || {};
+    // 2D（ndm=2）：反力 [Fx,Fy垂向,Mz]，p=[x,垂向]，位置无关新旧方案；
+    // 混合3D（X-Z平面，y=0）：反力 [Fx,Fy面外,Fz,Mx,My,Mz]，p=[x,z]，
+    // 面内平衡取 Fx/Fz，2D逆时针弯矩 My_2d = -r[4]。
+    const is3 = run.meta && run.meta.kind === "mixed3d";
     for (const xt of Object.keys(reacts)) {
       const r = reacts[xt], p = all[+xt - 1];
-      fx += r[0]; fy += r[1]; m0 += p[0] * r[1] - p[1] * r[0] + (r[5] || 0);
+      if (is3) { fx += r[0]; fy += r[2]; m0 += p[0] * r[2] - p[1] * r[0] - (r[4] || 0); }
+      else { fx += r[0]; fy += r[1]; m0 += p[0] * r[1] - p[1] * r[0] + (r[2] || 0); }
     }
     // 零目标分量用总荷载量级归一化，避免 1e-12 级噪声误杀
     const lscale = Math.max(1, Math.abs(opts.equil.fx), Math.abs(opts.equil.fy), Math.abs(opts.equil.m0));

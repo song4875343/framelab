@@ -18,9 +18,11 @@
  * 其它命令（如 recorder/analyze/constraints/system/面单元 Quad/壳）跳过并
  * 记入 warnings，不中断导入。
  *
- * 约定（与 xara.js 导出侧对称）：
+ * 约定（与 xara.js 导出侧对称；2D 平面统一为 X-Z，Y 为面外）：
  * - 单位：假定文件单位与 FrameLab 内部一致（m / kN / kN*m），不做换算；
- * - 杆件荷载沿局部 +y 为正（udl q / beamUniform Wy 直接对应）；
+ * - ndm=2 文件的第二坐标（OpenSees 称 Y，竖向）导入为 z；
+ *   ndm=3 文件取全坐标（x, y, z；y 为面外）；
+ * - 杆件荷载沿局部 +z 为正（udl q / beamUniform Wy 直接对应）；
  * - beamPoint 的位置参数按“相对长度（0~1）”解释（与本页导出一致）；
  *   若取值落在 (1, L] 内则按“距首节点绝对距离”解释并告警；
  * - truss 单元无抗弯刚度，导入时取 EI = EA*1e-9 并告警；
@@ -182,11 +184,13 @@
     if (!isFinite(h) || !isFinite(b) || h <= 0 || b <= 0) { return { type: "rect", b: 0.3, h: 0.5 }; }
     return { type: "rect", b: b, h: h };
   }
-  function memberType(x1, y1, x2, y2) {
+  function memberType(x1, z1, x2, z2) {
     if (Math.abs(x1 - x2) < 1e-9) { return "col"; }
-    if (Math.abs(y1 - y2) < 1e-9) { return "beam"; }
+    if (Math.abs(z1 - z2) < 1e-9) { return "beam"; }
     return "user";
   }
+  // 竖向坐标：z 优先（新 2D），兼容旧 y
+  function vertOf(p) { return (p && isFinite(p.z)) ? p.z : ((p && isFinite(p.y)) ? p.y : 0); }
 
   function detectFormat(text, filename) {
     var fn = String(filename || "").toLowerCase();
@@ -202,11 +206,11 @@
   function newCtx() {
     return {
       ndm: 2, ndf: 3,
-      nodes: {}, nodeOrder: [],       // tag -> {x, y}
+      nodes: {}, nodeOrder: [],       // tag -> {x, y?, z?}（2D 用 x,z）
       eles: [],                        // {tag, type, i, j, A, E, Iz, secTag, matTag}
       mats: {},                        // E 材料：tag -> E
       secs: {},                        // Elastic 截面：tag -> {E, A, Iz}
-      loads: {},                       // nodeTag -> {fx, fy, mz}
+      loads: {},                       // nodeTag -> {fx, fz, my}（2D；3D 为 6 分量）
       eleLoads: [],                    // {eleTag, kind, q/P..., raw}
       fixes: {},                       // nodeTag -> [f1..]
       env: {},                         // py/tcl 变量
@@ -329,15 +333,17 @@
           if (t === "-ndm" && isNum(A(i + 1))) { ctx.ndm = Math.round(A(i + 1)); }
           if (t === "-ndf" && isNum(A(i + 1))) { ctx.ndf = Math.round(A(i + 1)); }
         }
-        if (ctx.ndm === 3) { warn(ctx, "文件为 3D 模型（ndm=3），仅导入 x/y 平面坐标。"); }
+        if (ctx.ndm === 3) { warn(ctx, "文件为 3D 模型（ndm=3），取全坐标 x/y/z（含面外 y）导入。"); }
         return;
       }
       case "node": {
-        var tag = A(0), x = A(1), y = A(2);
-        if (!isNum(tag) || !isNum(x) || !isNum(y)) { warn(ctx, "跳过无法解析的 node 定义：" + args.join(" ")); return; }
+        var tag = A(0), x = A(1), v2 = A(2), v3 = A(3);
+        if (!isNum(tag) || !isNum(x) || !isNum(v2)) { warn(ctx, "跳过无法解析的 node 定义：" + args.join(" ")); return; }
         tag = Math.round(tag);
         if (ctx.nodes[tag]) { warn(ctx, "重复的 node " + tag + "（取首次定义）。"); return; }
-        ctx.nodes[tag] = { x: x, y: y };
+        // ndm=3（或带第三坐标）：node x y z 全取；ndm=2：第二坐标为竖向，存为 z
+        if (ctx.ndm === 3 || isNum(v3)) { ctx.nodes[tag] = { x: x, y: v2, z: v3 }; }
+        else { ctx.nodes[tag] = { x: x, z: v2 }; }
         ctx.nodeOrder.push(tag);
         return;
       }
@@ -400,10 +406,20 @@
       case "load": {
         var lt = Math.round(A(0));
         if (!isNum(lt)) { warn(ctx, "跳过无法解析的 load 定义：" + args.join(" ")); return; }
-        var e = ctx.loads[lt] || { fx: 0, fy: 0, mz: 0 };
-        if (isNum(A(1))) { e.fx += A(1); }
-        if (isNum(A(2))) { e.fy += A(2); }
-        if (isNum(A(3))) { e.mz += A(3); }
+        var e = ctx.loads[lt] || { fx: 0, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 };
+        if (ctx.ndm === 3) {
+          if (isNum(A(1))) { e.fx += A(1); }
+          if (isNum(A(2))) { e.fy += A(2); }
+          if (isNum(A(3))) { e.fz += A(3); }
+          if (isNum(A(4))) { e.mx += A(4); }
+          if (isNum(A(5))) { e.my += A(5); }
+          if (isNum(A(6))) { e.mz += A(6); }
+        } else {
+          // 2D：第二分量为竖向 Fz，第三分量为面内弯矩 My
+          if (isNum(A(1))) { e.fx += A(1); }
+          if (isNum(A(2))) { e.fz += A(2); }
+          if (isNum(A(3))) { e.my += A(3); }
+        }
         ctx.loads[lt] = e;
         return;
       }
@@ -467,10 +483,17 @@
       var p = ctx.nodes[tag];
       tag2id[tag] = nid;
       var fx = ctx.fixes[tag] || [];
-      nodes.push({
-        id: nid, x: p.x, y: p.y,
-        bc: { ux: !!fx[0], uy: !!fx[1], rz: !!(fx[2] || 0) }
-      });
+      var bc;
+      if (ctx.ndm === 3) {
+        bc = { ux: !!fx[0], uy: !!fx[1], uz: !!fx[2], rx: !!fx[3], ry: !!fx[4], rz: !!fx[5] };
+      } else {
+        // 2D：ux / uz（竖向）/ ry（面内弯曲）
+        bc = { ux: !!fx[0], uz: !!fx[1], ry: !!(fx[2] || 0) };
+      }
+      var nd = { id: nid, x: p.x, bc: bc };
+      if (ctx.ndm === 3) { nd.y = p.y || 0; nd.z = isNum(p.z) ? p.z : 0; }
+      else { nd.z = vertOf(p); }
+      nodes.push(nd);
       nid++;
     });
     var members = [], memStiff = {}, memMat = {}, memSec = {}, memLoads = {}, mid = 0;
@@ -481,9 +504,9 @@
         return;
       }
       var A = ctx.nodes[el.i], B = ctx.nodes[el.j];
-      var L = Math.hypot(B.x - A.x, B.y - A.y);
+      var L = Math.hypot(B.x - A.x, vertOf(B) - vertOf(A));
       if (!(L > 1e-9)) { warn(ctx, "element " + el.tag + " 为零长杆件，已跳过。"); return; }
-      var m = { id: mid, a: tag2id[el.i], b: tag2id[el.j], type: memberType(A.x, A.y, B.x, B.y) };
+      var m = { id: mid, a: tag2id[el.i], b: tag2id[el.j], type: memberType(A.x, vertOf(A), B.x, vertOf(B)) };
       members.push(m);
       ele2mid[el.tag] = mid;
       var EA = el.E * el.A, EI = el.E * el.Iz;
@@ -496,8 +519,13 @@
     Object.keys(ctx.loads).forEach(function (tag) {
       if (tag2id[tag] === undefined) { warn(ctx, "load 指向未定义的节点 " + tag + "，已跳过。"); return; }
       var l = ctx.loads[tag];
-      if (Math.abs(l.fx) < 1e-12 && Math.abs(l.fy) < 1e-12 && Math.abs(l.mz) < 1e-12) { return; }
-      nodeLoads[tag2id[tag]] = { fx: l.fx, fy: l.fy, mz: l.mz };
+      if (ctx.ndm === 3) {
+        if ([l.fx, l.fy, l.fz, l.mx, l.my, l.mz].every(function (v) { return Math.abs(v || 0) < 1e-12; })) { return; }
+        nodeLoads[tag2id[tag]] = { fx: l.fx, fy: l.fy, fz: l.fz, mx: l.mx, my: l.my, mz: l.mz };
+      } else {
+        if (Math.abs(l.fx) < 1e-12 && Math.abs(l.fz) < 1e-12 && Math.abs(l.my) < 1e-12) { return; }
+        nodeLoads[tag2id[tag]] = { fx: l.fx, fz: l.fz, my: l.my };
+      }
     });
     ctx.eleLoads.forEach(function (el2) {
       var mm = ele2mid[el2.eleTag];
@@ -506,7 +534,7 @@
       for (i = 0; i < members.length; i++) { if (members[i].id === mm) { mb = members[i]; } }
       if (!mb) { return; }
       var nA = nodes[mb.a], nB = nodes[mb.b];
-      var L = Math.hypot(nB.x - nA.x, nB.y - nA.y);
+      var L = Math.hypot(nB.x - nA.x, vertOf(nB) - vertOf(nA));
       var list = memLoads[mm] || (memLoads[mm] = []);
       if (el2.kind === "udl") {
         if (Math.abs(el2.q) < 1e-12) { return; }
@@ -530,7 +558,7 @@
       warn(ctx, "跳过 " + ctx.nSkip[k] + " 条“" + k + "”命令（非 2D 线弹性框架子集）。");
     });
     return {
-      app: "FrameLab", ver: 1, savedAt: new Date().toISOString(), D: defaultD(), model: model,
+      app: "FrameLab", ver: 2, savedAt: new Date().toISOString(), D: defaultD(), model: model,
       memStiff: memStiff, memMat: memMat, memSec: memSec, memLoads: memLoads,
       nodeLoads: nodeLoads, areaMat: {}, areaSec: {}, areaLoads: {},
       memDiv: {}, areaDiv: {}, memRebar: {}, areaRebar: {}

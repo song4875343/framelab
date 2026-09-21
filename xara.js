@@ -132,7 +132,15 @@
     if (s.indexOf("e") < 0 && s.indexOf(".") < 0) { s += ".0"; }
     return s;
   }
-  function pyStr(s) { return "'" + String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'"; }  /* ---------------- 导出：FrameLab state -> 中间表示 meta ---------------- */
+  function pyStr(s) { return "'" + String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'"; }
+  /* 2D X-Z 统一：竖向 nvX（z 优先，兼容旧 y）；面外 nyX（y，缺省 0）；整体竖向力/弯矩兼容读取 */
+  function nvX(n) { return (n && isFinite(n.z)) ? n.z : ((n && isFinite(n.y)) ? n.y : 0); }
+  function nyX(n) { return (n && isFinite(n.y)) ? n.y : 0; }
+  function bcUZx(bc) { bc = bc || {}; return (bc.uz != null) ? bc.uz : ((bc.uy != null) ? bc.uy : false); }
+  function bcRYx(bc) { bc = bc || {}; return (bc.ry != null) ? bc.ry : ((bc.rz != null) ? bc.rz : false); }
+  function nlFZx(nl) { nl = nl || {}; return (nl.fz != null) ? nl.fz : (nl.fy || 0); }
+  function nlMYx(nl) { nl = nl || {}; return (nl.my != null) ? nl.my : (nl.mz || 0); }
+  function alQZx(ld) { ld = ld || {}; return (ld.qz != null) ? ld.qz : (ld.qy || 0); }  /* ---------------- 导出：FrameLab state -> 中间表示 meta ---------------- */
   function effAreaDiv(a, nodeById, D, areaDiv) {
     var nx = clampInt(D.AMESH != null ? D.AMESH : 2, 1, 50), ny = nx, o = (areaDiv || {})[a.id];
     if (o) { nx = clampInt(o.nx || nx, 1, 50); ny = clampInt(o.ny || ny, 1, 50); }
@@ -140,7 +148,7 @@
       var pts = a.nodes.map(nodeById).filter(Boolean), Lmax = 0, i;
       for (i = 0; i < pts.length; i++) {
         var p = pts[i], q = pts[(i + 1) % pts.length];
-        Lmax = Math.max(Lmax, Math.hypot(q.x - p.x, q.y - p.y));
+        Lmax = Math.max(Lmax, Math.hypot(q.x - p.x, nvX(q) - nvX(p)));
       }
       if (Lmax > 0) { var k = Math.min(50, Math.ceil(Lmax / o.hmax)); nx = Math.max(nx, k); ny = Math.max(ny, k); }
     }
@@ -163,7 +171,7 @@
       if (reg[k] !== undefined) { return reg[k]; }
       reg[k] = all.length; all.push([x, y]); return reg[k];
     }
-    (model.nodes || []).forEach(function (n) { idx[n.id] = ensureNode(n.x, n.y); });
+    (model.nodes || []).forEach(function (n) { idx[n.id] = ensureNode(n.x, nvX(n)); });
     var xnode = all.map(function (_, i) { return i + 1; }); // 分析节点序号 -> xara 节点号
 
     // 材料去重
@@ -184,7 +192,7 @@
       var A = all[idx[m.a]], B = all[idx[m.b]];
       var L = Math.hypot(B[0] - A[0], B[1] - A[1]);
       if (!(L > 1e-9)) { return; }
-      var ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
+      var ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L, uz = uy;
       var st = (state.memStiff || {})[m.id], mat = (state.memMat || {})[m.id], sec = (state.memSec || {})[m.id];
       var E = (mat && mat.E) || 3.0e7, Asec = 0, Isec = 0;
       if (st) { Asec = st.EA / E; Isec = st.EI / E; }
@@ -208,7 +216,7 @@
         if (ids2[k] === ids2[k + 1]) { continue; }
         members.push({
           mid: m.id, type: m.type, i: ids2[k], j: ids2[k + 1], L: L,
-          xa: tu[k] * L, Lsub: (tu[k + 1] - tu[k]) * L, ux: ux, uy: uy, E: E, A: Asec, I: Isec
+          xa: tu[k] * L, Lsub: (tu[k + 1] - tu[k]) * L, ux: ux, uy: uy, uz: uy, E: E, A: Asec, I: Isec
         });
       }
     });
@@ -225,7 +233,7 @@
       var mtag = matTagOf(mat.E, mat.nu == null ? 0.2 : mat.nu);
       var dv = effAreaDiv(a, nodeById, D, state.areaDiv), nx = dv.nx, ny = dv.ny;
       if (corners.length >= 4) {
-        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, n.y]; });
+        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, nvX(n)]; });
         areaGrid[a.id] = { nx: nx, ny: ny, P: P, t: t };
         var sub = quadSubCells(P, nx, ny), gid = [], r, c;
         for (r = 0; r <= ny; r++) {
@@ -243,7 +251,7 @@
           quads.push({ aid: a.id, etype: a.etype, kind: "q4", g: g, t: t, ptype: ptype, mtag: mtag });
         });
       } else {
-        var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, n.y]; });
+        var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, nvX(n)]; });
         var sub3 = triSubCells(P3, nx), gmap = [];
         sub3.pts.forEach(function (p) {
           var gi = -1, k;
@@ -272,8 +280,8 @@
     }
     quads.forEach(function (qc) {
       var ld = (state.areaLoads || {})[qc.aid];
-      if (!ld || (!ld.qx && !ld.qy)) { return; }
-      var qx = ld.qx || 0, qy = ld.qy || 0;
+      if (!ld || (!ld.qx && !ld.qy && !ld.qz)) { return; }
+      var qx = ld.qx || 0, qy = alQZx(ld);
       if (qc.kind === "q4") {
         var coords = qc.g.map(function (gi) { return all[gi]; });
         var g = 1 / Math.sqrt(3);
@@ -298,9 +306,9 @@
 
     // 杆端集中力（a≈端点）转节点力（局部+y -> 整体）
     var endNodal = {};
-    function addEndN(modelId, fx, fy) {
-      var e = endNodal[modelId] || (endNodal[modelId] = { fx: 0, fy: 0 });
-      e.fx += fx; e.fy += fy;
+    function addEndN(modelId, fx, fz) {
+      var e = endNodal[modelId] || (endNodal[modelId] = { fx: 0, fy: 0, fz: 0 });
+      e.fx += fx; e.fy += fz; e.fz += fz;
     }
     // 单元关联（按分析节点序号，约束判断用；重复/共边节点合并到同一分析节点，
     // 故必须按分析节点记录，否则副本节点会被误判为孤立而多加约束）
@@ -319,6 +327,10 @@
   }  /* ---------------- 导出：meta -> xara .py 脚本 ---------------- */
   function buildScript(state, opts) {
     opts = opts || {};
+    // 真 3D 判定优先：任一节点 z≠0 / 杆件跨越 z / 6 自由度边界与荷载分量 → 真 3D 路径（ndm=3,ndf=6，真实坐标）
+    if (isTrue3D(state, opts)) {
+      return buildScriptTrue3D(state, opts);
+    }
     var meta = exportMeta(state, opts);
     if (meta.kind === "empty") { throw new Error("模型为空，无可导出的内容。"); }
     if (meta.kind === "mixed" || opts.force3D) {
@@ -368,7 +380,7 @@
     // 误判孤立而多加全约束，把共边界面钉死（曾实测悬臂墙刚度偏大 84 倍）。
     var fixMerge = {};
     Object.keys(meta.aiMids || {}).forEach(function (ai) {
-      var e = fixMerge[ai] || (fixMerge[ai] = { fx: 0, fy: 0, rz: 0 });
+      var e = fixMerge[ai] || (fixMerge[ai] = { fx: 0, fy: 0, fz: 0, rz: 0, ry: 0 });
       // 孤立分析节点（无任何单元关联）全部约束，避免刚度奇异；
       // 无框架连接节点的 rz 自动约束（对应内置的零刚度钻孔自由度处理）
       var isolated = !meta.aiFrame[ai] && !meta.aiQuad[ai];
@@ -376,8 +388,8 @@
       (meta.aiMids[ai] || []).forEach(function (mid) {
         var bc = bcOf(+mid);
         if (bc.ux || isolated) { e.fx = 1; }
-        if (bc.uy || isolated) { e.fy = 1; }
-        if (ndf === 3 && (bc.rz || isolated || !meta.aiFrame[ai])) { e.rz = 1; }
+        if (bcUZx(bc) || isolated) { e.fy = 1; e.fz = 1; }
+        if (ndf === 3 && (bcRYx(bc) || isolated || !meta.aiFrame[ai])) { e.rz = 1; e.ry = 1; }
       });
     });
     Object.keys(fixMerge).forEach(function (ai) {
@@ -436,8 +448,9 @@
             var mm = (model.members || []).find(function (m) { return m.id === +mid; });
             var nodeModelId = mm ? ((ld.a <= 1e-9 * Lfull) ? mm.a : mm.b) : null;
             if (nodeModelId != null) {
-              var ee = meta.endNodal[nodeModelId] || (meta.endNodal[nodeModelId] = { fx: 0, fy: 0 });
-              ee.fx += -segs[0].uy * ld.P; ee.fy += segs[0].ux * ld.P;
+              var ee = meta.endNodal[nodeModelId] || (meta.endNodal[nodeModelId] = { fx: 0, fy: 0, fz: 0 });
+              var _uz0 = (segs[0].uz != null ? segs[0].uz : segs[0].uy);
+              ee.fx += -_uz0 * ld.P; ee.fy += segs[0].ux * ld.P; ee.fz += segs[0].ux * ld.P;
             }
           } else {
             var sg = segAt(segs, ld.a, Lfull);
@@ -466,7 +479,7 @@
       var nl = (state.nodeLoads || {})[mid] || {};
       var ex = (meta.extraNodal[ai] || { fx: 0, fy: 0 });
       var en = (meta.endNodal[mid] || { fx: 0, fy: 0 });
-      var fx = (nl.fx || 0) + ex.fx + en.fx, fy = (nl.fy || 0) + ex.fy + en.fy, mz = nl.mz || 0;
+      var fx = (nl.fx || 0) + ex.fx + en.fx, fy = nlFZx(nl) + ex.fy + en.fy, mz = nlMYx(nl);
       if (Math.abs(fx) < 1e-12 && Math.abs(fy) < 1e-12 && Math.abs(mz) < 1e-12) { return; }
       if (ndf === 3) { L.push("model.load(" + xt + ", " + num(fx) + ", " + num(fy) + ", " + num(mz) + ", pattern=1)"); }
       else { L.push("model.load(" + xt + ", " + num(fx) + ", " + num(fy) + ", pattern=1)"); }
@@ -509,7 +522,8 @@
   }
 
   /* ============ 3D 退化平面路径（混合模型；纯模型加 opts.force3D 也可走） ============
-   * ndm=3, ndf=6，全部节点 z=0；uz/rx/ry 逐节点约束，仅面内荷载。
+   * ndm=3, ndf=6，2D 平面为 X-Z（全部节点 y=0）；uy/rx/rz 逐节点约束，仅面内荷载
+   * （Fx、Fz、My，其中 My 正向为 X-Z 视图逆时针，即整体 -Ry 方向）。
    * 关键实测结论（xara 0.0.34 + opensees 0.1.31）：
    * - ShellMITC4 的 stresses/strains 查询返回全零，ShellDKGQ 在膜截面下奇异；
    *   采用 ASDShellQ4 / ASDShellT3 + ElasticMembranePlateSection(E,nu,t)。
@@ -578,6 +592,542 @@
     return { A: A, Bb: Bb };
   }
 
+  /* ============ 真 3D 判定与导出（ndm=3, ndf=6，真实 x/y/z 坐标） ============
+   * 触发：任一节点 z≠0、任一杆件跨越 z、任一 ux…rz 扩展边界分量 (uz/rx/ry)、
+   * 任一节点荷载 fz/mx/my。杆件为 3D elasticBeamColumn（双 transf：1:+Z 给
+   * 非竖向杆，2:+X 给近竖向杆），杆件横向荷载（局部 +y，与内置同语义）一律
+   * 转一致等效节点力；面单元走 ASDShell（真实 3D 坐标，膜截面），应力回填
+   * 与 mixed3d 同式。位移 u stride=6，站内力含 N/Vy/Vz/T/My/Mz（S=Vy、M=Mz 兼容）。
+   */
+  function nzX(n) { return (n && isFinite(n.z)) ? n.z : 0; }
+  function isTrue3D(state, opts) {
+    var model = (state && state.model) || { nodes: [], members: [], areas: [] };
+    var i, n;
+    // 新方案（节点含 z，2D 平面为 X-Z）：面外 Y 相关（y 坐标、bc.uy/rx/rz、荷载 fy/mx/mz）才走真 3D；
+    // 旧方案（节点无 z，y 为竖向）：沿用旧判据。
+    var schemeNew = (model.nodes || []).some(function (t) { return t && isFinite(t.z); });
+    function yOut(t) { return schemeNew ? (((t) && isFinite(t.y)) ? t.y : 0) : (((t) && isFinite(t.z)) ? t.z : 0); }
+    for (i = 0; i < (model.nodes || []).length; i++) {
+      n = model.nodes[i];
+      if (Math.abs(yOut(n)) > 1e-9) { return true; }
+      var bc = n.bc || {};
+      if (schemeNew) { if (bc.uy || bc.rx || bc.rz) { return true; } }
+      else if (bc.uz || bc.rx || bc.ry) { return true; }
+    }
+    var nl;
+    var NL = (state && state.nodeLoads) || {};
+    for (var k in NL) {
+      nl = NL[k] || {};
+      if (schemeNew) { if ((nl.fy || 0) || (nl.mx || 0) || (nl.mz || 0)) { return true; } }
+      else if ((nl.fz || 0) || (nl.mx || 0) || (nl.my || 0)) { return true; }
+    }
+    function nb(id) { return (model.nodes || []).find(function (x) { return x.id === id; }); }
+    for (i = 0; i < (model.members || []).length; i++) {
+      var m = model.members[i], A = nb(m.a), B = nb(m.b);
+      if (A && B && Math.abs(yOut(A) - yOut(B)) > 1e-9) { return true; }
+    }
+    return false;
+  }
+  function sectionProps3(sec) {
+    if (!sec) { return null; }
+    if (sec.type === "rect") {
+      var b = sec.b, h = sec.h;
+      var mx = Math.max(b, h), mn = Math.min(b, h);
+      return { A: b * h, Iy: h * Math.pow(b, 3) / 12, Iz: b * Math.pow(h, 3) / 12, J: mx * Math.pow(mn, 3) * (1 / 3 - 0.21 * mn / mx) };
+    }
+    if (sec.type === "circle") {
+      var d = sec.d, A2 = Math.PI * d * d / 4, I2 = Math.PI * Math.pow(d, 4) / 64;
+      return { A: A2, Iy: I2, Iz: I2, J: 2 * I2 };
+    }
+    if (sec.type === "I") {
+      var h2 = sec.h, b2 = sec.b, tw = sec.tw, tf = sec.tf;
+      return {
+        A: 2 * b2 * tf + (h2 - 2 * tf) * tw,
+        Iy: (2 * tf * Math.pow(b2, 3) + (h2 - 2 * tf) * Math.pow(tw, 3)) / 12,
+        Iz: (b2 * Math.pow(h2, 3) - (b2 - tw) * Math.pow(h2 - 2 * tf, 3)) / 12,
+        J: (2 * b2 * Math.pow(tf, 3) + (h2 - 2 * tf) * Math.pow(tw, 3)) / 3
+      };
+    }
+    return null;
+  }
+  function beamAxesX(ax, ay, az, bx, by, bz) {
+    var ex = bx - ax, ey = by - ay, ez = bz - az;
+    var L = Math.hypot(ex, ey, ez) || 1;
+    ex /= L; ey /= L; ez /= L;
+    var yx, yy, yz;
+    if (Math.abs(ez) <= 0.99) {
+      var s = ez;
+      yx = 0 - s * ex; yy = 0 - s * ey; yz = 1 - s * ez;
+    } else {
+      var up = [0, 1, 0];
+      if (Math.abs(ex * up[0] + ey * up[1] + ez * up[2]) > 0.99) { up = [1, 0, 0]; }
+      yx = up[1] * ez - up[2] * ey; yy = up[2] * ex - up[0] * ez; yz = up[0] * ey - up[1] * ex;
+    }
+    var yl = Math.hypot(yx, yy, yz) || 1;
+    yx /= yl; yy /= yl; yz /= yl;
+    return { x: [ex, ey, ez], y: [yx, yy, yz], z: [ey * yz - ez * yy, ez * yx - ex * yz, ex * yy - ey * yx], L: L, vertical: Math.abs(ez) > 0.99 };
+  }
+  function quadSubCells3D(corners, nx, ny) {
+    var cells = [], grid = [], r, c;
+    for (r = 0; r <= ny; r++) {
+      grid[r] = [];
+      for (c = 0; c <= nx; c++) {
+        var s = c / nx, t = r / ny, d;
+        var p = [0, 0, 0];
+        for (d = 0; d < 3; d++) {
+          p[d] = (1 - s) * (1 - t) * corners[0][d] + s * (1 - t) * corners[1][d] + s * t * corners[2][d] + (1 - s) * t * corners[3][d];
+        }
+        grid[r][c] = p;
+      }
+    }
+    for (r = 0; r < ny; r++) {
+      for (c = 0; c < nx; c++) {
+        cells.push([r * (nx + 1) + c, r * (nx + 1) + c + 1, (r + 1) * (nx + 1) + c + 1, (r + 1) * (nx + 1) + c]);
+      }
+    }
+    return { grid: grid, cells: cells };
+  }
+
+  function exportMetaTrue3D(state, opts) {
+    opts = opts || {};
+    var model = state.model || { nodes: [], members: [], areas: [] };
+    var D = state.D || {};
+    var nodeById = function (id) { return (model.nodes || []).find(function (n) { return n.id === id; }); };
+    var all = [], reg = {};
+    function ensureNode(x, y, z) {
+      var zz = isFinite(z) ? z : 0;
+      var k = (Math.round(x * 1e6) / 1e6) + "," + (Math.round(y * 1e6) / 1e6) + "," + (Math.round(zz * 1e6) / 1e6);
+      if (reg[k] !== undefined) { return reg[k]; }
+      reg[k] = all.length; all.push([x, y, zz]); return reg[k];
+    }
+    var idx = {};
+    (model.nodes || []).forEach(function (n) { idx[n.id] = ensureNode(n.x, nyX(n), nzX(n)); });
+
+    var secMap = {}, sections = [];
+    function secTagOf(E, nu, t, kind) {
+      var e2 = E, n2 = (nu == null ? 0.2 : nu);
+      if (kind === "strain" || kind === "shell-thick") { e2 = E / (1 - n2 * n2); n2 = n2 / (1 - n2); }
+      var k = e2.toPrecision(12) + "|" + n2.toPrecision(12) + "|" + t.toPrecision(12);
+      if (!secMap[k]) { secMap[k] = sections.length + 1; sections.push({ tag: secMap[k], E: e2, nu: n2, t: t }); }
+      return secMap[k];
+    }
+    function effAreaDivT(a) {
+      var nx = clampInt(D.AMESH != null ? D.AMESH : 2, 1, 50), ny = nx, o = (state.areaDiv || {})[a.id];
+      if (o) { nx = clampInt(o.nx || nx, 1, 50); ny = clampInt(o.ny || ny, 1, 50); }
+      if (o && o.hmax > 0) {
+        var pts = a.nodes.map(nodeById).filter(Boolean), Lmax = 0, i;
+        for (i = 0; i < pts.length; i++) {
+          var p = pts[i], q = pts[(i + 1) % pts.length];
+          Lmax = Math.max(Lmax, Math.hypot(q.x - p.x, nyX(q) - nyX(p), nzX(q) - nzX(p)));
+        }
+        if (Lmax > 0) { var k = Math.min(50, Math.ceil(Lmax / o.hmax)); nx = Math.max(nx, k); ny = Math.max(ny, k); }
+      }
+      return { nx: nx, ny: ny };
+    }
+    var quads = [], areaGrid = {};
+    (model.areas || []).forEach(function (a) {
+      var corners = a.nodes.map(nodeById).filter(Boolean);
+      if (corners.length < 3) { return; }
+      var mat = (state.areaMat || {})[a.id] || { E: 3.0e7, nu: 0.2 };
+      var sec = (state.areaSec || {})[a.id] || {};
+      var t = Math.max(1e-6, sec.t || 0.2);
+      var stag = secTagOf(mat.E, mat.nu == null ? 0.2 : mat.nu, t, sec.kind);
+      var dv = effAreaDivT(a), nx = dv.nx, ny = dv.ny;
+      if (corners.length >= 4) {
+        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, nyX(n), nzX(n)]; });
+        areaGrid[a.id] = { nx: nx, ny: ny, P: P, t: t };
+        var sub = quadSubCells3D(P, nx, ny), gid = [], r, c;
+        for (r = 0; r <= ny; r++) {
+          gid[r] = [];
+          for (c = 0; c <= nx; c++) {
+            var onC = (r === 0 && c === 0) ? 0 : (r === 0 && c === nx) ? 1 : (r === ny && c === nx) ? 2 : (r === ny && c === 0) ? 3 : -1;
+            gid[r][c] = onC >= 0 ? idx[a.nodes[onC]] : ensureNode(sub.grid[r][c][0], sub.grid[r][c][1], sub.grid[r][c][2]);
+          }
+        }
+        sub.cells.forEach(function (cell) {
+          var g = [gid[Math.floor(cell[0] / (nx + 1))][cell[0] % (nx + 1)], gid[Math.floor(cell[1] / (nx + 1))][cell[1] % (nx + 1)],
+                   gid[Math.floor(cell[2] / (nx + 1))][cell[2] % (nx + 1)], gid[Math.floor(cell[3] / (nx + 1))][cell[3] % (nx + 1)]];
+          var cp = g.map(function (gi) { return [all[gi][0], all[gi][1]]; });
+          if (signedArea(cp) < 0) { g = [g[0], g[3], g[2], g[1]]; }
+          quads.push({ aid: a.id, etype: a.etype, kind: "q4", g: g, t: t, stag: stag });
+        });
+      } else {
+        // 3D 重心坐标直接插值 x/y/z：竖向/斜三角面在 XY 投影退化时仍能正确细分
+        //（拓扑只与 n 有关，用哑元三角形取 tris；角点按权重判定，不用 2D 距离匹配）
+        var C3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, nyX(n), nzX(n)]; });
+        var topo3 = triSubCells([[0, 0], [1, 0], [0, 1]], nx).tris;
+        var wts3 = [], ii3, jj3, kk3;
+        for (kk3 = 0; kk3 <= nx; kk3++) {
+          for (jj3 = 0; jj3 <= nx - kk3; jj3++) {
+            ii3 = nx - jj3 - kk3;
+            wts3.push([ii3, jj3, kk3]);
+          }
+        }
+        var gmap = wts3.map(function (w) {
+          if (w[0] === nx) { return idx[a.nodes[0]]; }
+          if (w[1] === nx) { return idx[a.nodes[1]]; }
+          if (w[2] === nx) { return idx[a.nodes[2]]; }
+          return ensureNode(
+            (C3[0][0] * w[0] + C3[1][0] * w[1] + C3[2][0] * w[2]) / nx,
+            (C3[0][1] * w[0] + C3[1][1] * w[1] + C3[2][1] * w[2]) / nx,
+            (C3[0][2] * w[0] + C3[1][2] * w[1] + C3[2][2] * w[2]) / nx);
+        });
+        topo3.forEach(function (tr) {
+          var g = [gmap[tr[0]], gmap[tr[1]], gmap[tr[2]]];
+          var cp = g.map(function (gi) { return [all[gi][0], all[gi][1]]; });
+          if (signedArea(cp) < 0) { g = [g[0], g[2], g[1]]; }
+          quads.push({ aid: a.id, etype: a.etype, kind: "cst", g: g, t: t, stag: stag });
+        });
+      }
+    });
+
+    var DEF3 = { col: { EA: 4.5e6, EI: 93750 }, beam: { EA: 4.5e6, EI: 150000 }, user: { EA: 4.5e6, EI: 150000 } };
+    var segs = [];
+    (model.members || []).forEach(function (m) {
+      var A = nodeById(m.a), B = nodeById(m.b);
+      if (!A || !B) { return; }
+      var dx = B.x - A.x, dy = nyX(B) - nyX(A), dz = nzX(B) - nzX(A);
+      var L = Math.hypot(dx, dy, dz);
+      if (!(L > 1e-9)) { return; }
+      var st = (state.memStiff || {})[m.id], mat = (state.memMat || {})[m.id], sec = (state.memSec || {})[m.id];
+      var E, Asec, Iy, Iz, J, nu;
+      if (st) { E = 1.0; Asec = st.EA; Iz = st.EI; Iy = st.EI; J = 0.77 * st.EI; nu = 0.3; }
+      else if (mat && sec) {
+        var p = sectionProps3(sec);
+        if (!p) { return; }
+        E = mat.E; Asec = p.A; Iy = p.Iy; Iz = p.Iz; J = p.J; nu = (mat.nu == null ? 0.3 : mat.nu);
+      }
+      else { var d0 = DEF3[m.type] || DEF3.user; E = 1.0; Asec = d0.EA; Iz = d0.EI; Iy = d0.EI; J = 0.77 * d0.EI; nu = 0.3; }
+      var G = E / (2 * (1 + nu));
+      var ax = beamAxesX(A.x, nyX(A), nzX(A), B.x, nyX(B), nzX(B));
+      var nDiv = effFrameDiv(state, m.id, L), ts = [], sDiv;
+      for (sDiv = 0; sDiv <= nDiv; sDiv++) { ts.push(sDiv / nDiv); }
+      var gi;
+      for (gi = 0; gi < all.length; gi++) {
+        var px = all[gi][0] - A.x, py = all[gi][1] - nyX(A), pz = all[gi][2] - nzX(A);
+        var proj = px * ax.x[0] + py * ax.x[1] + pz * ax.x[2];
+        if (proj <= 1e-7 || proj >= L - 1e-7) { continue; }
+        var qx = px - proj * ax.x[0], qy = py - proj * ax.x[1], qz = pz - proj * ax.x[2];
+        if (Math.hypot(qx, qy, qz) < 1e-6) { ts.push(proj / L); }
+      }
+      ts.sort(function (x, y) { return x - y; });
+      var tu = [];
+      ts.forEach(function (v) { if (!tu.length || v - tu[tu.length - 1] > 1e-7) { tu.push(v); } });
+      tu[0] = 0; tu[tu.length - 1] = 1;
+      var ids2 = tu.map(function (tt) { return ensureNode(A.x + dx * tt, nyX(A) + dy * tt, nzX(A) + dz * tt); });
+      for (var k = 0; k + 1 < ids2.length; k++) {
+        if (ids2[k] === ids2[k + 1]) { continue; }
+        segs.push({
+          mid: m.id, type: m.type, i: ids2[k], j: ids2[k + 1], L: L,
+          xa: tu[k] * L, Lsub: (tu[k + 1] - tu[k]) * L,
+          E: E, A: Asec, Iy: Iy, Iz: Iz, G: G, J: J, nu: nu, axes: ax
+        });
+      }
+    });
+
+    /* 荷载 → 一致等效节点力（6 分量；杆件横向局部 +y 经坐标架转整体） */
+    var nodal = {};
+    function addN6(ai, fx, fy, fz, mx, my, mz) {
+      var e = nodal[ai] || (nodal[ai] = { fx: 0, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 });
+      e.fx += fx; e.fy += fy; e.fz += fz; e.mx += mx; e.my += my; e.mz += mz;
+    }
+    Object.keys(idx).forEach(function (mid) {
+      var nl = (state.nodeLoads || {})[mid] || {};
+      if ((nl.fx || 0) || (nl.fy || 0) || (nl.fz || 0) || (nl.mx || 0) || (nl.my || 0) || (nl.mz || 0)) {
+        addN6(idx[mid], nl.fx || 0, nl.fy || 0, nl.fz || 0, nl.mx || 0, nl.my || 0, nl.mz || 0);
+      }
+    });
+    var byMid = {};
+    segs.forEach(function (sg) { (byMid[sg.mid] = byMid[sg.mid] || []).push(sg); });
+    Object.keys((state.memLoads || {})).forEach(function (mid) {
+      var mm = (model.members || []).find(function (x) { return x.id === +mid; });
+      var list = byMid[mid] || [];
+      if (!mm || !list.length) { return; }
+      var Lm = list[0].L;
+      (state.memLoads[mid] || []).forEach(function (ld) {
+        var isEnd = (ld.type === "point" && (ld.a <= 1e-9 * Lm || ld.a >= Lm * (1 - 1e-9)));
+        if (isEnd) {
+          var nm = (ld.a <= 1e-9 * Lm) ? mm.a : mm.b;
+          var sg0 = list[0], ax0 = sg0.axes;
+          if (nm != null && idx[nm] !== undefined) {
+            addN6(idx[nm], ax0.y[0] * ld.P, ax0.y[1] * ld.P, ax0.y[2] * ld.P, 0, 0, 0);
+          }
+          return;
+        }
+        list.forEach(function (sg) {
+          if (ld.type === "point" && !(ld.a > sg.xa - 1e-9 * Lm && (ld.a < sg.xa + sg.Lsub - 1e-9 * Lm || sg.xa + sg.Lsub >= Lm - 1e-9 * Lm))) { return; }
+          var p = segLoadVector(sg, [ld]);
+          var loc = [0, p[1] || 0, 0, 0, 0, p[2] || 0, 0, p[4] || 0, 0, 0, 0, p[5] || 0];
+          var ax = sg.axes, R = [ax.x, ax.y, ax.z];
+          function toG(lx, ly, lz) {
+            return [R[0][0] * lx + R[1][0] * ly + R[2][0] * lz, R[0][1] * lx + R[1][1] * ly + R[2][1] * lz, R[0][2] * lx + R[1][2] * ly + R[2][2] * lz];
+          }
+          var f1 = toG(loc[0], loc[1], loc[2]), m1 = toG(loc[3], loc[4], loc[5]);
+          var f2 = toG(loc[6], loc[7], loc[8]), m2 = toG(loc[9], loc[10], loc[11]);
+          addN6(sg.i, f1[0], f1[1], f1[2], m1[0], m1[1], m1[2]);
+          addN6(sg.j, f2[0], f2[1], f2[2], m2[0], m2[1], m2[2]);
+        });
+      });
+    });
+    function q4shapeT(xi, et) {
+      return [(1 - xi) * (1 - et) / 4, (1 + xi) * (1 - et) / 4, (1 + xi) * (1 + et) / 4, (1 - xi) * (1 + et) / 4];
+    }
+    quads.forEach(function (qc) {
+      var ld = (state.areaLoads || {})[qc.aid];
+      if (!ld || (!ld.qx && !ld.qy && !ld.qz)) { return; }
+      var qx = ld.qx || 0, qy = alQZx(ld);
+      if (qc.kind === "q4") {
+        var coords = qc.g.map(function (gi) { return [all[gi][0], all[gi][1]]; });
+        var g = 1 / Math.sqrt(3);
+        [[-g, -g, 1], [g, -g, 1], [g, g, 1], [-g, g, 1]].forEach(function (gp) {
+          var xi = gp[0], et = gp[1], w = gp[2], NN = q4shapeT(xi, et);
+          var J = [[0, 0], [0, 0]], a;
+          for (a = 0; a < 4; a++) {
+            var dNx = [-(1 - et) / 4, (1 - et) / 4, (1 + et) / 4, -(1 + et) / 4][a];
+            var dNe = [-(1 - xi) / 4, -(1 + xi) / 4, (1 + xi) / 4, (1 - xi) / 4][a];
+            J[0][0] += dNx * coords[a][0]; J[0][1] += dNx * coords[a][1];
+            J[1][0] += dNe * coords[a][0]; J[1][1] += dNe * coords[a][1];
+          }
+          var det = Math.abs(J[0][0] * J[1][1] - J[0][1] * J[1][0]);
+          for (a = 0; a < 4; a++) { addN6(qc.g[a], NN[a] * qx * qc.t * det * w, NN[a] * qy * qc.t * det * w, 0, 0, 0, 0); }
+        });
+      } else {
+        var p1 = all[qc.g[0]], p2 = all[qc.g[1]], p3 = all[qc.g[2]];
+        var Ar = Math.abs((p2[0] - p1[0]) * (p3[1] - p1[1]) - (p3[0] - p1[0]) * (p2[1] - p1[1])) / 2;
+        for (var a3 = 0; a3 < 3; a3++) { addN6(qc.g[a3], qx * qc.t * Ar / 3, qy * qc.t * Ar / 3, 0, 0, 0, 0); }
+      }
+    });
+
+    var ai2mid = {};
+    Object.keys(idx).forEach(function (k) { ai2mid[idx[k]] = k; });
+    return {
+      kind: "true3d", all: all, idx: idx, ai2mid: ai2mid, sections: sections,
+      members: segs, quads: quads, areaGrid: areaGrid, nodal: nodal,
+      nNode: (model.nodes || []).length, nMember: (model.members || []).length, nArea: (model.areas || []).length
+    };
+  }
+
+  function buildScriptTrue3D(state, opts) {
+    opts = opts || {};
+    var meta = exportMetaTrue3D(state, opts);
+    if (!meta.members.length && !meta.quads.length) { throw new Error("模型为空，无可导出的内容。"); }
+    var model = state.model || {};
+    var L = [];
+    L.push("# -*- coding: utf-8 -*-");
+    L.push("# FrameLab -> xara 导出脚本（真 3D：ndm=3, ndf=6，线弹性静力）");
+    L.push("# 杆段 " + meta.members.length + " / 面剖分子单元 " + meta.quads.length + " / 分析节点 " + meta.all.length);
+    L.push("# 单位：m / kN / kN*m / kPa（与 FrameLab 内部一致）；杆件荷载已转一致等效节点力");
+    L.push("import os, sys, json");
+    L.push("def _bootstrap_dll():");
+    L.push("    try:");
+    L.push("        import site");
+    L.push("        sps = list(site.getsitepackages()) + [site.getusersitepackages()]");
+    L.push("    except Exception:");
+    L.push("        sps = []");
+    L.push("    for sp in sps:");
+    L.push("        base = os.path.dirname(os.path.dirname(sp))");
+    L.push("        for d in (os.path.join(base, 'Library', 'bin'), os.path.join(base, 'bin'),");
+    L.push("                os.path.join(sys.prefix, 'Library', 'bin')):");
+    L.push("            if os.path.isdir(d):");
+    L.push("                os.environ['PATH'] = d + os.pathsep + os.environ.get('PATH', '')");
+    L.push("                try:");
+    L.push("                    os.add_dll_directory(d)");
+    L.push("                except Exception:");
+    L.push("                    pass");
+    L.push("_bootstrap_dll()");
+    L.push("import xara");
+    L.push("model = xara.Model(ndm=3, ndf=6)");
+    meta.sections.forEach(function (s) {
+      L.push("model.section('ElasticMembranePlateSection', " + s.tag + ", " + num(s.E) + ", " + num(s.nu) + ", " + num(s.t) + ")");
+    });
+    meta.all.forEach(function (p, i) {
+      L.push("model.node(" + (i + 1) + ", " + num(p[0]) + ", " + num(p[1]) + ", " + num(p[2]) + ")");
+    });
+    function bcOfT(modelId) {
+      var n = (model.nodes || []).find(function (nn) { return nn.id === modelId; });
+      return (n && n.bc) || {};
+    }
+    var usedT = {};
+    (meta.members || []).forEach(function (sg) { usedT[sg.i] = true; usedT[sg.j] = true; });
+    (meta.quads || []).forEach(function (qc) { qc.g.forEach(function (gi) { usedT[gi] = true; }); });
+    var fixMergeT = {};
+    Object.keys(meta.idx).forEach(function (mid) {
+      var ai = meta.idx[mid], bc = bcOfT(+mid);
+      var e = fixMergeT[ai] || (fixMergeT[ai] = { ux: 0, uy: 0, uz: 0, rx: 0, ry: 0, rz: 0 });
+      if (usedT[ai] !== true) { e.ux = 1; e.uy = 1; e.uz = 1; e.rx = 1; e.ry = 1; e.rz = 1; }
+      if (bc.ux) { e.ux = 1; }
+      if (bc.uy) { e.uy = 1; }
+      if (bc.uz) { e.uz = 1; }
+      if (bc.rx) { e.rx = 1; }
+      if (bc.ry) { e.ry = 1; }
+      if (bc.rz) { e.rz = 1; }
+    });
+    Object.keys(fixMergeT).forEach(function (ai) {
+      var xt = (+ai) + 1, e = fixMergeT[ai];
+      L.push("model.fix(" + xt + ", " + e.ux + ", " + e.uy + ", " + e.uz + ", " + e.rx + ", " + e.ry + ", " + e.rz + ")");
+    });
+    var eleTag = 0;
+    /* 定向：每杆独立 transf，vecxz 取内置坐标架的局部 y（竖向平面内横向），则
+     * OpenSees 局部架恒为 z_OS=my_y、y_OS=-my_z（右手系，精确到倾斜杆），回填
+     * 时按 N=f0、Vy=f2、Vz=-f1、T=f3、My=f5、Mz=-f4 映射（见 importResultsTrue3D） */
+    meta.members.forEach(function (sg) {
+      eleTag += 1; sg.eleTag = eleTag; sg.trTag = 1000 + eleTag;
+      var ax = sg.axes;
+      L.push("model.geomTransf('Linear', " + sg.trTag + ", " + num(ax.y[0]) + ", " + num(ax.y[1]) + ", " + num(ax.y[2]) + ")");
+    });
+    meta.members.forEach(function (sg) {
+      var tr = sg.trTag;
+      // 注意：OS 的 Iy/Iz 绕其局部 y/z（即我方 z/y），故 Iy=EI_z、Iz=EI_y，不可直接传
+      L.push("model.element('elasticBeamColumn', " + sg.eleTag + ", [" + (sg.i + 1) + ", " + (sg.j + 1) + "], " +
+        num(sg.A) + ", " + num(sg.E) + ", " + num(sg.G) + ", " + num(sg.J) + ", " + num(sg.Iz) + ", " + num(sg.Iy) + ", " + tr + ")");
+    });
+    meta.quads.forEach(function (qc) {
+      eleTag += 1; qc.eleTag = eleTag;
+      var tags = qc.g.map(function (gi) { return gi + 1; });
+      if (qc.kind === "q4") {
+        L.push("model.element('ASDShellQ4', " + eleTag + ", [" + tags.join(", ") + "], " + qc.stag + ")");
+      } else {
+        L.push("model.element('ASDShellT3', " + eleTag + ", " + tags.join(", ") + ", " + qc.stag + ")");
+      }
+    });
+    L.push("model.pattern('Plain', 1, 'Linear')");
+    Object.keys(meta.nodal).forEach(function (ai) {
+      var e = meta.nodal[ai], xt = (+ai) + 1;
+      if (!e.fx && !e.fy && !e.fz && !e.mx && !e.my && !e.mz) { return; }
+      L.push("model.load(" + xt + ", " + num(e.fx) + ", " + num(e.fy) + ", " + num(e.fz) + ", " + num(e.mx) + ", " + num(e.my) + ", " + num(e.mz) + ", pattern=1)");
+    });
+    L.push("model.system('BandSPD')");
+    L.push("model.numberer('RCM')");
+    L.push("model.constraints('Plain')");
+    L.push("model.integrator('LoadControl', 1.0)");
+    L.push("model.algorithm('Linear')");
+    L.push("model.analysis('Static')");
+    L.push("out = {'analyze': None, 'ok': False, 'error': None, 'disps': {}, 'reactions': {}, 'beams': {}, 'conts': {}}");
+    L.push("try:");
+    L.push("    out['analyze'] = int(model.analyze(1))");
+    L.push("    model.reactions()");
+    for (var qi = 0; qi < meta.all.length; qi++) {
+      var xt2 = qi + 1;
+      L.push("    out['disps'][" + xt2 + "] = [float(v) for v in model.nodeDisp(" + xt2 + ")]");
+      L.push("    out['reactions'][" + xt2 + "] = [float(v) for v in model.nodeReaction(" + xt2 + ")]");
+    }
+    meta.members.forEach(function (sg) {
+      L.push("    out['beams'][" + sg.eleTag + "] = [float(v) for v in model.eleResponse(" + sg.eleTag + ", 'localForces')]");
+    });
+    meta.quads.forEach(function (qc) {
+      L.push("    out['conts'][" + qc.eleTag + "] = [float(v) for v in model.eleResponse(" + qc.eleTag + ", 'stresses')]");
+    });
+    L.push("    out['ok'] = (out['analyze'] == 0)");
+    L.push("    if out['analyze'] != 0:");
+    L.push("        out['error'] = 'analyze returned ' + str(out['analyze'])");
+    L.push("except Exception as _ex:");
+    L.push("    out['ok'] = False");
+    L.push("    out['error'] = str(_ex)");
+    L.push("print('FRAMELAB_JSON_BEGIN')");
+    L.push("print(json.dumps(out))");
+    L.push("print('FRAMELAB_JSON_END')");
+    return { script: L.join("\n") + "\n", meta: meta, kind: meta.kind, ndf: 6 };
+  }
+
+  function importResultsTrue3D(res, meta, state) {
+    if (!res || !res.ok) { throw new Error("xara 求解失败：" + ((res && res.error) || "未知错误")); }
+    var model = (state && state.model) || { nodes: [], members: [], areas: [] };
+    var all = meta.all.map(function (p) { return [p[0], p[2]]; });
+    var all3 = meta.all;
+    var u = new Array(all.length * 6).fill(0);
+    Object.keys(res.disps || {}).forEach(function (xt) {
+      var ai = (+xt) - 1, d = res.disps[xt] || [];
+      if (ai < 0 || ai >= all.length) { return; }
+      u[6 * ai] = d[0] || 0; u[6 * ai + 1] = d[1] || 0; u[6 * ai + 2] = d[2] || 0;
+      u[6 * ai + 3] = d[3] || 0; u[6 * ai + 4] = d[4] || 0; u[6 * ai + 5] = d[5] || 0;
+    });
+    var idx = {};
+    Object.keys(meta.idx || {}).forEach(function (mid) { idx[mid] = meta.idx[mid]; });
+    var memLoads = (state && state.memLoads) || {};
+    var elems = [], byMember = {}, maxM = 0, maxV = 0, maxN = 0, maxT = 0;
+    (meta.members || []).forEach(function (sg) {
+      var f = (res.beams || {})[sg.eleTag];
+      if (!f || f.length < 12) { return; }
+      // 定向映射（见 buildScriptTrue3D）：z_OS=my_y、y_OS=-my_z，故
+      // my_Vy=OS_Vz=f2、my_Vz=-OS_Vy=-f1、my_My=OS_Mz=f5、my_Mz=-OS_My=-f4
+      var N1 = f[0], Vy1 = f[2], Vz1 = -f[1], T1 = f[3], My1 = f[5], Mz1 = -f[4];
+      var m = (model.members || []).find(function (mm) { return mm.id === sg.mid; });
+      var el = {
+        key: sg.mid, member: m || { id: sg.mid, L: sg.L }, a: sg.i, b: sg.j,
+        xa: sg.xa, Lsub: sg.Lsub, axial: -N1, torsion: T1, forces: [], fromXara: true
+      };
+      maxN = Math.max(maxN, Math.abs(el.axial)); maxT = Math.max(maxT, Math.abs(T1));
+      var pseg = segLoadVector(sg, memLoads[sg.mid] || []);
+      var Vy1a = Vy1 - (pseg[1] || 0), Mz1a = Mz1 - (pseg[2] || 0);
+      var NN = 12;
+      for (var k = 0; k <= NN; k++) {
+        var t = sg.Lsub * k / NN;
+        var R2 = segResultants(sg.mid, sg.L, sg.xa, sg.xa + t, memLoads);
+        var Vy = Vy1a + R2.A;
+        var J = (sg.xa + t) * R2.A - R2.Bb;
+        var Mz = -(Mz1a - Vy1a * t - J);
+        // 与内置求解同式：右手系下 My 取 + 号（见 solver solve3D 注释），否则子单元交界跳变
+        var My = -(My1 + Vz1 * t);
+        // M2=My(绕局部2轴), M3=Mz(绕局部3轴)；M/S 仅 2D 兼容别名，3D 显示用 M2/M3
+        el.forces.push({ t: t, S: Vy, M: Mz, Vy: Vy, Vz: Vz1, My: My, Mz: Mz, T: T1, V2: Vy, V3: Vz1, M2: My, M3: Mz });
+        maxM = Math.max(maxM, Math.abs(Mz), Math.abs(My)); maxV = Math.max(maxV, Math.abs(Vy), Math.abs(Vz1));
+      }
+      elems.push(el);
+      if (!byMember[el.key]) { byMember[el.key] = []; }
+      byMember[el.key].push(el);
+    });
+    Object.keys(byMember).forEach(function (k) {
+      byMember[k].sort(function (a, b) { return a.xa - b.xa; });
+    });
+    var areaElems = [], areaNodal = [], maxVM = 0, maxSX = 0;
+    function nodalAcc(i) {
+      if (!areaNodal[i]) { areaNodal[i] = { sx: 0, sz: 0, txz: 0, vm: 0, s1: 0, nx: 0, n: 0, sy: 0, txy: 0, nz: 0, nxz: 0, ny: 0, nxy: 0 }; }
+      return areaNodal[i];
+    }
+    (meta.quads || []).forEach(function (qc) {
+      var s = (res.conts || {})[qc.eleTag];
+      if (!s || s.length < 8) { return; }
+      var nGP = Math.floor(s.length / 8), k, Nxx = 0, Nyy = 0, Nxy = 0;
+      for (k = 0; k < nGP; k++) { Nyy += s[8 * k] || 0; Nxx += s[8 * k + 1] || 0; Nxy += s[8 * k + 2] || 0; }
+      var sx = Nxx / nGP / qc.t, sy = Nyy / nGP / qc.t, txy = -Nxy / nGP / qc.t;
+      var avg = (sx + sy) / 2, R = Math.hypot((sx - sy) / 2, txy);
+      var s1 = avg + R, s2 = avg - R;
+      var vm = Math.sqrt(sx * sx - sx * sy + sy * sy + 3 * txy * txy);
+      var ae = {
+        aid: qc.aid, etype: qc.etype, kind: qc.kind, g: qc.g.slice(), B: null, Dmat: null, t: qc.t,
+        s: { sx: sx, sy: sy, txy: txy, s1: s1, s2: s2, vm: vm, nx: sx * qc.t, ny: sy * qc.t, nxy: txy * qc.t },
+        cx: 0, cy: 0, fromXara: true
+      };
+      qc.g.forEach(function (gi) { ae.cx += all[gi][0]; ae.cy += all[gi][1]; });
+      ae.cx /= qc.g.length; ae.cy /= qc.g.length;
+      maxVM = Math.max(maxVM, Math.abs(vm)); maxSX = Math.max(maxSX, Math.abs(sx), Math.abs(sy));
+      qc.g.forEach(function (gi) {
+        var acc = nodalAcc(gi);
+        acc.sx += sx; acc.sy += sy; acc.txy += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * qc.t; acc.n++;
+      });
+      areaElems.push(ae);
+    });
+    var maxDisp = 0;
+    for (var i2 = 0; i2 < all.length; i2++) { maxDisp = Math.max(maxDisp, Math.hypot(u[6 * i2], u[6 * i2 + 1], u[6 * i2 + 2])); }
+    var nodes = model.nodes || [];
+    var hasZ = nodes.some(function (n) { return Math.abs(nzX(n)) > 1e-9; });
+    var hl = nodes.map(function (n) { return hasZ ? nzX(n) : nyX(n); });
+    var hmax = hl.length ? Math.max.apply(null, hl) : 0;
+    var roof = 0, nr = 0;
+    nodes.forEach(function (n) {
+      var h = hasZ ? nzX(n) : nyX(n);
+      if (Math.abs(h - hmax) < 1e-6 && idx[n.id] !== undefined) { roof += u[6 * idx[n.id]]; nr++; }
+    });
+    roof = nr ? roof / nr : 0;
+    return {
+      nodes: nodes, all: all, all3: all3, elems: elems, u: u, ok: true, idx: idx, byMember: byMember,
+      areaElems: areaElems, areaNodal: areaNodal, areaGrid: meta.areaGrid || {},
+      shellCuts: [], cutResults: {}, dof: 6, is3D: true,
+      fromXara: true, xaraLog: res,
+      res: { roof: roof * 1000, maxDisp: maxDisp * 1000, maxM: maxM, maxV: maxV, maxN: maxN, maxT: maxT, maxVM: maxVM, maxSX: maxSX, nNode: nodes.length, nMember: (model.members || []).length, nArea: (model.areas || []).length }
+    };
+  }
+
   function exportMeta3D(state, opts) {
     opts = opts || {};
     var model = state.model || { nodes: [], members: [], areas: [] };
@@ -590,7 +1140,7 @@
       reg[k] = all.length; all.push([x, y]); return reg[k];
     }
     var idx = {};
-    (model.nodes || []).forEach(function (n) { idx[n.id] = ensureNode(n.x, n.y); });
+    (model.nodes || []).forEach(function (n) { idx[n.id] = ensureNode(n.x, nvX(n)); });
 
     // 截面去重：(E,nu,t)；平面应变折算为等效平面应力
     var secMap = {}, sections = [];
@@ -610,7 +1160,7 @@
         var pts = a.nodes.map(nodeById).filter(Boolean), Lmax = 0, i;
         for (i = 0; i < pts.length; i++) {
           var p = pts[i], q = pts[(i + 1) % pts.length];
-          Lmax = Math.max(Lmax, Math.hypot(q.x - p.x, q.y - p.y));
+          Lmax = Math.max(Lmax, Math.hypot(q.x - p.x, nvX(q) - nvX(p)));
         }
         if (Lmax > 0) { var k = Math.min(50, Math.ceil(Lmax / o.hmax)); nx = Math.max(nx, k); ny = Math.max(ny, k); }
       }
@@ -629,7 +1179,7 @@
       var stag = secTagOf(mat.E, mat.nu == null ? 0.2 : mat.nu, t, sec.kind);
       var dv = effAreaDiv3(a), nx = dv.nx, ny = dv.ny;
       if (corners.length >= 4) {
-        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, n.y]; });
+        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, nvX(n)]; });
         areaGrid[a.id] = { nx: nx, ny: ny, P: P, t: t };
         var sub = quadSubCells(P, nx, ny), gid = [], r, c;
         for (r = 0; r <= ny; r++) {
@@ -647,7 +1197,7 @@
           quads.push({ aid: a.id, etype: a.etype, kind: "q4", g: g, t: t, stag: stag });
         });
       } else {
-        var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, n.y]; });
+        var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, nvX(n)]; });
         var sub3 = triSubCells(P3, nx), gmap = [];
         sub3.pts.forEach(function (p) {
           var gi = -1, k;
@@ -673,7 +1223,7 @@
       var A = all[idx[m.a]], B = all[idx[m.b]];
       var L = Math.hypot(B[0] - A[0], B[1] - A[1]);
       if (!(L > 1e-9)) { return; }
-      var ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
+      var ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L, uz = uy;
       var st = (state.memStiff || {})[m.id], mat = (state.memMat || {})[m.id], sec = (state.memSec || {})[m.id];
       var E, Asec, Isec, nu;
       if (st) { E = 1.0; Asec = st.EA; Isec = st.EI; nu = 0.3; }
@@ -701,21 +1251,21 @@
         if (ids2[k] === ids2[k + 1]) { continue; }
         segs.push({
           mid: m.id, type: m.type, i: ids2[k], j: ids2[k + 1], L: L,
-          xa: tu[k] * L, Lsub: (tu[k + 1] - tu[k]) * L, ux: ux, uy: uy,
+          xa: tu[k] * L, Lsub: (tu[k + 1] - tu[k]) * L, ux: ux, uy: uy, uz: uy,
           E: E, A: Asec, I: Isec, nu: nu
         });
       }
     });
 
-    // 荷载 -> 一致等效节点力（面内 Fx, Fy, Mz）
+    // 荷载 -> 一致等效节点力（面内 Fx, Fz, My；My 正向为 X-Z 视图逆时针）
     var nodal = {};
-    function addN3(ai, fx, fy, mz) {
-      var e = nodal[ai] || (nodal[ai] = { fx: 0, fy: 0, mz: 0 });
-      e.fx += fx; e.fy += fy; e.mz += mz;
+    function addN3(ai, fx, fz, my) {
+      var e = nodal[ai] || (nodal[ai] = { fx: 0, fy: 0, fz: 0, mz: 0, my: 0 });
+      e.fx += fx; e.fz += fz; e.my += my; e.fy += fz; e.mz += my;
     }
     Object.keys(idx).forEach(function (mid) {
       var nl = (state.nodeLoads || {})[mid] || {};
-      if ((nl.fx || 0) || (nl.fy || 0) || (nl.mz || 0)) { addN3(idx[mid], nl.fx || 0, nl.fy || 0, nl.mz || 0); }
+      if ((nl.fx || 0) || nlFZx(nl) || nlMYx(nl)) { addN3(idx[mid], nl.fx || 0, nlFZx(nl), nlMYx(nl)); }
     });
     var byMid = {};
     segs.forEach(function (sg) { (byMid[sg.mid] = byMid[sg.mid] || []).push(sg); });
@@ -727,18 +1277,20 @@
       (state.memLoads[mid] || []).forEach(function (ld) {
         var isEnd = (ld.type === "point" && (ld.a <= 1e-9 * Lm || ld.a >= Lm * (1 - 1e-9)));
         if (isEnd) {
-          // 端点集中力折为等效节点力（局部+y -> 整体）
+          // 端点集中力折为等效节点力（局部+z -> 整体）
           var nm = (ld.a <= 1e-9 * Lm) ? mm.a : mm.b;
           var sg0 = list[0];
-          if (nm != null && idx[nm] !== undefined) { addN3(idx[nm], -sg0.uy * ld.P, sg0.ux * ld.P, 0); }
+          var _uz0 = (sg0.uz != null ? sg0.uz : sg0.uy);
+          if (nm != null && idx[nm] !== undefined) { addN3(idx[nm], -_uz0 * ld.P, sg0.ux * ld.P, 0); }
           return;
         }
         list.forEach(function (sg) {
           if (ld.type === "point" && !(ld.a > sg.xa - 1e-9 * Lm && (ld.a < sg.xa + sg.Lsub - 1e-9 * Lm || sg.xa + sg.Lsub >= Lm - 1e-9 * Lm))) { return; }
           var p = segLoadVector(sg, [ld]);
-          // 局部 (0,Fy1,M1,0,Fy2,M2) -> 整体
-          addN3(sg.i, -sg.uy * p[1], sg.ux * p[1], p[2]);
-          addN3(sg.j, -sg.uy * p[4], sg.ux * p[4], p[5]);
+          // 局部 (0,Fz1,M1,0,Fz2,M2) -> 整体
+          var _uz = (sg.uz != null ? sg.uz : sg.uy);
+          addN3(sg.i, -_uz * p[1], sg.ux * p[1], p[2]);
+          addN3(sg.j, -_uz * p[4], sg.ux * p[4], p[5]);
         });
       });
     });
@@ -762,7 +1314,7 @@
             J[1][0] += dNe * coords[a][0]; J[1][1] += dNe * coords[a][1];
           }
           var det = Math.abs(J[0][0] * J[1][1] - J[0][1] * J[1][0]);
-          for (a = 0; a < 4; a++) { addN3(qc.g[a], NN[a] * qx * qc.t * det * w, NN[a] * qy * qc.t * det * w, 0); }
+          for (a = 0; a < 4; a++) { addN3(qc.g[a], NN[a] * qx * qc.t * det * w, NN[a] * qy * qc.t * det * w, 0); } // qy 即竖向 qz
         });
       } else {
         var p1 = all[qc.g[0]], p2 = all[qc.g[1]], p3 = all[qc.g[2]];
@@ -789,7 +1341,7 @@
     L.push("# -*- coding: utf-8 -*-");
     L.push("# FrameLab -> xara 导出脚本（3D 退化平面：混合模型专用，线弹性静力）");
     L.push("# 杆段 " + meta.members.length + " / 面剖分子单元 " + meta.quads.length + " / 分析节点 " + meta.all.length);
-    L.push("# 单位：m / kN / kN*m / kPa（与 FrameLab 内部一致）；z=0 平面，面外自由度全约束");
+    L.push("# 单位：m / kN / kN*m / kPa（与 FrameLab 内部一致）；y=0 平面（2D 即 X-Z，Y 为面外），面外自由度全约束");
     L.push("import os, sys, json");
     L.push("def _bootstrap_dll():");
     L.push("    try:");
@@ -814,7 +1366,7 @@
       L.push("model.section('ElasticMembranePlateSection', " + s.tag + ", " + num(s.E) + ", " + num(s.nu) + ", " + num(s.t) + ")");
     });
     meta.all.forEach(function (p, i) {
-      L.push("model.node(" + (i + 1) + ", " + num(p[0]) + ", " + num(p[1]) + ", 0.0)");
+      L.push("model.node(" + (i + 1) + ", " + num(p[0]) + ", 0.0, " + num(p[1]) + ")");
     });
     function bcOf3(modelId) {
       var n = (model.nodes || []).find(function (nn) { return nn.id === modelId; });
@@ -828,24 +1380,24 @@
     var fixMerge3 = {};
     Object.keys(meta.idx).forEach(function (mid) {
       var ai = meta.idx[mid], bc = bcOf3(+mid);
-      var e = fixMerge3[ai] || (fixMerge3[ai] = { fx: 0, fy: 0, rz: 0 });
-      if (used3[ai] !== true) { e.fx = 1; e.fy = 1; e.rz = 1; }
+      var e = fixMerge3[ai] || (fixMerge3[ai] = { fx: 0, fy: 0, fz: 0, rz: 0, ry: 0 });
+      if (used3[ai] !== true) { e.fx = 1; e.fz = 1; e.ry = 1; }
       if (bc.ux) { e.fx = 1; }
-      if (bc.uy) { e.fy = 1; }
-      if (bc.rz) { e.rz = 1; }
+      if (bcUZx(bc)) { e.fz = 1; }
+      if (bcRYx(bc)) { e.ry = 1; }
     });
     Object.keys(fixMerge3).forEach(function (ai) {
       var xt = (+ai) + 1, e = fixMerge3[ai];
-      L.push("model.fix(" + xt + ", " + e.fx + ", " + e.fy + ", 1, 1, 1, " + e.rz + ")");
+      L.push("model.fix(" + xt + ", " + e.fx + ", 1, " + e.fz + ", 1, " + e.ry + ", 1)");
     });
     // 非模型节点（细分/投影新增）：面内自由，面外全约束
     var inIdx = {};
     Object.keys(meta.idx).forEach(function (k) { inIdx[meta.idx[k]] = true; });
     for (var ai0 = 0; ai0 < meta.all.length; ai0++) {
-      if (!inIdx[ai0]) { L.push("model.fix(" + (ai0 + 1) + ", 0, 0, 1, 1, 1, 0)"); }
+      if (!inIdx[ai0]) { L.push("model.fix(" + (ai0 + 1) + ", 0, 1, 0, 1, 0, 1)"); }
     }
     var eleTag = 0;
-    L.push("model.geomTransf('Linear', 1, 0.0, 0.0, 1.0)");
+    L.push("model.geomTransf('Linear', 1, 0.0, -1.0, 0.0)");
     meta.members.forEach(function (sg) {
       eleTag += 1; sg.eleTag = eleTag;
       var G = sg.E / (2 * (1 + sg.nu));
@@ -865,8 +1417,9 @@
     L.push("model.pattern('Plain', 1, 'Linear')");
     Object.keys(meta.nodal).forEach(function (ai) {
       var e = meta.nodal[ai], xt = (+ai) + 1;
-      if (!e.fx && !e.fy && !e.mz) { return; }
-      L.push("model.load(" + xt + ", " + num(e.fx) + ", " + num(e.fy) + ", 0.0, 0.0, 0.0, " + num(e.mz) + ", pattern=1)");
+      if (!e.fx && !e.fz && !e.my) { return; }
+      // My(整体+Ry右手系) = -my(2D逆时针正)，故取反
+      L.push("model.load(" + xt + ", " + num(e.fx) + ", 0.0, " + num(e.fz) + ", 0.0, " + num(-e.my) + ", 0.0, pattern=1)");
     });
     L.push("model.system('BandSPD')");
     L.push("model.numberer('RCM')");
@@ -910,8 +1463,9 @@
     Object.keys(res.disps || {}).forEach(function (xt) {
       var ai = (+xt) - 1, d = res.disps[xt] || [];
       if (ai < 0 || ai >= all.length) { return; }
-      u[3 * ai] = d[0] || 0; u[3 * ai + 1] = d[1] || 0; u[3 * ai + 2] = d[5] || 0;
-      leakD = Math.max(leakD, Math.abs(d[2] || 0), Math.abs(d[3] || 0), Math.abs(d[4] || 0));
+      // 面内：ux=d0, uz=d2, ry(2D逆时针正)=-d4(Ry右手正)；面外泄漏：uy=d1, rx=d3, rz=d5
+      u[3 * ai] = d[0] || 0; u[3 * ai + 1] = d[2] || 0; u[3 * ai + 2] = -(d[4] || 0);
+      leakD = Math.max(leakD, Math.abs(d[1] || 0), Math.abs(d[3] || 0), Math.abs(d[5] || 0));
     });
     var idx = {};
     Object.keys(meta.idx || {}).forEach(function (mid) { idx[mid] = meta.idx[mid]; });
@@ -955,31 +1509,33 @@
 
     var areaElems = [], areaNodal = [], maxVM = 0, maxSX = 0;
     function nodalAcc(i) {
-      if (!areaNodal[i]) { areaNodal[i] = { sx: 0, sy: 0, txy: 0, vm: 0, s1: 0, nx: 0, n: 0 }; }
+      if (!areaNodal[i]) { areaNodal[i] = { sx: 0, sz: 0, txz: 0, vm: 0, s1: 0, nx: 0, n: 0, sy: 0, txy: 0, nz: 0, nxz: 0, ny: 0, nxy: 0 }; }
       return areaNodal[i];
     }
     (meta.quads || []).forEach(function (qc) {
       var s = (res.conts || {})[qc.eleTag];
       if (!s || s.length < 8) { return; }
-      var nGP = Math.floor(s.length / 8), k, Nxx = 0, Nyy = 0, Nxy = 0;
-      for (k = 0; k < nGP; k++) { Nyy += s[8 * k] || 0; Nxx += s[8 * k + 1] || 0; Nxy += s[8 * k + 2] || 0; }
-      // 注意：实测 ASDShell 的 Nxy 符号与 2D（标准等参元）相反，此处取反以对齐
-      // FrameLab 约定（门框+内填墙全场反相关验证：量级一致、符号全反）
-      var sx = Nxx / nGP / qc.t, sy = Nyy / nGP / qc.t, txy = -Nxy / nGP / qc.t;
+      var nGP = Math.floor(s.length / 8), k, Nxx = 0, Nzz = 0, Nxz = 0;
+      for (k = 0; k < nGP; k++) { Nzz += s[8 * k] || 0; Nxx += s[8 * k + 1] || 0; Nxz += s[8 * k + 2] || 0; }
+      // 注意：X-Z 平面下 s[8k] 标定为 Nzz（原 X-Y 平面下标定为 Nyy）；
+      // Nxz 符号沿用取反（与 2D 等参元对齐，待 verify_bridge 实测确认）
+      var sx = Nxx / nGP / qc.t, sy = Nzz / nGP / qc.t, txy = -Nxz / nGP / qc.t;
       var avg = (sx + sy) / 2, R = Math.hypot((sx - sy) / 2, txy);
       var s1 = avg + R, s2 = avg - R;
       var vm = Math.sqrt(sx * sx - sx * sy + sy * sy + 3 * txy * txy);
       var ae = {
         aid: qc.aid, etype: qc.etype, kind: qc.kind, g: qc.g.slice(), B: null, Dmat: null, t: qc.t,
-        s: { sx: sx, sy: sy, txy: txy, s1: s1, s2: s2, vm: vm, nx: sx * qc.t, ny: sy * qc.t, nxy: txy * qc.t },
-        cx: 0, cy: 0, fromXara: true
+        s: { sx: sx, sz: sy, txz: txy, s1: s1, s2: s2, vm: vm, nx: sx * qc.t, nz: sy * qc.t, nxz: txy * qc.t,
+             sy: sy, txy: txy, ny: sy * qc.t, nxy: txy * qc.t },
+        cx: 0, cy: 0, cz: 0, fromXara: true
       };
       qc.g.forEach(function (gi) { ae.cx += all[gi][0]; ae.cy += all[gi][1]; });
-      ae.cx /= qc.g.length; ae.cy /= qc.g.length;
+      ae.cx /= qc.g.length; ae.cy /= qc.g.length; ae.cz = ae.cy;
       maxVM = Math.max(maxVM, Math.abs(vm)); maxSX = Math.max(maxSX, Math.abs(sx), Math.abs(sy));
       qc.g.forEach(function (gi) {
         var acc = nodalAcc(gi);
-        acc.sx += sx; acc.sy += sy; acc.txy += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * qc.t; acc.n++;
+        acc.sx += sx; acc.sz += sy; acc.txz += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * qc.t;
+        acc.sy += sy; acc.txy += txy; acc.nz += sy * qc.t; acc.nxz += txy * qc.t; acc.ny += sy * qc.t; acc.nxy += txy * qc.t; acc.n++;
       });
       areaElems.push(ae);
     });
@@ -987,10 +1543,10 @@
     var maxDisp = 0;
     for (var i2 = 0; i2 < all.length; i2++) { maxDisp = Math.max(maxDisp, Math.hypot(u[3 * i2], u[3 * i2 + 1])); }
     var nodes = model.nodes || [];
-    var ys = nodes.map(function (n) { return n.y; });
+    var ys = nodes.map(function (n) { return nvX(n); });
     var ymax = ys.length ? Math.max.apply(null, ys) : 0;
     var roof = 0, nr = 0;
-    nodes.forEach(function (n) { if (Math.abs(n.y - ymax) < 1e-6 && idx[n.id] !== undefined) { roof += u[3 * idx[n.id]]; nr++; } });
+    nodes.forEach(function (n) { if (Math.abs(nvX(n) - ymax) < 1e-6 && idx[n.id] !== undefined) { roof += u[3 * idx[n.id]]; nr++; } });
     roof = nr ? roof / nr : 0;
     var scaleL = Math.max(1e-12, maxDisp / 1000, maxM / 1e4);
     var leak = Math.max(leakD / Math.max(1e-12, maxDisp / 1000), leakB / scaleL);
@@ -1005,6 +1561,7 @@
   }
   /* ---------------- 回填：resultsJSON + meta -> ana ---------------- */
   function importResults(res, meta, state) {
+    if (meta && meta.kind === "true3d") { return importResultsTrue3D(res, meta, state); }
     if (meta && meta.kind === "mixed3d") { return importResults3D(res, meta, state); }
     if (!res || !res.ok) { throw new Error("xara 求解失败：" + ((res && res.error) || "未知错误")); }
     var model = (state && state.model) || { nodes: [], members: [], areas: [] };
@@ -1094,15 +1651,17 @@
       var vm = Math.sqrt(sx * sx - sx * sy + sy * sy + 3 * txy * txy);
       var ae = {
         aid: qc.aid, etype: qc.etype, kind: qc.kind, g: qc.g.slice(), B: null, Dmat: null, t: qc.t,
-        s: { sx: sx, sy: sy, txy: txy, s1: s1, s2: s2, vm: vm, nx: sx * qc.t, ny: sy * qc.t, nxy: txy * qc.t },
-        cx: 0, cy: 0, fromXara: true
+        s: { sx: sx, sz: sy, txz: txy, s1: s1, s2: s2, vm: vm, nx: sx * qc.t, nz: sy * qc.t, nxz: txy * qc.t,
+             sy: sy, txy: txy, ny: sy * qc.t, nxy: txy * qc.t },
+        cx: 0, cy: 0, cz: 0, fromXara: true
       };
       qc.g.forEach(function (gi) { ae.cx += all[gi][0]; ae.cy += all[gi][1]; });
-      ae.cx /= qc.g.length; ae.cy /= qc.g.length;
+      ae.cx /= qc.g.length; ae.cy /= qc.g.length; ae.cz = ae.cy;
       maxVM = Math.max(maxVM, Math.abs(vm)); maxSX = Math.max(maxSX, Math.abs(sx), Math.abs(sy));
       qc.g.forEach(function (gi) {
         var acc = nodalAcc(gi);
-        acc.sx += sx; acc.sy += sy; acc.txy += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * qc.t; acc.n++;
+        acc.sx += sx; acc.sz += sy; acc.txz += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * qc.t;
+        acc.sy += sy; acc.txy += txy; acc.nz += sy * qc.t; acc.nxz += txy * qc.t; acc.ny += sy * qc.t; acc.nxy += txy * qc.t; acc.n++;
       });
       areaElems.push(ae);
     });
@@ -1110,10 +1669,10 @@
     var maxDisp = 0;
     for (var i2 = 0; i2 < all.length; i2++) { maxDisp = Math.max(maxDisp, Math.hypot(u[3 * i2], u[3 * i2 + 1])); }
     var nodes = model.nodes || [];
-    var ys = nodes.map(function (n) { return n.y; });
+    var ys = nodes.map(function (n) { return nvX(n); });
     var ymax = ys.length ? Math.max.apply(null, ys) : 0;
     var roof = 0, nr = 0;
-    nodes.forEach(function (n) { if (Math.abs(n.y - ymax) < 1e-6 && idx[n.id] !== undefined) { roof += u[3 * idx[n.id]]; nr++; } });
+    nodes.forEach(function (n) { if (Math.abs(nvX(n) - ymax) < 1e-6 && idx[n.id] !== undefined) { roof += u[3 * idx[n.id]]; nr++; } });
     roof = nr ? roof / nr : 0;
 
     return {
@@ -1188,7 +1747,7 @@
       if (global.FrameLab.setExternalAna) {
         global.FrameLab.setExternalAna(ana, { backend: "xara", ndf: built.ndf, kind: built.kind, log: "analyze=" + res.analyze });
         backend = "xara";
-        var tag3d = built.kind === "mixed3d" ? "（3D 退化平面）" : "";
+        var tag3d = built.kind === "true3d" ? "（真 3D）" : built.kind === "mixed3d" ? "（3D 退化平面）" : "";
         setStatus("xara 求解完成" + tag3d + "：analyze=" + res.analyze + "，最大位移 " + ana.res.maxDisp.toFixed(3) +
           " mm，最大弯矩 " + ana.res.maxM.toFixed(2) + " kN·m。点“回到内置求解器”可切回。");
       } else {
@@ -1252,6 +1811,7 @@
     version: VERSION, backend: function () { return backend; },
     exportMeta: exportMeta, buildScript: buildScript, importResults: importResults,
     exportMeta3D: exportMeta3D, buildScript3D: buildScript3D, importResults3D: importResults3D,
+    isTrue3D: isTrue3D, exportMetaTrue3D: exportMetaTrue3D, buildScriptTrue3D: buildScriptTrue3D, importResultsTrue3D: importResultsTrue3D,
     runOnBridge: runOnBridge, checkBridge: checkBridge, bridgeUrl: bridgeUrl, probeServer: probeServer,
     runFromUI: runFromUI, backToBuiltin: backToBuiltin,
     downloadScript: downloadScript, copyScript: copyScript, init: init
