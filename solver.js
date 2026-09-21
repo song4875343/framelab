@@ -9,20 +9,22 @@
  *   FrameSolver.solve(ctx)         执行一次线弹性分析，返回 ana 结果对象
  *   FrameSolver.info()             返回模块能力说明（含单位约定与局限）
  *
- * ctx（分析上下文，纯数据对象）字段：
- *   model     { nodes:[{id,x,y,bc:{ux,uy,rz}}], members:[{id,a,b,type}],
+ * ctx（分析上下文，纯数据对象）字段【2D 平面统一为 X-Z，Y 为面外方向】：
+ *   model     { nodes:[{id,x,z,y?,bc:{ux,uz,ry}}], members:[{id,a,b,type}],
  *               areas:[{id,nodes:[ids],etype:"plane"|"shell"}], cuts:[...] }
+ *   兼容旧数据：n.y（无 z 时）视为竖向；bc.uy→uz、bc.rz→ry；
+ *   y（有 z 时）为面外坐标（2D 求解忽略，3D 判定用）。
  *   NSUB      杆件全局默认细分数（默认 5）
  *   AMESH     面全局默认细分 nx=ny（默认 2）
  *   memStiff  {mid:{EA,EI,GA}}        杆件刚度手动覆盖（优先）
  *   memMat    {mid:{label,E,nu}}      杆件材料（E 单位 kN/m^2）
  *   memSec    {mid:{type:"rect"|"circle"|"I",...}}  杆件截面（m）
  *   memLoads  {mid:[{type:"udl",q}|{type:"point",P,a}|{type:"trap",q1,q2,c,d}]}
- *             杆件荷载：局部 +y 为正（水平杆向上），a/c/d 为沿杆米数
- *   nodeLoads {nid:{fx,fy,mz}}        节点荷载（整体坐标，kN / kN*m）
+ *             杆件荷载：局部 +z 为正（水平杆向上），a/c/d 为沿杆米数
+ *   nodeLoads {nid:{fx,fz,my}}        节点荷载（整体坐标，kN / kN*m；兼容 fy→fz、mz→my）
  *   areaMat   {aid:{label,E,nu}}      面材料
  *   areaSec   {aid:{kind:"stress"|"strain"|"shell-thin"|"shell-thick",t}}
- *   areaLoads {aid:{qx,qy}}           面荷载（整体坐标，kN/m^2）
+ *   areaLoads {aid:{qx,qz}}           面荷载（整体坐标，kN/m^2；兼容 qy→qz）
  *   memDiv    {mid:{n,lmax}}          杆件细分覆盖
  *   areaDiv   {aid:{nx,ny,hmax}}      面细分覆盖
  *   MATERIALS {label:{E,nu}}          材料库（可省略，用内置默认）
@@ -33,7 +35,9 @@
  *     areaGrid, shellCuts, cutResults,
  *     res:{roof,maxDisp,maxM,maxV,maxN,maxVM,maxSX,nNode,nMember,nArea} }
  *   长度 m、力 kN、弯矩 kN*m、应力 kPa；位移 res.roof/maxDisp 单位 mm。
- * 注意：solve() 会像原实现一样回写 member.L/ux/uy/x1/y1。
+ * 注意：solve() 会像原实现一样回写 member.L/ux/uz/x1/z1（另附 uy/y1 别名兼容）。
+ * 2D 自由度为 ux、uz、ry（ry 为面外 Y 轴弯曲，正向为 X-Z 视图逆时针，与旧 rz 同值改名）。
+ * 面应力为 sx、sz、txz（兼容别名 sy、txy），膜内力 nx、nz、nxz（兼容 ny、nxy）。
  */
 (function (global) {
   "use strict";
@@ -369,8 +373,11 @@
     if (t1 < 0 || t0 > 1) { return null; }
     return [clamp(t0, 0, 1), clamp(t1, 0, 1)];
   }
+  function cutY0(cut) { return (cut.z0 != null) ? cut.z0 : ((cut.y0 != null) ? cut.y0 : 0); }
+  function cutY1(cut) { return (cut.z1 != null) ? cut.z1 : ((cut.y1 != null) ? cut.y1 : 0); }
+  function cutCY(cut) { return (cut.cz != null) ? cut.cz : ((cut.cy != null) ? cut.cy : 0); }
   function cutGeom(cut) {
-    var dx = cut.x1 - cut.x0, dy = cut.y1 - cut.y0, L = Math.hypot(dx, dy);
+    var dx = cut.x1 - cut.x0, dy = cutY1(cut) - cutY0(cut), L = Math.hypot(dx, dy);
     if (!(L > 1e-12)) { return null; }
     var sx = dx / L, sy = dy / L;
     return { L: L, sx: sx, sy: sy, nx: -sy, ny: sx };
@@ -379,13 +386,13 @@
     var out = {};
     (cuts || []).forEach(function (cut) {
       var g = cutGeom(cut);
-      var res = { L: 0, Fn: 0, Fs: 0, M: 0, segs: [], hit: false, cax: cut.cx, cay: cut.cy };
+      var res = { L: 0, Fn: 0, Fs: 0, M: 0, segs: [], hit: false, cax: cut.cx, cay: cutCY(cut) };
       if (!g || !elems || !all) { out[cut.id] = res; return; }
       res.L = g.L;
       elems.forEach(function (ae) {
         if (!ae.s) { return; }
         var poly = ae.g.map(function (gi) { return all[gi]; });
-        var tt = clipSegPoly(cut.x0, cut.y0, cut.x1, cut.y1, poly);
+        var tt = clipSegPoly(cut.x0, cutY0(cut), cut.x1, cutY1(cut), poly);
         if (!tt) { return; }
         var a = tt[0] * g.L, b = tt[1] * g.L;
         if (!(b - a > 1e-12)) { return; }
@@ -395,17 +402,18 @@
       res.segs.sort(function (p, q) { return p.a - q.a; });
       if (res.hit && cut.cAuto !== false) {
         var mid = (res.segs[0].a + res.segs[res.segs.length - 1].b) / 2;
-        cut.cx = cut.x0 + g.sx * mid; cut.cy = cut.y0 + g.sy * mid;
+        cut.cx = cut.x0 + g.sx * mid; var _cy = cutY0(cut) + g.sy * mid; cut.cy = _cy; cut.cz = _cy;
       }
-      res.cax = cut.cx; res.cay = cut.cy;
+      res.cax = cut.cx; res.cay = cutCY(cut);
       res.segs.forEach(function (sg) {
         var len = sg.b - sg.a, s = sg.s, t = sg.t;
-        var tx = s.sx * g.nx + s.txy * g.ny;
-        var ty = s.txy * g.nx + s.sy * g.ny;
+        var _sz = (s.sz != null) ? s.sz : s.sy, _txz = (s.txz != null) ? s.txz : s.txy;
+        var tx = s.sx * g.nx + _txz * g.ny;
+        var ty = _txz * g.nx + _sz * g.ny;
         res.Fn += (tx * g.nx + ty * g.ny) * t * len;
         res.Fs += (tx * g.sx + ty * g.sy) * t * len;
-        var mx = cut.x0 + g.sx * (sg.a + sg.b) / 2, my = cut.y0 + g.sy * (sg.a + sg.b) / 2;
-        res.M += ((mx - cut.cx) * ty - (my - cut.cy) * tx) * t * len;
+        var mx = cut.x0 + g.sx * (sg.a + sg.b) / 2, my = cutY0(cut) + g.sy * (sg.a + sg.b) / 2;
+        res.M += ((mx - cut.cx) * ty - (my - cutCY(cut)) * tx) * t * len;
       });
       out[cut.id] = res;
     });
@@ -459,7 +467,7 @@
         for (r = 0; r < ny; r++) {
           var s = cs(r, c);
           if (!s) { continue; }
-          N += s.sx * t * dv; V += s.txy * t * dv;
+          N += s.sx * t * dv; V += ((s.txz != null) ? s.txz : s.txy) * t * dv;
           M += -s.sx * t * ((r + 0.5) * dv - Lv / 2) * dv;
         }
         bu.push((c + 0.5) * du); bN.push(N); bV.push(V); bM.push(M);
@@ -470,8 +478,9 @@
         for (c = 0; c < nx; c++) {
           var s2 = cs(r, c);
           if (!s2) { continue; }
-          N2 += s2.sy * t * du; V2 += -s2.txy * t * du;
-          M2 += s2.sy * t * ((c + 0.5) * du - Lu / 2) * du;
+          var _sy2 = (s2.sz != null) ? s2.sz : s2.sy, _tx2 = (s2.txz != null) ? s2.txz : s2.txy;
+          N2 += _sy2 * t * du; V2 += -_tx2 * t * du;
+          M2 += _sy2 * t * ((c + 0.5) * du - Lu / 2) * du;
         }
         cv.push((r + 0.5) * dv); cN.push(N2); cV.push(V2); cM.push(M2);
       }
@@ -518,6 +527,14 @@
     };
     function nodeById(id) { return (model.nodes || []).find(function (n) { return n.id === id; }); }
     function areaById(id) { return (model.areas || []).find(function (a) { return a.id === id; }); }
+    /* 2D X-Z 统一适配：竖向 nv()（z 优先，兼容旧 y）；面外 yo()（有 z 时 y 为面外，否则 0） */
+    function nv(n) { return (n && isFinite(n.z)) ? n.z : ((n && isFinite(n.y)) ? n.y : 0); }
+    function yo(n) { return (n && isFinite(n.z)) ? ((isFinite(n.y)) ? n.y : 0) : 0; }
+    function bcUZ(bc) { bc = bc || {}; return (bc.uz != null) ? bc.uz : ((bc.uy != null) ? bc.uy : false); }
+    function bcRY(bc) { bc = bc || {}; return (bc.ry != null) ? bc.ry : ((bc.rz != null) ? bc.rz : false); }
+    function nlFZ(nl) { nl = nl || {}; return (nl.fz != null) ? nl.fz : (nl.fy || 0); }
+    function nlMY(nl) { nl = nl || {}; return (nl.my != null) ? nl.my : (nl.mz || 0); }
+    function alQZ(ld) { ld = ld || {}; return (ld.qz != null) ? ld.qz : (ld.qy || 0); }
     function areaMatOf(aid) {
       return C.areaMat[aid] || { label: "C30", E: (C.MATERIALS.C30 || BUILTIN_MATERIALS.C30).E, nu: (C.MATERIALS.C30 || BUILTIN_MATERIALS.C30).nu };
     }
@@ -536,8 +553,8 @@
       }
       return n;
     }
-    function nzS(n) { return (n && isFinite(n.z)) ? n.z : 0; }
-    function d3(a, b) { return Math.hypot(a.x - b.x, a.y - b.y, nzS(a) - nzS(b)); }
+    function nzS(n) { return yo(n); }
+    function d3(a, b) { return Math.hypot(a.x - b.x, nv(a) - nv(b), yo(a) - yo(b)); }
     function effAreaDiv(a) {
       var nx = clampInt(C.AMESH, 1, 50), ny = nx, o = C.areaDiv[a.id];
       if (o) { nx = clampInt(o.nx || nx, 1, 50); ny = clampInt(o.ny || ny, 1, 50); }
@@ -563,29 +580,35 @@
       }
       return C.DEF_STIFF[m.type] || C.DEF_STIFF.user;
     }
-    /* 3D 判定：任一节点 z≠0、任一杆件跨越 z、任一 6 自由度边界/荷载分量、任一面单元不共 XY 平面 */
+    /* 3D 判定（2D 平面为 X-Z，Y 为面外）：面外坐标/约束/荷载任一非零即走 solve3D；
+     * 新方案（节点含 z）：面外 y≠0、bc.uy/rx/rz、荷载 fy/mx/mz、杆件跨越 y、面单元不等 y；
+     * 旧方案（节点无 z，y 为竖向）：沿用旧判据（z≠0、bc.uz/rx/ry、荷载 fz/mx/my）。 */
     function is3DModel() {
       var ms = model.nodes || [], i;
+      var schemeNew = ms.some(function (n) { return n && isFinite(n.z); });
+      function yOut(t) { return schemeNew ? (((t) && isFinite(t.y)) ? t.y : 0) : (((t) && isFinite(t.z)) ? t.z : 0); }
       for (i = 0; i < ms.length; i++) {
         var n = ms[i];
-        if (Math.abs(nzS(n)) > 1e-9) { return true; }
+        if (Math.abs(yOut(n)) > 1e-9) { return true; }
         var bc = n.bc || {};
-        if (bc.uz || bc.rx || bc.ry) { return true; }
+        if (schemeNew) { if (bc.uy || bc.rx || bc.rz) { return true; } }
+        else { if (bc.uz || bc.rx || bc.ry) { return true; } }
       }
       var nl;
       for (var k in C.nodeLoads) {
         nl = C.nodeLoads[k] || {};
-        if ((nl.fz || 0) || (nl.mx || 0) || (nl.my || 0)) { return true; }
+        if (schemeNew) { if ((nl.fy || 0) || (nl.mx || 0) || (nl.mz || 0)) { return true; } }
+        else { if ((nl.fz || 0) || (nl.mx || 0) || (nl.my || 0)) { return true; } }
       }
       function nb(id) { return (model.nodes || []).find(function (x) { return x.id === id; }); }
       for (i = 0; i < (model.members || []).length; i++) {
         var m = model.members[i], A = nb(m.a), B = nb(m.b);
-        if (A && B && Math.abs(nzS(A) - nzS(B)) > 1e-9) { return true; }
+        if (A && B && Math.abs(yOut(A) - yOut(B)) > 1e-9) { return true; }
       }
       for (i = 0; i < (model.areas || []).length; i++) {
-        var a = model.areas[i], zs = (a.nodes || []).map(function (id) { var t = nb(id); return t ? nzS(t) : 0; });
-        var z0 = zs.length ? zs[0] : 0;
-        for (var j = 1; j < zs.length; j++) { if (Math.abs(zs[j] - z0) > 1e-9) { return true; } }
+        var a = model.areas[i], ys = (a.nodes || []).map(function (id) { var t = nb(id); return t ? yOut(t) : 0; });
+        var y00 = ys.length ? ys[0] : 0;
+        for (var j = 1; j < ys.length; j++) { if (Math.abs(ys[j] - y00) > 1e-9) { return true; } }
       }
       return false;
     }
@@ -602,13 +625,13 @@
       reg[k] = all.length; all.push([x, y]); return reg[k];
     }
     var idx = {};
-    nodes.forEach(function (n) { idx[n.id] = ensureNode(n.x, n.y, nzS(n)); });
+    nodes.forEach(function (n) { idx[n.id] = ensureNode(n.x, nv(n), yo(n)); });
     var elems = [];
     var areaElems = [];
     var areaGrid = {};
     var areaNodal = [];
     function nodalAcc(i) {
-      if (!areaNodal[i]) { areaNodal[i] = { sx: 0, sy: 0, txy: 0, vm: 0, s1: 0, nx: 0, n: 0 }; }
+      if (!areaNodal[i]) { areaNodal[i] = { sx: 0, sz: 0, txz: 0, vm: 0, s1: 0, nx: 0, n: 0, sy: 0, txy: 0, nz: 0, nxz: 0, ny: 0, nxy: 0 }; }
       return areaNodal[i];
     }
 
@@ -620,7 +643,7 @@
       var L3 = (na && nb) ? d3(na, nb) : Math.hypot(Bp[0] - A[0], Bp[1] - A[1]);
       var Lm = Math.hypot(Bp[0] - A[0], Bp[1] - A[1]);
       if (L3 > 1e-9) { m.L = L3; }
-      if (Lm > 1e-9) { m.ux = (Bp[0] - A[0]) / Lm; m.uy = (Bp[1] - A[1]) / Lm; m.x1 = A[0]; m.y1 = A[1]; }
+      if (Lm > 1e-9) { m.ux = (Bp[0] - A[0]) / Lm; m.uz = (Bp[1] - A[1]) / Lm; m.uy = m.uz; m.x1 = A[0]; m.z1 = A[1]; m.y1 = A[1]; }
     });
 
     var areaDivUse = {}, memTarget = {};
@@ -655,8 +678,8 @@
       var t = Math.max(1e-6, sec.t || 0.2);
       var dv = areaDivUse[a.id] || effAreaDiv(a), nx = dv.nx, ny = dv.ny;
       if (corners.length >= 4) {
-        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, n.y]; });
-        var za = nzS(corners[0]);
+        var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, nv(n)]; });
+        var za = yo(corners[0]);
         areaGrid[a.id] = { nx: nx, ny: ny, P: P, t: t };
         var sub = quadSubCells(P, nx, ny), gid = [], r, c;
         for (r = 0; r <= ny; r++) {
@@ -674,8 +697,8 @@
           areaElems.push({ aid: a.id, etype: a.etype, kind: "q4", g: g, B: q.B0, Dmat: Dmat, t: t });
         });
       } else {
-        var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, n.y]; });
-        var za3 = nzS(corners[0]);
+        var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, nv(n)]; });
+        var za3 = yo(corners[0]);
         var sub3 = triSubCells(P3, nx), gmap = [];
         sub3.pts.forEach(function (p) {
           var gi = -1, k;
@@ -698,9 +721,9 @@
       if (ia === undefined || ib === undefined) { return; }
       var A = all[ia], Bp = all[ib];
       var Lm = Math.hypot(Bp[0] - A[0], Bp[1] - A[1]);
-      if (Lm < 1e-9) { return; }   // 面外（Z向）杆件不参与 2D 内置求解（走 OpenSees 3D 路径），m.L 保留 3D 真长
+      if (Lm < 1e-9) { return; }   // 面外（Y向）杆件不参与 2D 内置求解（走 OpenSees 3D 路径），m.L 保留 3D 真长
       var na0 = nodeById(m.a), zm = na0 ? nzS(na0) : 0;
-      m.L = Lm; m.ux = (Bp[0] - A[0]) / Lm; m.uy = (Bp[1] - A[1]) / Lm; m.x1 = A[0]; m.y1 = A[1];
+      m.L = Lm; m.ux = (Bp[0] - A[0]) / Lm; m.uz = (Bp[1] - A[1]) / Lm; m.uy = m.uz; m.x1 = A[0]; m.z1 = A[1]; m.y1 = A[1];
       var n = clampInt(memTarget[m.id] || effFrameDiv(m), 1, 60);
       var ts = [], s;
       for (s = 0; s <= n; s++) { ts.push(s / n); }
@@ -750,7 +773,7 @@
     var F = new Array(ndof).fill(0);
     nodes.forEach(function (n) {
       var nl = C.nodeLoads[n.id], ni = idx[n.id];
-      if (nl) { F[3 * ni] += nl.fx || 0; F[3 * ni + 1] += nl.fy || 0; F[3 * ni + 2] += nl.mz || 0; }
+      if (nl) { F[3 * ni] += nl.fx || 0; F[3 * ni + 1] += nlFZ(nl); F[3 * ni + 2] += nlMY(nl); }
     });
     elems.forEach(function (el) {
       var pg = matVec(transpose(el.T), el.p);
@@ -760,8 +783,8 @@
 
     areaElems.forEach(function (ae) {
       var ld = C.areaLoads[ae.aid];
-      if (!ld || (!ld.qx && !ld.qy)) { return; }
-      var qx = ld.qx || 0, qy = ld.qy || 0, nn = ae.g.length;
+      if (!ld || (!ld.qx && !ld.qy && !ld.qz)) { return; }
+      var qx = ld.qx || 0, qy = alQZ(ld), nn = ae.g.length;
       if (ae.kind === "q4") {
         var coords = ae.g.map(function (gi) { return all[gi]; });
         var g = 1 / Math.sqrt(3);
@@ -795,8 +818,8 @@
       var ni = idx[n.id];
       var bc = n.bc || {};
       if (bc.ux) { fixed[3 * ni] = true; }
-      if (bc.uy) { fixed[3 * ni + 1] = true; }
-      if (bc.rz) { fixed[3 * ni + 2] = true; }
+      if (bcUZ(bc)) { fixed[3 * ni + 1] = true; }
+      if (bcRY(bc)) { fixed[3 * ni + 2] = true; }
     });
     (function () {
       var md = 0, d;
@@ -847,14 +870,16 @@
       var avg = (sx + sy) / 2, R = Math.hypot((sx - sy) / 2, txy);
       var s1 = avg + R, s2 = avg - R;
       var vm = Math.sqrt(sx * sx - sx * sy + sy * sy + 3 * txy * txy);
-      ae.s = { sx: sx, sy: sy, txy: txy, s1: s1, s2: s2, vm: vm, nx: sx * ae.t, ny: sy * ae.t, nxy: txy * ae.t };
-      ae.cx = 0; ae.cy = 0;
+      ae.s = { sx: sx, sz: sy, txz: txy, s1: s1, s2: s2, vm: vm, nx: sx * ae.t, nz: sy * ae.t, nxz: txy * ae.t,
+               sy: sy, txy: txy, ny: sy * ae.t, nxy: txy * ae.t };
+      ae.cx = 0; ae.cy = 0; ae.cz = 0;
       for (var a5 = 0; a5 < nn; a5++) { ae.cx += all[ae.g[a5]][0]; ae.cy += all[ae.g[a5]][1]; }
-      ae.cx /= nn; ae.cy /= nn;
+      ae.cx /= nn; ae.cy /= nn; ae.cz = ae.cy;
       maxVM = Math.max(maxVM, Math.abs(vm)); maxSX = Math.max(maxSX, Math.abs(sx), Math.abs(sy));
       for (var a6 = 0; a6 < nn; a6++) {
         var acc = nodalAcc(ae.g[a6]);
-        acc.sx += sx; acc.sy += sy; acc.txy += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * ae.t; acc.n++;
+        acc.sx += sx; acc.sz += sy; acc.txz += txy; acc.vm += vm; acc.s1 += s1; acc.nx += sx * ae.t;
+        acc.sy += sy; acc.txy += txy; acc.nz += sy * ae.t; acc.nxz += txy * ae.t; acc.ny += sy * ae.t; acc.nxy += txy * ae.t; acc.n++;
       }
     });
 
@@ -863,10 +888,10 @@
 
     var maxDisp = 0;
     for (var i2 = 0; i2 < all.length; i2++) { maxDisp = Math.max(maxDisp, Math.hypot(u[3 * i2], u[3 * i2 + 1])); }
-    var ys = nodes.map(function (n) { return n.y; });
+    var ys = nodes.map(function (n) { return nv(n); });
     var ymax = ys.length ? Math.max.apply(null, ys) : 0;
     var roof = 0, nr = 0;
-    nodes.forEach(function (n) { if (Math.abs(n.y - ymax) < 1e-6) { roof += u[3 * idx[n.id]]; nr++; } });
+    nodes.forEach(function (n) { if (Math.abs(nv(n) - ymax) < 1e-6) { roof += u[3 * idx[n.id]]; nr++; } });
     roof = nr ? roof / nr : 0;
 
     return {
@@ -1311,7 +1336,7 @@
     roof = nr ? roof / nr : 0;
 
     return {
-      nodes: nodes, all: all.map(function (p) { return [p[0], p[1]]; }), all3: all, elems: elems, u: u, ok: ok, idx: idx, byMember: byMember,
+      nodes: nodes, all: all.map(function (p) { return [p[0], p[2]]; }), all3: all, elems: elems, u: u, ok: ok, idx: idx, byMember: byMember,
       areaElems: areaElems, areaNodal: areaNodal, areaGrid: areaGrid, shellCuts: shellCuts,
       cutResults: cutResults, dof: 6, is3D: true, skippedArea3D: skippedArea3D,
       warn3D: skippedArea3D ? ("3D 内置求解跳过 " + skippedArea3D + " 个真斜面单元（仅共面 XY/XZ/YZ 者以膜刚度参与；精确解请用 OpenSees 真 3D 路径）") : null,
@@ -1323,8 +1348,8 @@
     return {
       name: "FrameLab built-in solver", version: VERSION,
       method: "direct stiffness, linear elastic",
-      frame: "2D: Timoshenko beam-column (u,v,rz); 3D(auto): Euler beam 12x12 (ux,uy,uz,rx,ry,rz) + torsion + biaxial bending",
-      plane: "Q4 (2x2 Gauss, center stress) / CST, plane stress or plane strain",
+      frame: "2D X-Z: Timoshenko beam-column (ux,uz,ry); 3D(auto): Euler beam 12x12 (ux,uy,uz,rx,ry,rz) + torsion + biaxial bending",
+      plane: "Q4 (2x2 Gauss, center stress) / CST, plane stress or plane strain; stress sx,sz,txz",
       shell: "membrane only (N=sigma*t), no plate bending",
       units: "m, kN, kN*m, kPa; roof/maxDisp in mm",
       limits: ["linear only", "no buckling/dynamics", "shell has no out-of-plane bending", "3D skewed shells skipped (use OpenSees)"]

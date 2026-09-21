@@ -397,7 +397,7 @@
     var sd = storyDrift(ana, model);
     var topDisp = ana && ana.res ? ana.res.roof : 0;
     var H = 0;
-    (model.nodes || []).forEach(function (n) { H = Math.max(H, n.y); });
+    (model.nodes || []).forEach(function (n) { var vv = (n && isFinite(n.z)) ? n.z : (n.y || 0); H = Math.max(H, vv); });
     var topRatio = H > 0 ? Math.abs(topDisp) / 1000 / H : 0;
     return {
       members: members, unsafe: unsafe, total: (model.members || []).length,

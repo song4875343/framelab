@@ -80,6 +80,17 @@
   .cvwrap:not(.multi) #mainwrap { position: absolute; inset: 0; }
   .cvwrap.multi #mainwrap { border: 1px solid rgba(110,231,255,.4); border-radius: 9px; overflow: hidden; }
   .cvwrap.multi #mainwrap #cv { border-radius: 0; }
+  /* 3D 小窗折叠：0号窗口左上角按钮切 no-left，1/2/3号隐藏、0号横向撑满 cvwrap */
+  .cvwrap.multi.no-left #leftviews { display: none; }
+  #wtag0wrap { position: absolute; top: 4px; left: 6px; z-index: 4; display: none; align-items: center; gap: 4px; max-width: calc(100% - 12px); cursor: pointer; }
+  #wtag0wrap #wtag0 { position: static; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10.5px; padding: 1px 8px; border-radius: 10px; background: rgba(10,16,30,.7); border: 1px solid rgba(110,231,255,.4); color: #a9f4ec; }
+  #btn-collapse-left { flex: 0 0 auto; padding: 1px 8px; font-size: 10.5px; line-height: 1.5; cursor: pointer; border-radius: 10px; border: 1px solid rgba(110,231,255,.5); background: rgba(10,16,30,.8); color: #a9f4ec; font-family: inherit; }
+  #btn-collapse-left:hover { background: rgba(47,123,255,.4); color: #fff; }
+  body.light #wtag0wrap #wtag0 { background: rgba(255,255,255,.9); color: #41527a; border-color: rgba(90,120,190,.55); }
+  body.light #btn-collapse-left { background: rgba(255,255,255,.92); color: #41527a; border-color: rgba(90,120,190,.55); }
+  body.light #btn-collapse-left:hover { background: rgba(47,123,255,.2); color: #1b4fb0; }
+  /* 左侧控制面板折叠：右上角按钮切 body.hide-side，stage 横向撑满整个项目窗口 */
+  body.hide-side .layout .controls { display: none; }
   /* 3D 平面/剖面位置：放到底部状态条正中间（3D 下显示，2D 下隐藏），无帮助文本 */
   .statusbar { position: relative; }
   .sb-planes { position: absolute; left: 50%; transform: translateX(-50%); display: none; gap: 12px; align-items: center; font-size: 10.5px; color: #9fb0d6; white-space: nowrap; }
@@ -293,6 +304,7 @@
       <button class="tb" id="btnSave" type="button">保存</button>
       <button class="tb" id="btnOpen" type="button">打开</button>
       <button class="tb" id="fitview" type="button">适应窗口</button>
+      <button class="tb" id="btn-sidepanel" type="button" title="折叠/展开左侧控制面板">折叠</button>
       <button class="tb" id="btnTheme" type="button">亮色主题</button>
       <input type="file" id="fileInput" accept=".json,.framelab,.txt,application/json" style="display:none" />
     </div>
@@ -354,7 +366,7 @@
         <label class="chk" id="extWrap"><input type="checkbox" id="f-extreme" /> 显示极值位置（位移 / 应力 / 内力）</label>
         <div id="shellGeoOpts">
           <label class="chk"><input type="checkbox" id="showShellBeam" /> 显示壳梁（矩形壳X向中线）</label>
-          <label class="chk"><input type="checkbox" id="showShellCol" /> 显示壳柱（矩形壳Y向中线）</label>
+          <label class="chk"><input type="checkbox" id="showShellCol" /> 显示壳柱（矩形壳Z向中线）</label>
           <label class="chk" id="extrudeWrap"><input type="checkbox" id="showExtrude" /> 拉伸截面（杆件3D实体 / 壳厚度显示）</label>
         </div>
         <div id="xaraSection">
@@ -385,7 +397,7 @@
           选择模式左键多选、右键取消。选中后在右上角窗口分「单元 / 细分 / 荷载 / 内力 / 材料 / 截面 / 设计」编辑。细分页对杆件按等分、对面按 nx×ny 分别处理。
           <br /><b style="color:#9fd0ff">说明：</b>2D 下为平面分析（Timoshenko 梁 + Q4/CST 平面应力/应变）；壳单元按“膜 + 厚度”处理（N=σ·t），不含板弯曲（面外）自由度。顶部 2D/3D 可切换三维建模：3D 下内置求解为 6 自由度/节点空间杆系（轴向+扭转+双向弯曲，梁均布沿竖向、向下取负），共面（XY 等 z / XZ 等 y / YZ 等 x）的面单元均以膜刚度参与计算（含竖向墙，与共边杆件共享节点、变形协调），仅真斜面单元由内置求解跳过（精确分析请用 OpenSees 真 3D 路径，自动切换）。四窗口均支持滚轮缩放、中键/Shift+左键拖动平移、双击复位/互换；3D结构窗在选择模式下左键点空处拖动可绕屏幕中点旋转。
           <br /><b style="color:#9fd0ff">节点消重：</b>容差内（默认 2mm，「设置」面板可调）同一位置只保留一个节点，新增 / 导入 / 移动复制时自动合并。
-          <br /><b style="color:#9fd0ff">壳梁/壳柱：</b>仅矩形壳单元在母单元中线生成参考线（梁=橙色X向中线，柱=青色Y向中线），全部分细分单元应力沿线积分；几何菜单控制参考线显示，内力菜单将其当框架构件显示 M/V/N 图（受轴力/弯矩/剪力开关控制）。选中面后在「内力」页可查看参考线端-中-端内力。
+          <br /><b style="color:#9fd0ff">壳梁/壳柱：</b>仅矩形壳单元在母单元中线生成参考线（梁=橙色X向中线，柱=青色Z向中线），全部分细分单元应力沿线积分；几何菜单控制参考线显示，内力菜单将其当框架构件显示 M/V/N 图（受轴力/弯矩/剪力开关控制）。选中面后在「内力」页可查看参考线端-中-端内力。
           <br /><b style="color:#9fd0ff">拉伸截面：</b>仅 3D 模式显示，勾选后 3D 结构窗内杆件按截面（矩形/圆形/工字形）拉伸成 3D 实体、壳按厚度显示为实体板（SAP2000 风格，含光照明暗与遮挡关系），位移/内力视图下跟随变形显示。
         </div>
       </div>
@@ -408,8 +420,8 @@
           <label>位移云图分量<select id="cloud-dvar">
             <option value="mag">总位移</option>
             <option value="ux">Ux（X向位移）</option>
-            <option value="uy">Uy（Y向位移）</option>
-            <option value="uz">Uz（Z向位移，3D）</option>
+            <option value="uz">Uz（Z向位移）</option>
+            <option value="uy">Uy（Y向位移，3D面外）</option>
           </select></label>
         </div>
         <div id="dispOpts">
@@ -428,8 +440,8 @@
           <label>面云图分量<select id="cloud-var">
             <option value="vm">von Mises</option>
             <option value="sx">σx</option>
-            <option value="sy">σy</option>
-            <option value="txy">τxy</option>
+            <option value="sz">σz</option>
+            <option value="txz">τxz</option>
             <option value="s1">σ1(最大主应力)</option>
             <option value="nx">Nx(壳膜内力)</option>
           </select></label>
@@ -514,7 +526,7 @@
         </div>
         <div id="mainwrap">
           <canvas id="cv"></canvas>
-          <span class="wtag" id="wtag0" style="position:absolute;top:4px;left:6px;z-index:3;font-size:10.5px;padding:1px 8px;border-radius:10px;background:rgba(10,16,30,.7);border:1px solid rgba(110,231,255,.4);color:#a9f4ec;pointer-events:none;display:none">0号</span>
+          <div id="wtag0wrap" title="双击：双折叠 / 恢复双展开（小窗 + 左侧面板）"><span class="wtag" id="wtag0">0号</span><button id="btn-collapse-left" type="button" title="折叠/展开 1、2、3 号小窗口">«</button></div>
           <div id="dimseg"><button type="button" data-dim="2d" class="active">2D</button><button type="button" data-dim="3d">3D</button></div>
           <div id="slicenav">
             <button type="button" id="slice-up" title="上一个剖面/平面">▲</button>
@@ -574,13 +586,13 @@
           <div class="pp-sec">
             <div class="pp-title">节点约束（2D/3D 通用，3D 另含 Uz/Rx/Ry）</div>
             <select id="nd-bc">
-              <option value="fixed">固定端（固接，3D六向全约束）</option>
+              <option value="fixed">固定端（固接：UxUz+Ry）</option>
               <option value="fixed3d">3D固定（UxUyUz+RxRyRz）</option>
-              <option value="pin">铰支（Ux、Uy 约束）</option>
+              <option value="pin">铰支座（Ux、Uz 约束）</option>
               <option value="pin3d">3D铰支（UxUyUz 约束）</option>
-              <option value="rollerY">辊轴（Uy 约束）</option>
+              <option value="rollerZ">辊轴（Uz 竖向约束）</option>
               <option value="rollerX">辊轴（Ux 约束）</option>
-              <option value="clampZ">Z向固接（UxUyUz+Rz）</option>
+              <option value="clampZ">Z向固接（UxUyUz+Ry）</option>
               <option value="free">自由</option>
             </select>
             <button class="btn" id="nd-bc-apply">应用到选中节点</button>
@@ -663,7 +675,7 @@
         <!-- 荷载 -->
         <div class="pp-tabpane hidden" id="tab-load">
           <div class="pp-sec">
-            <div class="pp-title" id="ttl-nodeload">节点荷载（kN, kN·m；3D 含 Fz/Mx/My/Mz 全分量）</div>
+            <div class="pp-title" id="ttl-nodeload">节点荷载（kN, kN·m；2D 用 Fx/Fz/My，3D 全分量）</div>
             <div class="pp-grid3">
               <label>Fx<input type="number" id="nl-fx" value="0" /></label>
               <label>Fy<input type="number" id="nl-fy" value="0" /></label>
@@ -679,7 +691,7 @@
           </div>
 
           <div class="pp-sec">
-            <div class="pp-title">杆件荷载（垂直于杆件，沿局部 +y 为正；2D/3D一致：水平杆向上为正，重力向下取负；3D非竖杆沿竖向平面内横向，竖杆沿水平横向）</div>
+            <div class="pp-title">杆件荷载（垂直于杆件，沿局部 +z 为正；2D/3D一致：水平杆向上为正，重力向下取负；3D非竖杆沿竖向平面内横向，竖杆沿水平横向）</div>
             <select id="ml-type">
               <option value="udl">均布荷载 q</option>
               <option value="point">集中荷载 P</option>
@@ -705,10 +717,10 @@
           </div>
 
           <div class="pp-sec">
-            <div class="pp-title" id="ttl-areaload">面荷载（整体坐标，kN/m²，向量 qx / qy）</div>
+            <div class="pp-title" id="ttl-areaload">面荷载（整体坐标，kN/m²，向量 qx / qz）</div>
             <div class="pp-grid2">
               <label>qx<input type="number" id="al-qx" value="0" /></label>
-              <label>qy<input type="number" id="al-qy" value="-10" /></label>
+              <label>qz<input type="number" id="al-qz" value="-10" /></label>
             </div>
             <div class="pp-row">
               <button class="btn" id="al-apply">应用到选中面</button>
@@ -821,8 +833,8 @@
             <div class="pp-title">沿线应力（平滑 + 彩虹色标）</div>
             <select id="cut-var">
               <option value="sx">σx</option>
-              <option value="sy">σy</option>
-              <option value="txy">τxy</option>
+              <option value="sz">σz</option>
+              <option value="txz">τxz</option>
               <option value="vm">von Mises</option>
               <option value="s1">σ1(最大主应力)</option>
               <option value="nx">Nx(壳膜内力)</option>
@@ -840,11 +852,11 @@
             <div class="pp-title">起点 / 终点 / 中轴（中轴⊥剖面，默认取有应力范围中点）</div>
             <div class="pp-grid2">
               <label>起点 X<input type="number" id="cut-x0" step="0.1" /></label>
-              <label>起点 Y<input type="number" id="cut-y0" step="0.1" /></label>
+              <label>起点 Z<input type="number" id="cut-z0" step="0.1" /></label>
               <label>终点 X<input type="number" id="cut-x1" step="0.1" /></label>
-              <label>终点 Y<input type="number" id="cut-y1" step="0.1" /></label>
+              <label>终点 Z<input type="number" id="cut-z1" step="0.1" /></label>
               <label>中轴 X<input type="number" id="cut-cx" step="0.1" /></label>
-              <label>中轴 Y<input type="number" id="cut-cy" step="0.1" /></label>
+              <label>中轴 Z<input type="number" id="cut-cz" step="0.1" /></label>
             </div>
             <div class="pp-row">
               <button class="btn" id="cut-restore">恢复坐标（画线数值）</button>
@@ -928,6 +940,7 @@
             light: true, lenUnit: "m", forceUnit: "kN", cloudLo: null, cloudHi: null, dispLo: null, dispHi: null,
             station: 0.5, zoom: 1, px: 0, py: 0,
             designSteel: "GB50017-2017", designConc: "GB50010-2010", designMode: "rebar",
+            hideLeft: false, hideSide: false,
             cam3: null, prot3: null };
   var DEF_STIFF = { col: { EA: 4.5e6, EI: 93750, GA: 1.0e9 }, beam: { EA: 4.5e6, EI: 150000, GA: 1.0e9 }, user: { EA: 4.5e6, EI: 150000, GA: 1.0e9 } };
 
@@ -1131,9 +1144,10 @@
     return [(1 - xi) * (1 - et) / 4, (1 + xi) * (1 - et) / 4, (1 + xi) * (1 + et) / 4, (1 - xi) * (1 + et) / 4];
   }
   function areaStressPick(s, v) {
+    if (!s) { return 0; }
     if (v === "sx") { return s.sx; }
-    if (v === "sy") { return s.sy; }
-    if (v === "txy") { return s.txy; }
+    if (v === "sy" || v === "sz") { return (s.sz != null ? s.sz : s.sy); }
+    if (v === "txy" || v === "txz") { return (s.txz != null ? s.txz : s.txy); }
     if (v === "s1") { return s.s1; }
     if (v === "nx") { return s.nx; }
     return s.vm;
@@ -1141,7 +1155,7 @@
 
   /* ================= 壳剖面截面切割（SAP2000 式 shell section cut） =================
    * 剖面为模型坐标系下直线段 P0→P1，切向 s，法向 n（s 逆时针 90°）。
-   * 对穿过的每个面子单元（常应力 σx、σy、τxy，厚 t）求交集长度 len，
+   * 对穿过的每个面子单元（常应力 σx、σz、τxz，厚 t）求交集长度 len，
    * 面力 t_vec = σ·n，合力 F += t_vec·t·len，
    * 法向轴力 Fn = F·n， 切向剪力 Fs = F·s，
    * 绕中轴 C 弯矩 M += ((r−C)×t_vec)·t·len（逆时针为正）。
@@ -1167,8 +1181,11 @@
     if (t1 < 0 || t0 > 1) { return null; }
     return [clamp(t0, 0, 1), clamp(t1, 0, 1)];
   }
+  function cutZ0(cut) { return (cut.z0 != null) ? cut.z0 : ((cut.y0 != null) ? cut.y0 : 0); }
+  function cutZ1(cut) { return (cut.z1 != null) ? cut.z1 : ((cut.y1 != null) ? cut.y1 : 0); }
+  function cutCZ(cut) { return (cut.cz != null) ? cut.cz : ((cut.cy != null) ? cut.cy : 0); }
   function cutGeom(cut) {
-    var dx = cut.x1 - cut.x0, dy = cut.y1 - cut.y0, L = Math.hypot(dx, dy);
+    var dx = cut.x1 - cut.x0, dy = cutZ1(cut) - cutZ0(cut), L = Math.hypot(dx, dy);
     if (!(L > 1e-12)) { return null; }
     var sx = dx / L, sy = dy / L;
     return { L: L, sx: sx, sy: sy, nx: -sy, ny: sx };
@@ -1184,13 +1201,13 @@
     var out = {};
     (cuts || []).forEach(function (cut) {
       var g = cutGeom(cut);
-      var res = { L: 0, Fn: 0, Fs: 0, M: 0, segs: [], hit: false, cax: cut.cx, cay: cut.cy };
+      var res = { L: 0, Fn: 0, Fs: 0, M: 0, segs: [], hit: false, cax: cut.cx, cay: cutCZ(cut) };
       if (!g || !elems || !all) { out[cut.id] = res; return; }
       res.L = g.L;
       elems.forEach(function (ae) {
         if (!ae.s) { return; }
         var poly = ae.g.map(function (gi) { return all[gi]; });
-        var tt = clipSegPoly(cut.x0, cut.y0, cut.x1, cut.y1, poly);
+        var tt = clipSegPoly(cut.x0, cutZ0(cut), cut.x1, cutZ1(cut), poly);
         if (!tt) { return; }
         var a = tt[0] * g.L, b = tt[1] * g.L;
         if (!(b - a > 1e-12)) { return; }
@@ -1201,17 +1218,18 @@
       // 中轴默认取有应力范围的中点（画线常比壳宽，两边不等长，线中点≠真实中轴）
       if (res.hit && cut.cAuto !== false) {
         var mid = (res.segs[0].a + res.segs[res.segs.length - 1].b) / 2;
-        cut.cx = cut.x0 + g.sx * mid; cut.cy = cut.y0 + g.sy * mid;
+        cut.cx = cut.x0 + g.sx * mid; var _ccz = cutZ0(cut) + g.sy * mid; cut.cz = _ccz; cut.cy = _ccz;
       }
-      res.cax = cut.cx; res.cay = cut.cy;
+      res.cax = cut.cx; res.cay = cutCZ(cut);
       res.segs.forEach(function (sg) {
         var len = sg.b - sg.a, s = sg.s, t = sg.t;
-        var tx = s.sx * g.nx + s.txy * g.ny;
-        var ty = s.txy * g.nx + s.sy * g.ny;
+        var _sz = (s.sz != null ? s.sz : s.sy), _txz = (s.txz != null ? s.txz : s.txy);
+        var tx = s.sx * g.nx + _txz * g.ny;
+        var ty = _txz * g.nx + _sz * g.ny;
         res.Fn += (tx * g.nx + ty * g.ny) * t * len;
         res.Fs += (tx * g.sx + ty * g.sy) * t * len;
-        var mx = cut.x0 + g.sx * (sg.a + sg.b) / 2, my = cut.y0 + g.sy * (sg.a + sg.b) / 2;
-        res.M += ((mx - cut.cx) * ty - (my - cut.cy) * tx) * t * len;
+        var mx = cut.x0 + g.sx * (sg.a + sg.b) / 2, my = cutZ0(cut) + g.sy * (sg.a + sg.b) / 2;
+        res.M += ((mx - cut.cx) * ty - (my - cutCZ(cut)) * tx) * t * len;
       });
       out[cut.id] = res;
     });
@@ -1364,8 +1382,8 @@
       var tx = sx * g.nx + txy * g.ny, ty = txy * g.nx + sy * g.ny;
       out.Fn += (tx * g.nx + ty * g.ny) * t * dx;
       out.Fs += (tx * g.sx + ty * g.sy) * t * dx;
-      var mx = cut.x0 + g.sx * xm, my = cut.y0 + g.sy * xm;
-      out.M += ((mx - cut.cx) * ty - (my - cut.cy) * tx) * t * dx;
+      var mx = cut.x0 + g.sx * xm, my = cutZ0(cut) + g.sy * xm;
+      out.M += ((mx - cut.cx) * ty - (my - cutCZ(cut)) * tx) * t * dx;
     }
     return out;
   }
@@ -1450,7 +1468,7 @@
         for (r = 0; r < ny; r++) {
           var s = cs(r, c);
           if (!s) { continue; }
-          N += s.sx * t * dv; V += s.txy * t * dv;
+          N += s.sx * t * dv; V += ((s.txz != null ? s.txz : s.txy)) * t * dv;
           M += -s.sx * t * ((r + 0.5) * dv - Lv / 2) * dv;
         }
         bu.push((c + 0.5) * du); bN.push(N); bV.push(V); bM.push(M);
@@ -1462,8 +1480,9 @@
         for (c = 0; c < nx; c++) {
           var s2 = cs(r, c);
           if (!s2) { continue; }
-          N2 += s2.sy * t * du; V2 += -s2.txy * t * du;
-          M2 += s2.sy * t * ((c + 0.5) * du - Lu / 2) * du;
+          var _sy2 = (s2.sz != null ? s2.sz : s2.sy), _tx2 = (s2.txz != null ? s2.txz : s2.txy);
+          N2 += _sy2 * t * du; V2 += -_tx2 * t * du;
+          M2 += _sy2 * t * ((c + 0.5) * du - Lu / 2) * du;
         }
         cv.push((r + 0.5) * dv); cN.push(N2); cV.push(V2); cM.push(M2);
       }
@@ -1654,13 +1673,20 @@
   /* ---- 节点消重（容差，默认 2mm）：3D 距离度量，兼容 2D（z 缺省 0） ---- */
   function nodeTol() { var mm = (D.nodeTolMm == null ? 2 : +D.nodeTolMm); if (!isFinite(mm) || mm < 0) { mm = 2; } return mm / 1000; }
   function nz(n) { return (n && isFinite(n.z)) ? n.z : 0; }
+  /* 2D 平面统一为 X-Z（Y 为面外）：nv() 取竖向（z 优先，兼容旧 y），nyo() 取面外 y（无 z 时为 0） */
+  function nv(n) { return (n && isFinite(n.z)) ? n.z : ((n && isFinite(n.y)) ? n.y : 0); }
+  function nyo(n) { return (n && isFinite(n.z)) ? ((isFinite(n.y)) ? n.y : 0) : 0; }
   function findNodeNear(x, y, z, excludeId) {
-    var tol = nodeTol(), zz = (z == null ? 0 : z), best = null, bd = tol;
+    // 新签名 (x, z, yOut)；兼容旧调用 (x, y竖向, z面外)：以节点有无 z 字段自动识别
+    var tol = nodeTol(), best = null, bd = tol;
     if (!(tol > 0)) { return null; }
+    var schemeNew = (model.nodes || []).some(function (t) { return t && isFinite(t.z); });
     for (var i = 0; i < model.nodes.length; i++) {
       var n = model.nodes[i];
       if (excludeId != null && n.id === excludeId) { continue; }
-      var d = Math.hypot(n.x - x, n.y - y, nz(n) - zz);
+      var d;
+      if (schemeNew) { var yo = (z == null ? 0 : z); d = Math.hypot(n.x - x, nv(n) - y, nyo(n) - yo); }
+      else { var zz = (z == null ? 0 : z); d = Math.hypot(n.x - x, n.y - y, nz(n) - zz); }
       if (d <= tol + 1e-12) { if (best === null || d < bd) { best = n; bd = d; } }
     }
     return best;
@@ -1670,11 +1696,11 @@
     if (oldId === keepId) { return; }
     var keep = nodeById(keepId), old = nodeById(oldId);
     if (keep && old && old.bc) {
-      keep.bc = keep.bc || { ux: false, uy: false, rz: false };
+      keep.bc = keep.bc || normBC2D(null);
       ["ux", "uy", "uz", "rx", "ry", "rz"].forEach(function (k) { keep.bc[k] = keep.bc[k] || old.bc[k]; });
     }
     if (nodeLoads[oldId]) {
-      var a = nodeLoads[keepId] || (nodeLoads[keepId] = { fx: 0, fy: 0, mz: 0 });
+      var a = nodeLoads[keepId] || (nodeLoads[keepId] = { fx: 0, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 });
       var b = nodeLoads[oldId];
       ["fx", "fy", "fz", "mx", "my", "mz"].forEach(function (k) { a[k] = (a[k] || 0) + (b[k] || 0); });
       delete nodeLoads[oldId];
@@ -1700,7 +1726,7 @@
       j = i + 1;
       while (j < model.nodes.length) {
         var a = model.nodes[i], b = model.nodes[j];
-        if (Math.hypot(a.x - b.x, a.y - b.y, nz(a) - nz(b)) <= tol + 1e-12) {
+        if (Math.hypot(a.x - b.x, nv(a) - nv(b), nyo(a) - nyo(b)) <= tol + 1e-12) {
           mergeNodeInto(b.id, a.id); merged++;
           // mergeNodeInto 已从数组删除 b，不推进 j
         } else { j++; }
@@ -1723,23 +1749,37 @@
     for (var i = 0; i < model.nodes.length; i++) {
       for (var j = i + 1; j < model.nodes.length; j++) {
         var a = model.nodes[i], b = model.nodes[j];
-        if (Math.hypot(a.x - b.x, a.y - b.y, nz(a) - nz(b)) <= tol + 1e-12) { c++; break; }
+        if (Math.hypot(a.x - b.x, nv(a) - nv(b), nyo(a) - nyo(b)) <= tol + 1e-12) { c++; break; }
       }
     }
     return c;
   }
 
-  function addNode(x, y, bc, z) {
-    var zz = (z == null ? 0 : z);
-    var dup = (model && model.nodes && model.nodes.length) ? findNodeNear(x, y, zz, null) : null;
+  function normBC2D(bc) {
+    // 2D 约束归一化。新键（uz/ry 任一出现）视为新方案，uy/rx/rz 为面外原样保留；
+    // 否则视为旧 2D 键（uy 竖向→uz，rz 面内→ry），面外清零，避免误触真 3D 判定。
+    bc = bc || {};
+    var isNew = (bc.uz != null) || (bc.ry != null);
+    if (isNew) {
+      return { ux: !!bc.ux, uy: !!bc.uy, uz: !!bc.uz, rx: !!bc.rx, ry: !!bc.ry, rz: !!bc.rz };
+    }
+    return { ux: !!bc.ux, uy: false, uz: !!bc.uy, rx: false, ry: !!bc.rz, rz: false };
+  }
+  function addNode(x, z, bc, yOut) {
+    var yo = (yOut == null ? 0 : yOut);
+    var dup = (model && model.nodes && model.nodes.length) ? findNodeNear(x, z, yo, null) : null;
     if (dup) {
       if (bc) {
-        dup.bc = dup.bc || { ux: false, uy: false, rz: false };
+        dup.bc = dup.bc || normBC2D(null);
         ["ux", "uy", "uz", "rx", "ry", "rz"].forEach(function (k) { dup.bc[k] = dup.bc[k] || bc[k]; });
+        if (bc.uz != null) { dup.bc.uz = dup.bc.uz || bc.uz; }
+        if (bc.uy != null) { dup.bc.uz = dup.bc.uz || bc.uy; }
+        if (bc.ry != null) { dup.bc.ry = dup.bc.ry || bc.ry; }
+        if (bc.rz != null) { dup.bc.ry = dup.bc.ry || bc.rz; }
       }
       return dup;
     }
-    var n = { id: model.nextNode++, x: x, y: y, z: zz, bc: bc || { ux: false, uy: false, rz: false } };
+    var n = { id: model.nextNode++, x: x, z: z, y: yo, bc: normBC2D(bc) };
     model.nodes.push(n); return n;
   }
   function addMemberById(a, b, type) {
@@ -1779,8 +1819,9 @@
     var wrap = $("cvwrap");
     if (wrap) { wrap.classList.toggle("multi", (D.dim || "2d") === "3d"); }
     try { document.body.classList.toggle("mode3d", (D.dim || "2d") === "3d"); } catch (eB) {}
-    var tag0 = $("wtag0");
-    if (tag0) { tag0.style.display = ((D.dim || "2d") === "3d") ? "block" : "none"; }
+    var tag0w = $("wtag0wrap");
+    if (tag0w) { tag0w.style.display = ((D.dim || "2d") === "3d") ? "flex" : "none"; }
+    syncCollapseUI();
     if ($("in-planeZ")) { $("in-planeZ").value = roundN(lenO(D.planeZ || 0), 3); $("in-secY").value = roundN(lenO(D.secY0 || 0), 3); $("in-secX").value = roundN(lenO(D.secX0 || 0), 3); }
     // 拉伸截面选项仅 3D 模式显示（几何显示选项）
     try { var ew = $("extrudeWrap"); if (ew) { ew.style.display = ((D.dim || "2d") === "3d") ? "" : "none"; } } catch (eEx) {}
@@ -1795,6 +1836,57 @@
     }
     syncDimUI(); draw();
   }
+  /* ============ 窗口折叠：小窗（1/2/3号）+ 左侧控制面板 ============
+   * 左上按钮（0号标识旁）：折叠/展开 1、2、3 号小窗口，0号横向撑满 cvwrap；
+   * 右上按钮（适应窗口旁）：折叠/展开左侧控制面板，stage 横向撑满项目窗口。
+   * 两者同时折叠时 0 号窗口最大、横向撑满屏幕。
+   * 双击 0 号标识：在双折叠与双展开之间一键切换。
+   */
+  function syncCollapseUI() {
+    var wrap = $("cvwrap");
+    if (wrap) { wrap.classList.toggle("no-left", !!D.hideLeft); }
+    try { document.body.classList.toggle("hide-side", !!D.hideSide); } catch (eH) {}
+    var bL = $("btn-collapse-left");
+    if (bL) {
+      bL.textContent = D.hideLeft ? "»" : "«";
+      bL.title = D.hideLeft ? "展开 1、2、3 号小窗口" : "折叠 1、2、3 号小窗口";
+    }
+    var bS = $("btn-sidepanel");
+    if (bS) { bS.textContent = D.hideSide ? "展开面板" : "折叠"; bS.classList.toggle("on", !!D.hideSide); }
+    var w0 = $("wtag0wrap");
+    if (w0) { w0.title = (D.hideLeft && D.hideSide) ? "双击：恢复双展开（小窗 + 左侧面板）" : "双击：双折叠（隐藏小窗 + 左侧面板）"; }
+  }
+  (function () {
+    var bL = $("btn-collapse-left");
+    if (bL && !bL._wired) {
+      bL._wired = true;
+      bL.addEventListener("click", function (ev) {
+        D.hideLeft = !D.hideLeft;
+        syncCollapseUI(); draw();
+        if (ev.stopPropagation) { ev.stopPropagation(); }
+      });
+    }
+    var bS = $("btn-sidepanel");
+    if (bS && !bS._wired) {
+      bS._wired = true;
+      bS.addEventListener("click", function () {
+        D.hideSide = !D.hideSide;
+        syncCollapseUI(); draw();
+      });
+    }
+    var w0 = $("wtag0wrap");
+    if (w0 && !w0._wiredDbl) {
+      w0._wiredDbl = true;
+      w0.addEventListener("dblclick", function (ev) {
+        if (ev.target && ev.target.id === "btn-collapse-left") { return; }
+        var both = D.hideLeft && D.hideSide;
+        D.hideLeft = !both; D.hideSide = !both;
+        syncCollapseUI(); draw();
+        ev.preventDefault();
+        if (ev.stopPropagation) { ev.stopPropagation(); }
+      });
+    }
+  })();
   function updateWinTags() {
     if (!D.winAssign) { return; }
     var names = ["0号 ", "1号 ", "2号 ", "3号 "];
@@ -2035,7 +2127,7 @@
     function anaP3(gi, amp) {
       var b;
       if (ana.all3 && ana.all3[gi]) { b = ana.all3[gi]; }
-      else if (ana.all[gi]) { var _p = ana.all[gi]; b = [_p[0], _p[1], _p[2] || 0]; }
+      else if (ana.all[gi]) { var _p = ana.all[gi]; b = (_p.length >= 3) ? [_p[0], _p[1], _p[2] || 0] : [_p[0], 0, _p[1]]; }
       else { return null; }
       var bz = b[2] || 0;
       if (!amp) { return [b[0], b[1], bz]; }
@@ -3235,18 +3327,18 @@
             var col = (D.light ? (sel ? "#1b4fb0" : "#2f7bff") : (sel ? "#ffe066" : "#e08fff"));
             var pa, pb;
             if (kind === "plan" || kind === "persp") {
-              pa = scr3(proj3(kind, c.x0, c.y0, zc)); pb = scr3(proj3(kind, c.x1, c.y1, zc));
+              pa = scr3(proj3(kind, c.x0, D.secY0 || 0, cutZ0(c))); pb = scr3(proj3(kind, c.x1, D.secY0 || 0, cutZ1(c)));
             } else if (kind === "secX") {
-              pa = scr3(proj3(kind, c.x0, D.secY0 || 0, c.y0)); pb = scr3(proj3(kind, c.x1, D.secY0 || 0, c.y1));
+              pa = scr3(proj3(kind, c.x0, D.secY0 || 0, cutZ0(c))); pb = scr3(proj3(kind, c.x1, D.secY0 || 0, cutZ1(c)));
             } else {
-              pa = scr3(proj3(kind, D.secX0 || 0, c.x0, c.y0)); pb = scr3(proj3(kind, D.secX0 || 0, c.x1, c.y1));
+              pa = scr3(proj3(kind, D.secX0 || 0, c.x0, cutZ0(c))); pb = scr3(proj3(kind, D.secX0 || 0, c.x1, cutZ1(c)));
             }
             // 注意：proj3 已是投影坐标，scr3 需的是模型坐标；此处直接用 ft 变换
             function toScr2(uu, vv2) { return [ft.X(uu), ft.Y(vv2)]; }
             var qa, qb;
-            if (kind === "plan" || kind === "persp") { qa = toScr2(proj3(kind, c.x0, c.y0, zc)[0], proj3(kind, c.x0, c.y0, zc)[1]); qb = toScr2(proj3(kind, c.x1, c.y1, zc)[0], proj3(kind, c.x1, c.y1, zc)[1]); }
-            else if (kind === "secX") { qa = toScr2(proj3(kind, c.x0, D.secY0 || 0, c.y0)[0], proj3(kind, c.x0, D.secY0 || 0, c.y0)[1]); qb = toScr2(proj3(kind, c.x1, D.secY0 || 0, c.y1)[0], proj3(kind, c.x1, D.secY0 || 0, c.y1)[1]); }
-            else { qa = toScr2(proj3(kind, D.secX0 || 0, c.x0, c.y0)[0], proj3(kind, D.secX0 || 0, c.x0, c.y0)[1]); qb = toScr2(proj3(kind, D.secX0 || 0, c.x1, c.y1)[0], proj3(kind, D.secX0 || 0, c.x1, c.y1)[1]); }
+            if (kind === "plan" || kind === "persp") { qa = toScr2(proj3(kind, c.x0, D.secY0 || 0, cutZ0(c))[0], proj3(kind, c.x0, D.secY0 || 0, cutZ0(c))[1]); qb = toScr2(proj3(kind, c.x1, D.secY0 || 0, cutZ1(c))[0], proj3(kind, c.x1, D.secY0 || 0, cutZ1(c))[1]); }
+            else if (kind === "secX") { qa = toScr2(proj3(kind, c.x0, D.secY0 || 0, cutZ0(c))[0], proj3(kind, c.x0, D.secY0 || 0, cutZ0(c))[1]); qb = toScr2(proj3(kind, c.x1, D.secY0 || 0, cutZ1(c))[0], proj3(kind, c.x1, D.secY0 || 0, cutZ1(c))[1]); }
+            else { qa = toScr2(proj3(kind, D.secX0 || 0, c.x0, cutZ0(c))[0], proj3(kind, D.secX0 || 0, c.x0, cutZ0(c))[1]); qb = toScr2(proj3(kind, D.secX0 || 0, c.x1, cutZ1(c))[0], proj3(kind, D.secX0 || 0, c.x1, cutZ1(c))[1]); }
             void pa; void pb;
             ctx.save();
             ctx.strokeStyle = col; ctx.lineWidth = sel ? 2 : 1.4;
@@ -3523,11 +3615,11 @@
     drawOneView("cv3", a[3], false);
   }
   function cutById(id) { return (model.cuts || []).find(function (c) { return c.id === id; }); }
-  function addCut(x0, y0, x1, y1) {
+  function addCut(x0, z0, x1, z1) {
     if (!model.cuts) { model.cuts = []; }
     if (model.nextCut == null) { model.nextCut = 0; }
-    var c = { id: model.nextCut++, x0: x0, y0: y0, x1: x1, y1: y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, cAuto: true };
-    c.d0 = { x0: c.x0, y0: c.y0, x1: c.x1, y1: c.y1, cx: c.cx, cy: c.cy };   // 画线数值（恢复坐标用）
+    var c = { id: model.nextCut++, x0: x0, z0: z0, x1: x1, z1: z1, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, cAuto: true };
+    c.d0 = { x0: c.x0, z0: c.z0, x1: c.x1, z1: c.z1, cx: c.cx, cz: c.cz };   // 画线数值（恢复坐标用）
     model.cuts.push(c); return c;
   }
   function delCut(id) {
@@ -3552,7 +3644,7 @@
     var seq = [];
     orderedIds.forEach(function (id) { if (id != null && (!seq.length || seq[seq.length - 1] !== id)) { seq.push(id); } });
     if (seq.length < 2) { return []; }
-    function coord(id) { var n = nodeById(id); return n ? [n.x, n.y, nz(n)] : null; }
+    function coord(id) { var n = nodeById(id); return n ? [n.x, nv(n), nyo(n)] : null; }
     var A0 = coord(m.a); if (!A0) { return []; }
     // 方向对齐：seq 起点更靠近 m.a 则保持，否则反转（含 z 三向距离）
     var cs = coord(seq[0]), ce = coord(seq[seq.length - 1]);
@@ -3669,9 +3761,11 @@
     }
     var childIds = [], edges = [], r, c;
     if (corners.length >= 4) {
-      var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return [n.x, n.y]; });
+      var flat2 = corners.every(function (n) { return Math.abs(nyo(n)) < 1e-9; });
+      var P = [corners[0], corners[1], corners[2], corners[3]].map(function (n) { return flat2 ? [n.x, nv(n)] : [n.x, n.y]; });
       // 3D：角点高程按双线性权重插值（s=c/nx, t=r/ny），竖向/空间斜面不再塌到 z=0
       var Zq = [nz(corners[0]), nz(corners[1]), nz(corners[2]), nz(corners[3])];
+      if (flat2) { Zq = [nyo(corners[0]), nyo(corners[1]), nyo(corners[2]), nyo(corners[3])]; }
       var sub = quadSubCells(P, nx, ny), gid = [];
       for (r = 0; r <= ny; r++) {
         gid[r] = [];
@@ -3704,8 +3798,10 @@
       // 3D：重心坐标 (i,j,k)/n 同步插值 x/y/z；角点与边序列按权重拓扑判定，
       // 竖向/空间斜三角面在 XY 投影退化时仍能正确分割（2D 距离匹配在投影重合时会失效）
       var ntri = Math.max(1, Math.min(50, nx));
+      var flat23 = corners.every(function (n) { return Math.abs(nyo(n)) < 1e-9; });
       var Z3 = [nz(corners[0]), nz(corners[1]), nz(corners[2])];
-      var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return [n.x, n.y]; });
+      if (flat23) { Z3 = [nyo(corners[0]), nyo(corners[1]), nyo(corners[2])]; }
+      var P3 = [corners[0], corners[1], corners[2]].map(function (n) { return flat23 ? [n.x, nv(n)] : [n.x, n.y]; });
       var sub3 = triSubCells(P3, ntri), gmap = [], wts = [], zpts = [], ii, jj, kk;
       for (kk = 0; kk <= ntri; kk++) {
         for (jj = 0; jj <= ntri - kk; jj++) {
@@ -3747,9 +3843,9 @@
   function memberTypeFor(a, b) {
     var A = nodeById(a), B = nodeById(b);
     if (!A || !B) { return "user"; }
-    var dx = Math.abs(A.x - B.x), dy = Math.abs(A.y - B.y), dz = Math.abs(nz(A) - nz(B));
-    if (dx < 1e-6 && dy < 1e-6 && dz > 1e-6) { return "col"; }   // Z向竖杆
-    if (dx < 1e-6 && dz < 1e-6) { return "col"; }                // Y向竖杆（2D 柱）
+    var dx = Math.abs(A.x - B.x), dy = Math.abs(nv(A) - nv(B)), dz = Math.abs(nyo(A) - nyo(B));
+    if (dx < 1e-6 && dy < 1e-6 && dz > 1e-6) { return "col"; }   // Y向杆（面外）
+    if (dx < 1e-6 && dz < 1e-6) { return "col"; }                // Z向竖杆（2D 柱 / 3D 柱）
     if ((dy < 1e-6 && dz < 1e-6) || (dx < 1e-6 && dy < 1e-6)) { return "beam"; }
     if (dy < 1e-6) { return "beam"; }
     return "user";
@@ -3795,7 +3891,7 @@
     if ((D.dim || "2d") === "3d") { generateModel3D(); pendingMember = null; pendingCut = null; cutHover = null; cutDrag = null; return; }
     var B = clampInt(D.bays, 1, 6), S = clampInt(D.stories, 1, 8), W = Math.max(0.5, D.W), h = Math.max(0.5, D.h);
     var g = [], r, c;
-    for (r = 0; r <= S; r++) { g[r] = []; for (c = 0; c <= B; c++) { g[r][c] = addNode(c * W, r * h, r === 0 ? { ux: true, uy: true, rz: true } : null, 0).id; } }
+    for (r = 0; r <= S; r++) { g[r] = []; for (c = 0; c <= B; c++) { g[r][c] = addNode(c * W, r * h, r === 0 ? { ux: true, uz: true, ry: true } : null, 0).id; } }
     for (r = 0; r < S; r++) { for (c = 0; c <= B; c++) { addMemberById(g[r][c], g[r + 1][c], "col"); } }
     for (r = 1; r <= S; r++) { for (c = 0; c < B; c++) { addMemberById(g[r][c], g[r][c + 1], "beam"); } }
     pendingMember = null; pendingCut = null; cutHover = null; cutDrag = null;
@@ -3811,7 +3907,7 @@
       for (ix = 0; ix <= NX; ix++) {
         g[r][ix] = [];
         for (iy = 0; iy <= NY; iy++) {
-          g[r][ix][iy] = addNode(ix * WX, iy * WY, r === 0 ? { ux: true, uy: true, rz: true, uz: true } : null, r * h).id;
+          g[r][ix][iy] = addNode(ix * WX, r * h, r === 0 ? { ux: true, uy: true, uz: true, rx: true, ry: true, rz: true } : null, iy * WY).id;
         }
       }
     }
@@ -3840,15 +3936,15 @@
       memRebar[m.id] = defaultRebar();
     });
     var maxY = 0;
-    model.nodes.forEach(function (n) { maxY = Math.max(maxY, n.y); });
+    model.nodes.forEach(function (n) { maxY = Math.max(maxY, nv(n)); });
     model.nodes.forEach(function (n) {
-      if (n.y <= 1e-9) { return; }
-      nodeLoads[n.id] = { fx: 6 + 8 * (n.y / D.h), fy: 0, mz: 0 };
+      if (nv(n) <= 1e-9) { return; }
+      nodeLoads[n.id] = { fx: 6 + 8 * (nv(n) / D.h), fz: 0, my: 0 };
     });
     model.members.forEach(function (m) {
       if (m.type !== "beam") { return; }
       var A = nodeById(m.a);
-      if (A && Math.abs(A.y - maxY) < 1e-6) { memLoads[m.id] = [{ type: "udl", q: -12 }]; }
+      if (A && Math.abs(nv(A) - maxY) < 1e-6) { memLoads[m.id] = [{ type: "udl", q: -12 }]; }
     });
     selNodes = {}; selMembers = {}; selCuts = {};
     areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {}; selAreas = {}; pendingArea = [];
@@ -3862,8 +3958,8 @@
     areaMat = {}; areaSec = {}; areaLoads = {}; memDiv = {}; areaDiv = {}; selAreas = {}; pendingArea = [];
     pendingMember = null; pendingCut = null; cutHover = null; cutDrag = null;
     var W = 6, H = 4, nx = 3, ny = 3;
-    var bl = addNode(0, 0, { ux: true, uy: true, rz: true });
-    var br = addNode(W, 0, { ux: true, uy: true, rz: true });
+    var bl = addNode(0, 0, { ux: true, uz: true, ry: true });
+    var br = addNode(W, 0, { ux: true, uz: true, ry: true });
     var tr = addNode(W, H, null), tl = addNode(0, H, null);
     var a = addAreaByIds([bl.id, br.id, tr.id, tl.id], "shell");
     if (a) {
@@ -3873,8 +3969,8 @@
       selAreas = {}; selAreas[a.id] = true;
     }
     // 顶部两个节点水平荷载（自平衡于底部固定端）
-    nodeLoads[tl.id] = { fx: 30, fy: 0, mz: 0 };
-    nodeLoads[tr.id] = { fx: 30, fy: 0, mz: 0 };
+    nodeLoads[tl.id] = { fx: 30, fz: 0, my: 0 };
+    nodeLoads[tr.id] = { fx: 30, fz: 0, my: 0 };
     D.AMESH = nx; $("in-AMESH").value = nx;
     rebuild();
   }
@@ -3908,16 +4004,25 @@
   var T = { ox: 0, oy: 0, scale: 1 };
   var CB = { show: false, kind: "disp", rng: { min: 0, max: 1 }, lo: 0, hi: 1, title: "" };   // 底部云图色标范围
   var gSX = null, gSY = null;   // 变形后各分析节点的屏幕坐标（供标注/荷载随变形移动）
-  var DCV = [];                 // 位移视图当前分量各分析节点值（mm）：mag=总位移，ux/uy/uz=分量（3D 含 Uz）
+  var DCV = [];                 // 位移视图当前分量各分析节点值（mm）：mag=总位移；2D 时 u[1] 即竖向 Uz
   var DISP_NAMES = { mag: "位移", ux: "Ux", uy: "Uy", uz: "Uz" };
   function dofStride() { return (ana && ana.all && ana.all.length && ana.u && ana.u.length >= ana.all.length * 6 - 1e-9) ? 6 : 3; }
+  /* 2D 画布平面坐标：X-Z 统一。ana.all 恒为平面二元组 [x,z]（3D 时 all3 另存三元组）；
+   * 位移按 stride 取：ux=u[st*i]，uz=u[st*i+(st==6?2:1)] */
+  function anaPlaneY(p) { return p[1]; }
+  function anaPlaneU(i) { var st = dofStride(); return (ana.u[st * i] || 0); }
+  function anaPlaneW(i) { var st = dofStride(); return (ana.u[st * i + (st === 6 ? 2 : 1)] || 0); }
+  function planeAll() { return (ana.all || []).map(function (p) { return [p[0], anaPlaneY(p)]; }); }
   function dispNodeVal(i) {
     var st = dofStride();
-    var ux = ana.u[st * i], uy = ana.u[st * i + 1], uz = st === 6 ? ana.u[st * i + 2] : 0;
-    var v = D.dispVar === "ux" ? ux : D.dispVar === "uy" ? uy : D.dispVar === "uz" ? uz : Math.hypot(ux, uy, uz);
+    var ux = ana.u[st * i];
+    var vY = ana.u[st * i + 1];              // 2D：竖向 Uz；3D：面外 Uy
+    var vZ = (st === 6) ? ana.u[st * i + 2] : vY;  // 3D：竖向 Uz；2D：同 vY
+    var mag = (st === 6) ? Math.hypot(ux, vY, vZ) : Math.hypot(ux, vY);
+    var v = D.dispVar === "ux" ? ux : D.dispVar === "uy" ? vY : D.dispVar === "uz" ? vZ : mag;
     return v * 1000;
   }
-  function dispTitle() { return D.dispVar === "ux" ? "X向位移云图" : D.dispVar === "uy" ? "Y向位移云图" : D.dispVar === "uz" ? "Z向位移云图（3D）" : "位移幅值云图"; }
+  function dispTitle() { return D.dispVar === "ux" ? "X向位移云图" : D.dispVar === "uy" ? "Y向位移云图" : D.dispVar === "uz" ? "Z向位移云图" : "位移幅值云图"; }
 
   // 面云图数据范围（按当前分量取 min/max）
   function cloudRange() {
@@ -3966,9 +4071,11 @@
     return rgb(jet((v - CB.lo) / (CB.hi - CB.lo)));
   }
   function toX(x) { return T.ox + x * T.scale; }
-  function toY(y) { return T.oy - y * T.scale; }
+  function toZ(z) { return T.oy - z * T.scale; }
+  function toY(y) { return toZ(y); } // 旧名兼容（y 即竖向 z）
   function fromX(px) { return (px - T.ox) / T.scale; }
-  function fromY(py) { return (T.oy - py) / T.scale; }
+  function fromZ(pz) { return (T.oy - pz) / T.scale; }
+  function fromY(py) { return fromZ(py); } // 旧名兼容
 
   // 杆件上某个截面位置（杆件坐标 x，单位 m）在“变形后”图面上的屏幕坐标
   function memScreenPoint(m, x) {
@@ -3983,16 +4090,18 @@
         }
       }
     }
-    return [toX(m.x1 + m.ux * x), toY(m.y1 + m.uy * x)];
+    var _z1 = (m.z1 != null ? m.z1 : m.y1), _uz = (m.uz != null ? m.uz : m.uy);
+    return [toX(m.x1 + m.ux * x), toZ(_z1 + _uz * x)];
   }
-  // 杆件变形后弦向的屏幕法向（即局部 -y 的荷载正方向）
+  // 杆件变形后弦向的屏幕法向（即局部 -z 的荷载正方向）
   function memDirNormal(m) {
     var ia = ana ? ana.idx[m.a] : null, ib = ana ? ana.idx[m.b] : null;
     var ax, ay, bx, by;
     if (gSX && ia != null) {
       ax = gSX[ia]; ay = gSY[ia]; bx = gSX[ib]; by = gSY[ib];
     } else {
-      ax = toX(m.x1); ay = toY(m.y1); bx = toX(m.x1 + m.ux * m.L); by = toY(m.y1 + m.uy * m.L);
+      var _z1b = (m.z1 != null ? m.z1 : m.y1), _uzb = (m.uz != null ? m.uz : m.uy);
+      ax = toX(m.x1); ay = toZ(_z1b); bx = toX(m.x1 + m.ux * m.L); by = toZ(_z1b + _uzb * m.L);
     }
     var ex = bx - ax, ey = by - ay, Ls = Math.hypot(ex, ey) || 1;
     return { x: -ey / Ls, y: ex / Ls };
@@ -4088,13 +4197,13 @@
 
   function drawAreaLoads(ctx, small) {
     var qmax = 0;
-    Object.keys(areaLoads).forEach(function (k) { var l = areaLoads[k]; qmax = Math.max(qmax, Math.hypot(l.qx || 0, l.qy || 0)); });
+    Object.keys(areaLoads).forEach(function (k) { var l = areaLoads[k]; qmax = Math.max(qmax, Math.hypot(l.qx || 0, (l.qz != null ? l.qz : l.qy) || 0)); });
     if (!qmax) { return; }
     var base = Math.max(36, Math.min(T.cw || 800, T.ch || 600) * 0.09) * D.loadScale;
     ctx.strokeStyle = "#7bf7c9"; ctx.fillStyle = "#7bf7c9"; ctx.lineWidth = 2;
     Object.keys(areaLoads).forEach(function (k) {
       var a = areaById(+k); if (!a) { return; }
-      var l = areaLoads[k], qx = l.qx || 0, qy = l.qy || 0, m = Math.hypot(qx, qy);
+      var l = areaLoads[k], qx = l.qx || 0, qy = ((l.qz != null ? l.qz : l.qy) || 0), m = Math.hypot(qx, qy);
       if (!m) { return; }
       var poly = areaDeformedPoly(a), cx = 0, cy = 0;
       poly.forEach(function (p) { cx += p[0]; cy += p[1]; }); cx /= poly.length; cy /= poly.length;
@@ -4113,7 +4222,7 @@
         if (ana && ana.u && ana.all) {
           var st0 = (ana.all.length && ana.u.length >= ana.all.length * 6 - 1e-9) ? 6 : 3;
           DCV = ana.all.map(function (p, i) {
-            var ux = ana.u[st0 * i] || 0, uy = ana.u[st0 * i + 1] || 0, uz = st0 === 6 ? (ana.u[st0 * i + 2] || 0) : 0;
+            var ux = ana.u[st0 * i] || 0, uy = ana.u[st0 * i + 1] || 0, uz = st0 === 6 ? (ana.u[st0 * i + 2] || 0) : uy;
             var v = D.dispVar === "ux" ? ux : D.dispVar === "uy" ? uy : D.dispVar === "uz" ? uz : Math.hypot(ux, uy, uz);
             return v * 1000;
           });
@@ -4147,7 +4256,7 @@
     var nodes = ana.nodes, all = ana.all, elems = ana.elems, u = ana.u, idx = ana.idx;
     var fs = Math.max(10, Math.min(cw, ch) * 0.021), small = Math.max(9, fs * 0.86);
 
-    var xs = nodes.map(function (n) { return n.x; }), ys = nodes.map(function (n) { return n.y; });
+    var xs = nodes.map(function (n) { return n.x; }), ys = nodes.map(function (n) { return nv(n); });
     var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
     var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
     var mx = (maxX - minX) * 0.30 || 1, my = (maxY - minY) * 0.20 || 1;
@@ -4165,10 +4274,10 @@
 
     var amp = (view === "model" || view === "design") ? 0 : D.mag;
     var _st = (all.length && u.length >= all.length * 6 - 1e-9) ? 6 : 3;
-    var dxn = all.map(function (p, i) { return p[0] + u[_st * i] * amp; });
-    var dyn = all.map(function (p, i) { return p[1] + u[_st * i + 1] * amp; });
+    var dxn = all.map(function (p, i) { return p[0] + (u[_st * i] || 0) * amp; });
+    var dyn = all.map(function (p, i) { return p[1] + (u[_st * i + (_st === 6 ? 2 : 1)] || 0) * amp; });
     var sx = all.map(function (p, i) { return toX(dxn[i]); });
-    var sy = all.map(function (p, i) { return toY(dyn[i]); });
+    var sy = all.map(function (p, i) { return toZ(dyn[i]); });
     gSX = sx; gSY = sy;
     DCV = all.map(function (p, i) { return dispNodeVal(i); });
     var vals = DCV;
@@ -4190,13 +4299,13 @@
       model.members.forEach(function (m) {
         var A = nodes[idx[m.a]], B = nodes[idx[m.b]];
         if (!A || !B) { return; }
-        ctx.beginPath(); ctx.moveTo(toX(A.x), toY(A.y)); ctx.lineTo(toX(B.x), toY(B.y)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(toX(A.x), toZ(nv(A))); ctx.lineTo(toX(B.x), toZ(nv(B))); ctx.stroke();
       });
       (model.areas || []).forEach(function (a) {
         ctx.beginPath();
         a.nodes.forEach(function (nid, k) {
           var n = nodeById(nid); if (!n) { return; }
-          if (k) { ctx.lineTo(toX(n.x), toY(n.y)); } else { ctx.moveTo(toX(n.x), toY(n.y)); }
+          if (k) { ctx.lineTo(toX(n.x), toZ(nv(n))); } else { ctx.moveTo(toX(n.x), toZ(nv(n))); }
         });
         ctx.closePath(); ctx.stroke();
       });
@@ -4287,7 +4396,7 @@
 
     // 支座
     nodes.forEach(function (n) {
-      if (!(n.bc.ux || n.bc.uy || n.bc.rz)) { return; }
+      if (!(n.bc.ux || (n.bc.uz != null ? n.bc.uz : n.bc.uy) || (n.bc.ry != null ? n.bc.ry : n.bc.rz))) { return; }
       drawSupport(ctx, sx[idx[n.id]], sy[idx[n.id]], n.bc, Math.max(9, cw * 0.012));
     });
 
@@ -4363,7 +4472,8 @@
   }
 
   function drawSupport(ctx, bx, by, bc, wdt) {
-    var tri = bc.ux && bc.uy && bc.rz;
+    var _uz = (bc.uz != null ? bc.uz : bc.uy), _ry = (bc.ry != null ? bc.ry : bc.rz);
+    var tri = bc.ux && _uz && _ry;
     ctx.fillStyle = D.light ? "rgba(11, 127, 168, 0.16)" : "rgba(110, 231, 255, 0.22)"; ctx.strokeStyle = TH().support; ctx.lineWidth = 1.8;
     ctx.beginPath(); ctx.moveTo(bx - wdt, by + wdt); ctx.lineTo(bx, by); ctx.lineTo(bx + wdt, by + wdt); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(bx - wdt * 1.3, by + wdt); ctx.lineTo(bx + wdt * 1.3, by + wdt); ctx.stroke();
@@ -4401,7 +4511,8 @@
     ctx.strokeStyle = "#ff9f43"; ctx.fillStyle = "#ff9f43"; ctx.lineWidth = 2;
     nodes.forEach(function (n) {
       var nl = nodeLoads[n.id]; if (!nl) { return; }
-      var i = idx[n.id], x = sx[i], y = sy[i], fx = nl.fx || 0, fy = nl.fy || 0, mz = nl.mz || 0;
+      var i = idx[n.id], x = sx[i], y = sy[i], fx = nl.fx || 0;
+      var fy = ((nl.fz != null ? nl.fz : nl.fy) || 0), mz = ((nl.my != null ? nl.my : nl.mz) || 0);
       var base = Math.max(32, T.scale * 0.7) * D.loadScale;
       if (fx) {
         var ex = x + Math.sign(fx) * base;
@@ -4414,8 +4525,8 @@
         arrowHead(ctx, x, y, x, ey, 10);
       }
       if (mz) { ctx.beginPath(); ctx.arc(x, y, base * 0.5, 0.4, 5.5); ctx.stroke(); }
-      // Fz（3D/面外）：以 ⊗ 符号表示，数值随荷载数值开关显示
-      if (nl.fz) {
+      // Fz（3D/面外）：以 ⊗ 符号表示，数值随荷载数值开关显示（2D 下 fz 为面内竖向，不画此符号）
+      if (nl.fz && (D.dim || "2d") === "3d") {
         ctx.save(); ctx.font = "600 " + small + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
         ctx.fillStyle = "#c59bff";
         ctx.fillText("⊗" + (D.showLoadVals ? roundN(fO(nl.fz), 2) : ""), x, y + base * 0.55 + 10);
@@ -4424,9 +4535,9 @@
       if (D.showLoadVals && (fx || fy || mz || nl.fz)) {
         var s = [];
         if (fx) { s.push("Fx=" + roundN(fO(fx), 3)); }
-        if (fy) { s.push("Fy=" + roundN(fO(fy), 3)); }
-        if (nl.fz) { s.push("Fz=" + roundN(fO(nl.fz), 3)); }
-        if (mz) { s.push("M=" + roundN(momO(mz), 3)); }
+        if (fy) { s.push("Fz=" + roundN(fO(fy), 3)); }
+        if (nl.fz && (D.dim || "2d") === "3d") { s.push("Fz=" + roundN(fO(nl.fz), 3)); }
+        if (mz) { s.push("My=" + roundN(momO(mz), 3)); }
         ctx.save(); ctx.font = "600 " + small + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "left";
         var _lt = s.join("  ");
         outlineForText(ctx); ctx.strokeText(_lt, x + 8, y - 9);
@@ -4759,10 +4870,11 @@
     if (!ana || !ana.all || !ana.u || !amp) { return [0, 0]; }
     var all = ana.all, u = ana.u, n = all.length, i;
     var _st = (n && u.length >= n * 6 - 1e-9) ? 6 : 3;
+    var _w = (_st === 6 ? 2 : 1);
     var K = 6, bd = [], bv = [], m = 0;
     for (i = 0; i < n; i++) {
       var dx = x - all[i][0], dy = y - all[i][1], d2 = dx * dx + dy * dy;
-      if (d2 < 1e-18) { return [u[_st * i] * amp, u[_st * i + 1] * amp]; }
+      if (d2 < 1e-18) { return [u[_st * i] * amp, u[_st * i + _w] * amp]; }
       if (m < K) { bd.push(d2); bv.push(i); m++; }
       else {
         var mi = 0, k;
@@ -4771,7 +4883,7 @@
       }
     }
     var sx = 0, sy = 0, sw = 0, k2;
-    for (k2 = 0; k2 < m; k2++) { var w = 1 / (bd[k2] + 1e-12); sx += u[_st * bv[k2]] * w; sy += u[_st * bv[k2] + 1] * w; sw += w; }
+    for (k2 = 0; k2 < m; k2++) { var w = 1 / (bd[k2] + 1e-12); sx += u[_st * bv[k2]] * w; sy += u[_st * bv[k2] + _w] * w; sw += w; }
     if (!(sw > 0)) { return [0, 0]; }
     return [sx / sw * amp, sy / sw * amp];
   }
@@ -4786,7 +4898,7 @@
     return [ux, uy];
   }
   // 未变形剖面点 → 变形后屏幕坐标
-  function cutDefPt(x, y) { var d = deformPt(x, y); return [toX(d[0]), toY(d[1])]; }
+  function cutDefPt(x, y) { var d = deformPt(x, y); return [toX(d[0]), toZ(d[1])]; }
   // 剖面探针在主图上的屏幕坐标（壳内有效段内插值，随变形移动），无命中返回 null
   function cutProbeScreen(c) {
     var res = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
@@ -4794,7 +4906,7 @@
     if (!res || !res.hit || !g) { return null; }
     var hr = cutHitRange(res);
     var x = hr[0] + clamp(D.cutPos == null ? 0.5 : D.cutPos, 0, 1) * (hr[1] - hr[0]);
-    var p = cutDefPt(c.x0 + g.sx * x, c.y0 + g.sy * x);
+    var p = cutDefPt(c.x0 + g.sx * x, cutZ0(c) + g.sy * x);
     return [p[0], p[1], x];
   }
   function drawCuts(ctx, small) {
@@ -4806,7 +4918,7 @@
       var sel = !!selCuts[c.id];
       var col = cutThemeCol(sel);
       // 端点随变形显示
-      var pa = cutDefPt(c.x0, c.y0), pb = cutDefPt(c.x1, c.y1);
+      var pa = cutDefPt(c.x0, cutZ0(c)), pb = cutDefPt(c.x1, cutZ1(c));
       var ax = pa[0], ay = pa[1], bx = pb[0], by = pb[1];
       // 变形后屏幕方向及法向（中轴短 tick 用）
       var ddx = bx - ax, ddy = by - ay, ddl = Math.hypot(ddx, ddy) || 1;
@@ -4819,7 +4931,7 @@
       ctx.globalAlpha = 1;
       var g = cutGeom(c);
       var res = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
-      function cutPtAt(x) { return cutDefPt(c.x0 + g.sx * x, c.y0 + g.sy * x); }
+      function cutPtAt(x) { return cutDefPt(c.x0 + g.sx * x, cutZ0(c) + g.sy * x); }
       // 壳内有效段加粗覆盖
       if (g && res && res.hit) {
         ctx.lineWidth = sel ? 4 : 3;
@@ -4840,7 +4952,7 @@
           });
         });
       }
-      var mc = cutDefPt(c.cx, c.cy), tl = 7;
+      var mc = cutDefPt(c.cx, cutCZ(c)), tl = 7;
       ctx.strokeStyle = col; ctx.lineWidth = sel ? 2 : 1.4;
       ctx.beginPath(); ctx.moveTo(mc[0] - dnx * tl, mc[1] - dny * tl); ctx.lineTo(mc[0] + dnx * tl, mc[1] + dny * tl); ctx.stroke();
       if (sel) {
@@ -4865,14 +4977,14 @@
     });
     // 画线橡皮筋（第二点经节点吸附/15°磁吸，均随变形显示）
     if (D.mode === "cut" && pendingCut && cutHover) {
-      var sp0 = cutDefPt(pendingCut.x, pendingCut.y);
+      var sp0 = cutDefPt(pendingCut.x, pendingCut.z);
       var sx0 = sp0[0], sy0 = sp0[1];
       var ex = cutHover.x, ey = cutHover.y;
       var hn = pickNode(ex, ey);
       if (hn !== null) { var hnn = nodeById(hn); var hp = cutDefPt(hnn.x, hnn.y); ex = hp[0]; ey = hp[1]; }
       else if (D.cutSnap) {
-        var wxy = undeformPt(fromX(ex), fromY(ey));
-        var sn2 = snapCutAngle(pendingCut.x, pendingCut.y, wxy[0], wxy[1]);
+        var wxy = undeformPt(fromX(ex), fromZ(ey));
+        var sn2 = snapCutAngle(pendingCut.x, pendingCut.z, wxy[0], wxy[1]);
         var spp = cutDefPt(sn2[0], sn2[1]); ex = spp[0]; ey = spp[1];
       }
       ctx.strokeStyle = cutThemeCol(false); ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]);
@@ -4998,13 +5110,13 @@
     }
     // 两端节点荷载（用于荷载小图显示）
     var mem = els[0].member, endLoads = [];
-    var mux = mem.ux, muy = mem.uy;
+    var mux = mem.ux, muy = (mem.uz != null ? mem.uz : mem.uy);
     if (mux == null) { mux = 1; muy = 0; }
     [[mem.a, 0], [mem.b, L]].forEach(function (e) {
       var nl = nodeLoads[e[0]]; if (!nl) { return; }
-      var fx = nl.fx || 0, fy = nl.fy || 0, mz = nl.mz || 0;
+      var fx = nl.fx || 0, fy = ((nl.fz != null ? nl.fz : nl.fy) || 0), mz = ((nl.my != null ? nl.my : nl.mz) || 0);
       if (Math.abs(fx) < 1e-9 && Math.abs(fy) < 1e-9 && Math.abs(mz) < 1e-9 && Math.abs(nl.fz || 0) < 1e-9 && Math.abs(nl.mx || 0) < 1e-9 && Math.abs(nl.my || 0) < 1e-9) { return; }
-      var trans = fx * (-muy) + fy * mux;   // 节点力的横向分量（局部 +y 为正）
+            var trans = fx * (-muy) + fy * mux;   // local +z
       endLoads.push({ x: e[1], fx: fx, fy: fy, mz: mz, val: trans });
     });
     return { L: L, pts: pts, loadPts: loadPts, loads: loads, member: mem, endLoads: endLoads };
@@ -5086,8 +5198,8 @@
           ctx.fillStyle = "#ff9f43"; ctx.beginPath(); ctx.moveTo(X, Y); ctx.lineTo(X - 3, Y + (nl.val >= 0 ? 6 : -6)); ctx.lineTo(X + 3, Y + (nl.val >= 0 ? 6 : -6)); ctx.closePath(); ctx.fill();
           var parts = [];
           if (Math.abs(nl.fx) > 1e-9) { parts.push("Fx=" + roundN(fO(nl.fx), 2)); }
-          if (Math.abs(nl.fy) > 1e-9) { parts.push("Fy=" + roundN(fO(nl.fy), 2)); }
-          if (Math.abs(nl.mz) > 1e-9) { parts.push("M=" + roundN(momO(nl.mz), 2)); }
+          if (Math.abs(nl.fy) > 1e-9) { parts.push("Fz=" + roundN(fO(nl.fy), 2)); }
+          if (Math.abs(nl.mz) > 1e-9) { parts.push("My=" + roundN(momO(nl.mz), 2)); }
           if (parts.length) {
             var left = nl.x <= L / 2;
             ctx.fillStyle = "#ff9f43"; ctx.font = "600 9px Segoe UI, Microsoft YaHei";
@@ -5154,7 +5266,7 @@
 
   /* ================= 底部云图色标范围条（位移 / 应力共用） ================= */
 
-  var SB_NAMES = { vm: "von Mises", sx: "σx", sy: "σy", txy: "τxy", s1: "σ1", nx: "Nx" };
+  var SB_NAMES = { vm: "von Mises", sx: "σx", sy: "σz", sz: "σz", txy: "τxz", txz: "τxz", s1: "σ1", nx: "Nx" };
 
   function fmtCloudVal(v) { return CB.kind === "disp" ? v.toFixed(2) : fmtSci(v); }
 
@@ -5370,7 +5482,7 @@
       return;
     }
     var p = canvasPos(ev);
-    updateStatusCoord(fromX(p.x), fromY(p.y));
+    updateStatusCoord(fromX(p.x), fromZ(p.y));
     var info = hoverContent(p);
     var box = $("hoverbox");
     if (!info) { box.style.display = "none"; return; }
@@ -5411,8 +5523,8 @@
 
   function updateStatusCoord(mx, my, mz) {
     var el = $("status-coord"); if (!el) { return; }
-    if (mx == null) { el.textContent = ((D.dim || "2d") === "3d") ? "X —　Y —　Z —" : "X —　Y —"; return; }
-    var t = "X " + fmtCoord(mx) + " " + D.lenUnit + "　Y " + fmtCoord(my) + " " + D.lenUnit;
+    if (mx == null) { el.textContent = ((D.dim || "2d") === "3d") ? "X —　Y —　Z —" : "X —　Z —"; return; }
+    var t = "X " + fmtCoord(mx) + " " + D.lenUnit + "　" + (((D.dim || "2d") === "3d") ? "Y" : "Z") + " " + fmtCoord(my) + " " + D.lenUnit;
     if ((D.dim || "2d") === "3d" && mz != null && isFinite(mz)) { t += "　Z " + fmtCoord(mz) + " " + D.lenUnit; }
     t += "　｜　" + forceU() + " · " + momU() + " · " + stressU();
     el.textContent = t;
@@ -5426,9 +5538,9 @@
     } catch (e) {
       // 3D 模式下面内/面外混合可能使 2D 内置求解奇异：退化为几何占位，保证多窗口照常显示
       // 占位保留 z 与 all3，保证细分网格（如有）与模型高程一致
-      var _all3 = (model.nodes || []).map(function (n) { return [n.x, n.y, nz(n)]; });
-      ana = { nodes: (model.nodes || []).map(function (n) { return { id: n.id, x: n.x, y: n.y }; }),
-              all: _all3.map(function (p) { return [p[0], p[1], p[2]]; }), all3: _all3,
+      var _all3 = (model.nodes || []).map(function (n) { return [n.x, nyo(n), nv(n)]; });
+      ana = { nodes: (model.nodes || []).map(function (n) { return { id: n.id, x: n.x, y: nyo(n), z: nv(n) }; }),
+              all: _all3.map(function (p) { return [p[0], p[2]]; }), all3: _all3,
               u: [], idx: {}, elems: [], byMember: {}, areaElems: [], res: { roof: 0, maxDisp: 0, maxM: 0, maxV: 0, maxN: 0, nNode: (model.nodes || []).length, nMember: (model.members || []).length, nArea: (model.areas || []).length }, ok: false };
       (model.nodes || []).forEach(function (n, i) { ana.idx[n.id] = i; ana.u[3 * i] = 0; ana.u[3 * i + 1] = 0; ana.u[3 * i + 2] = 0; });
       ana.error = String((e && e.message) || e);
@@ -5442,7 +5554,7 @@
   // 轻量刷新剖面（仅重算切割积分，不重跑整体分析；供拖拽手柄/改坐标用）
   function refreshCuts(skipInputs) {
     if (!ana) { return; }
-    ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, ana.all);
+    ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, planeAll());
     draw(); updateCutPanel(skipInputs);
   }
 
@@ -5455,7 +5567,7 @@
     if (D.showCuts === false) { return null; }
     var best = null, bd = 10;
     (model.cuts || []).forEach(function (c) {
-      var pa = cutDefPt(c.x0, c.y0), pb = cutDefPt(c.x1, c.y1);
+      var pa = cutDefPt(c.x0, cutZ0(c)), pb = cutDefPt(c.x1, cutZ1(c));
       var d = distSeg(px, py, pa[0], pa[1], pb[0], pb[1]);
       if (d < bd) { bd = d; best = c.id; }
     });
@@ -5469,7 +5581,7 @@
       var c = cutById(+k); if (!c) { return; }
       var ps = cutProbeScreen(c);
       if (ps && Math.hypot(px - ps[0], py - ps[1]) < 12) { best = { id: c.id, part: "probe" }; return; }
-      [["p0", c.x0, c.y0], ["p1", c.x1, c.y1], ["c", c.cx, c.cy]].forEach(function (q) {
+      [["p0", c.x0, cutZ0(c)], ["p1", c.x1, cutZ1(c)], ["c", c.cx, cutCZ(c)]].forEach(function (q) {
         var hp = cutDefPt(q[1], q[2]);
         if (Math.hypot(px - hp[0], py - hp[1]) < 11) { best = { id: c.id, part: q[0] }; }
       });
@@ -5559,7 +5671,7 @@
       return;
     }
     if (D.mode === "node") {
-      var nx = Math.round(fromX(p.x) * 20) / 20, ny = Math.round(fromY(p.y) * 20) / 20;
+      var nx = Math.round(fromX(p.x) * 20) / 20, ny = Math.round(fromZ(p.y) * 20) / 20;
       var nn = addNode(nx, ny, null, 0);
       selNodes = {}; selNodes[nn.id] = true; selMembers = {}; selAreas = {};
       rebuild(); return;
@@ -5590,13 +5702,13 @@
       var nid3 = pickNode(p.x, p.y);
       var mx, my;
       if (nid3 !== null) { var nn3 = nodeById(nid3); mx = nn3.x; my = nn3.y; }
-      else { var uw = undeformPt(fromX(p.x), fromY(p.y)); mx = uw[0]; my = uw[1]; }
-      if (!pendingCut) { pendingCut = { x: mx, y: my }; cutHover = null; refreshModebar(); draw(); }
+      else { var uw = undeformPt(fromX(p.x), fromZ(p.y)); mx = uw[0]; my = uw[1]; }
+      if (!pendingCut) { pendingCut = { x: mx, z: my }; cutHover = null; refreshModebar(); draw(); }
       else {
         var qx = mx, qy = my;
-        if (D.cutSnap) { var sn = snapCutAngle(pendingCut.x, pendingCut.y, mx, my); qx = sn[0]; qy = sn[1]; }
-        if (Math.hypot(qx - pendingCut.x, qy - pendingCut.y) < 1e-9) { return; }
-        var nc = addCut(pendingCut.x, pendingCut.y, qx, qy);
+        if (D.cutSnap) { var sn = snapCutAngle(pendingCut.x, pendingCut.z, mx, my); qx = sn[0]; qy = sn[1]; }
+        if (Math.hypot(qx - pendingCut.x, qy - pendingCut.z) < 1e-9) { return; }
+        var nc = addCut(pendingCut.x, pendingCut.z, qx, qy);
         pendingCut = null; cutHover = null;
         selNodes = {}; selMembers = {}; selAreas = {}; selCuts = {}; selCuts[nc.id] = true;
         rebuild(); setMode("select"); showTab("cut");
@@ -5643,7 +5755,7 @@
       var c = cutById(cutDrag.id);
       if (c) {
         // 鼠标为变形后坐标，先换算回未变形坐标再更新存储值
-        var uw2 = undeformPt(fromX(ev.clientX - r.left), fromY(ev.clientY - r.top));
+        var uw2 = undeformPt(fromX(ev.clientX - r.left), fromZ(ev.clientY - r.top));
         var wx = uw2[0], wy = uw2[1];
         if (cutDrag.part === "probe") {
           // 探针沿剖面线投影，钳制到壳内有效段（与应力图滑点同步）
@@ -5651,14 +5763,14 @@
           var res = (ana && ana.cutResults) ? ana.cutResults[c.id] : null;
           if (g && res && res.hit) {
             var hr = cutHitRange(res);
-            var t = ((wx - c.x0) * g.sx + (wy - c.y0) * g.sy - hr[0]) / (Math.max(hr[1] - hr[0], 1e-12));
+            var t = ((wx - c.x0) * g.sx + (wy - cutZ0(c)) * g.sy - hr[0]) / (Math.max(hr[1] - hr[0], 1e-12));
             D.cutPos = clamp(t, 0, 1);
           }
           refreshCuts(true);
         }
-        else if (cutDrag.part === "p0") { c.x0 = wx; c.y0 = wy; refreshCuts(true); }
-        else if (cutDrag.part === "p1") { c.x1 = wx; c.y1 = wy; refreshCuts(true); }
-        else { c.cx = wx; c.cy = wy; c.cAuto = false; refreshCuts(true); }
+        else if (cutDrag.part === "p0") { c.x0 = wx; c.z0 = wy; refreshCuts(true); }
+        else if (cutDrag.part === "p1") { c.x1 = wx; c.z1 = wy; refreshCuts(true); }
+        else { c.cx = wx; c.cz = wy; c.cAuto = false; refreshCuts(true); }
       }
       return;
     }
@@ -5984,13 +6096,18 @@
   function bcKeyOf(bc) {
     bc = bc || {};
     var all6 = bc.ux && bc.uy && bc.uz && bc.rx && bc.ry && bc.rz;
-    if (all6) { return "fixed"; }
+    if (all6) { return "fixed3d"; }
     if (bc.ux && bc.uy && bc.uz && !bc.rx && !bc.ry && !bc.rz) { return "pin3d"; }
-    if (bc.ux && bc.uy && bc.uz && bc.rz && !bc.rx && !bc.ry) { return "clampZ"; }
-    if (bc.ux && bc.uy && bc.rz && !bc.uz) { return "fixed"; }
+    if (bc.ux && bc.uy && bc.uz && bc.ry && !bc.rx && !bc.rz) { return "clampZ"; }
+    // 2D（X-Z）：ux+uz+ry 为固定，ux+uz 为铰，uz 为竖向辊轴
+    if (bc.ux && bc.uz && bc.ry && !bc.uy && !bc.rx && !bc.rz) { return "fixed"; }
+    if (bc.ux && bc.uz && !bc.ry) { return "pin"; }
+    if (bc.uz && !bc.ux) { return "rollerZ"; }
+    if (bc.ux && !bc.uz) { return "rollerX"; }
+    // 兼容旧键（uy 竖向 / rz 面内）：
+    if (bc.ux && bc.uy && bc.rz) { return "fixed"; }
     if (bc.ux && bc.uy) { return "pin"; }
-    if (bc.uy) { return "rollerY"; }
-    if (bc.ux) { return "rollerX"; }
+    if (bc.uy && !bc.ux) { return "rollerZ"; }
     return "free";
   }
   function selCounts() { return { n: Object.keys(selNodes).length, m: Object.keys(selMembers).length, a: Object.keys(selAreas).length }; }
@@ -6009,7 +6126,7 @@
     var nid = Object.keys(selNodes)[0];
     if (nid !== undefined) {
       var n = nodeById(+nid);
-      if (n) { $("nd-x").value = roundN(lenO(n.x), 3); $("nd-y").value = roundN(lenO(n.y), 3); if ($("nd-z")) { $("nd-z").value = roundN(lenO(nz(n)), 3); } $("nd-bc").value = bcKeyOf(n.bc); }
+      if (n) { $("nd-x").value = roundN(lenO(n.x), 3); $("nd-y").value = roundN(lenO(nyo(n)), 3); if ($("nd-z")) { $("nd-z").value = roundN(lenO(nv(n)), 3); } $("nd-bc").value = bcKeyOf(n.bc); }
     }
     var mid = Object.keys(selMembers)[0];
     var m = (mid !== undefined) ? memberById(+mid) : null;
@@ -6120,9 +6237,9 @@
     $("cut-snap").checked = D.cutSnap !== false;
     var c = (cur !== null) ? cutById(cur) : null;
     if (c && !skipInputs) {
-      $("cut-x0").value = roundN(lenO(c.x0), 3); $("cut-y0").value = roundN(lenO(c.y0), 3);
-      $("cut-x1").value = roundN(lenO(c.x1), 3); $("cut-y1").value = roundN(lenO(c.y1), 3);
-      $("cut-cx").value = roundN(lenO(c.cx), 3); $("cut-cy").value = roundN(lenO(c.cy), 3);
+      $("cut-x0").value = roundN(lenO(c.x0), 3); $("cut-z0").value = roundN(lenO(cutZ0(c)), 3);
+      $("cut-x1").value = roundN(lenO(c.x1), 3); $("cut-z1").value = roundN(lenO(cutZ1(c)), 3);
+      $("cut-cx").value = roundN(lenO(c.cx), 3); $("cut-cz").value = roundN(lenO(cutCZ(c)), 3);
     }
     if (!c) { $("cut-read").textContent = "尚无壳剖面，点「增加壳剖面」后在图上画线"; updateCutProbe(null); }
     else { updateCutRead(c); }
@@ -6306,14 +6423,14 @@
     var list = (ana.areaElems || []).filter(function (ae) { return ae.aid === +aid && ae.s; });
     if (!list.length) { el.textContent = "无应力数据"; return; }
     var vx = 0, vy = 0, vxy = 0, vm = 0, k;
-    list.forEach(function (ae) { vx += ae.s.sx; vy += ae.s.sy; vxy += ae.s.txy; vm += ae.s.vm; });
+    list.forEach(function (ae) { vx += ae.s.sx; vy += (ae.s.sz != null ? ae.s.sz : ae.s.sy); vxy += (ae.s.txz != null ? ae.s.txz : ae.s.txy); vm += ae.s.vm; });
     k = list.length; vx /= k; vy /= k; vxy /= k; vm /= k;
     var avg = (vx + vy) / 2, R = Math.hypot((vx - vy) / 2, vxy), s1 = avg + R, s2 = avg - R;
     var sec = areaSecOf(+aid);
     el.textContent = (a.etype === "shell" ? "壳" : "平面") + " A" + a.id + "（" + list.length + " 子单元均值）\n" +
-      "σx=" + fmtSci(sO(vx)) + " ｜ σy=" + fmtSci(sO(vy)) + " ｜ τxy=" + fmtSci(sO(vxy)) + " " + stressU() + "\n" +
+      "σx=" + fmtSci(sO(vx)) + " ｜ σz=" + fmtSci(sO(vy)) + " ｜ τxz=" + fmtSci(sO(vxy)) + " " + stressU() + "\n" +
       "σ1=" + fmtSci(sO(s1)) + " ｜ σ2=" + fmtSci(sO(s2)) + " ｜ vonMises=" + fmtSci(sO(vm)) + "\n" +
-      "膜内力 Nx=" + fmtSci(lO(vx * sec.t)) + " ｜ Ny=" + fmtSci(lO(vy * sec.t)) + " " + lineU() +
+      "膜内力 Nx=" + fmtSci(lO(vx * sec.t)) + " ｜ Nz=" + fmtSci(lO(vy * sec.t)) + " " + lineU() +
       shellCutText(+aid);
   }
 
@@ -6371,7 +6488,7 @@
   });
   $("nd-bc-apply").addEventListener("click", function () {
     var v = $("nd-bc").value;
-    var map = { fixed: { ux: true, uy: true, uz: true, rx: true, ry: true, rz: true }, fixed3d: { ux: true, uy: true, uz: true, rx: true, ry: true, rz: true }, pin: { ux: true, uy: true, uz: false, rx: false, ry: false, rz: false }, pin3d: { ux: true, uy: true, uz: true, rx: false, ry: false, rz: false }, rollerY: { ux: false, uy: true, uz: false, rx: false, ry: false, rz: false }, rollerX: { ux: true, uy: false, uz: false, rx: false, ry: false, rz: false }, clampZ: { ux: true, uy: true, uz: true, rx: false, ry: false, rz: true }, free: { ux: false, uy: false, uz: false, rx: false, ry: false, rz: false } }[v] || { ux: false, uy: false, uz: false, rx: false, ry: false, rz: false };
+    var map = { fixed: { ux: true, uy: false, uz: true, rx: false, ry: true, rz: false }, fixed3d: { ux: true, uy: true, uz: true, rx: true, ry: true, rz: true }, pin: { ux: true, uy: false, uz: true, rx: false, ry: false, rz: false }, pin3d: { ux: true, uy: true, uz: true, rx: false, ry: false, rz: false }, rollerY: { ux: false, uy: false, uz: true, rx: false, ry: false, rz: false }, rollerZ: { ux: false, uy: false, uz: true, rx: false, ry: false, rz: false }, rollerX: { ux: true, uy: false, uz: false, rx: false, ry: false, rz: false }, clampZ: { ux: true, uy: true, uz: true, rx: false, ry: true, rz: false }, free: { ux: false, uy: false, uz: false, rx: false, ry: false, rz: false } }[v] || { ux: false, uy: false, uz: false, rx: false, ry: false, rz: false };
     Object.keys(selNodes).forEach(function (k) { var n = nodeById(+k); if (n) { n.bc = { ux: map.ux, uy: map.uy, uz: map.uz, rx: map.rx, ry: map.ry, rz: map.rz }; } });
     rebuild();
   });
@@ -6386,7 +6503,13 @@
   $("op-move").addEventListener("click", function () {
     var dx = lenI(parseFloat($("mv-dx").value) || 0), dy = lenI(parseFloat($("mv-dy").value) || 0);
     var dz = ($("mv-dz") && isFinite(parseFloat($("mv-dz").value))) ? lenI(parseFloat($("mv-dz").value)) : 0;
-    selectedMoveNodes().forEach(function (id) { var n = nodeById(id); if (n) { n.x += dx; n.y += dy; n.z = nz(n) + dz; } });
+    var is3 = ((D.dim || "2d") === "3d");
+    selectedMoveNodes().forEach(function (id) {
+      var n = nodeById(id); if (!n) { return; }
+      n.x += dx;
+      if (is3) { n.y = nyo(n) + dy; n.z = nv(n) + dz; }
+      else { n.z = nv(n) + dy; n.y = nyo(n) + dz; }
+    });
     mergeDuplicateNodes();
     rebuild();
   });
@@ -6398,7 +6521,8 @@
     function dup(id) {
       if (map[id] !== undefined) { return map[id]; }
       var n = nodeById(id); if (!n) { return null; }
-      var nn = addNode(n.x + dx, n.y + dy, null, nz(n) + dz);   // 复制节点不继承边界约束（新节点自由，自动消重）
+      var is3c = ((D.dim || "2d") === "3d");
+      var nn = is3c ? addNode(n.x + dx, nv(n) + dz, null, nyo(n) + dy) : addNode(n.x + dx, nv(n) + dy, null, nyo(n) + dz);   // 复制节点不继承边界约束（新节点自由，自动消重）
       map[id] = nn.id; return nn.id;
     }
     selectedMoveNodes().forEach(dup);
@@ -6563,6 +6687,12 @@
     var fz = $("nl-fz") ? fI(parseFloat($("nl-fz").value) || 0) : 0;
     var mx = $("nl-mx") ? momI(parseFloat($("nl-mx").value) || 0) : 0;
     var my = $("nl-my") ? momI(parseFloat($("nl-my").value) || 0) : 0;
+    if ((D.dim || "2d") !== "3d") {
+      // 2D（X-Z 平面）：竖向取 Fz（兼容填在 Fy 框的值），面内弯矩取 My（兼容 Mz 框）
+      if (!fz && fy) { fz = fy; }
+      if (!my && mz) { my = mz; }
+      fy = 0; mx = 0; mz = 0;
+    }
     Object.keys(selNodes).forEach(function (k) { nodeLoads[+k] = { fx: fx, fy: fy, fz: fz, mx: mx, my: my, mz: mz }; });
     rebuild();
   });
@@ -6583,10 +6713,11 @@
   });
   $("ml-clear").addEventListener("click", function () { Object.keys(selMembers).forEach(function (k) { delete memLoads[+k]; }); rebuild(); });
 
-  // 面荷载（整体坐标 qx、qy，kN/m²）
+  // 面荷载（整体坐标 qx、qz，kN/m²）
   $("al-apply").addEventListener("click", function () {
-    var qx = aI(parseFloat($("al-qx").value) || 0), qy = aI(parseFloat($("al-qy").value) || 0);
-    Object.keys(selAreas).forEach(function (k) { areaLoads[+k] = { qx: qx, qy: qy }; });
+    var qxel = $("al-qx"), qzel = $("al-qz") || $("al-qy");
+    var qx = aI(parseFloat(qxel && qxel.value) || 0), qz = aI(parseFloat(qzel && qzel.value) || 0);
+    Object.keys(selAreas).forEach(function (k) { areaLoads[+k] = { qx: qx, qz: qz }; });
     rebuild();
   });
   $("al-clear").addEventListener("click", function () { Object.keys(selAreas).forEach(function (k) { delete areaLoads[+k]; }); rebuild(); });
@@ -7050,12 +7181,12 @@
     var id = selCutId(), c = (id !== null) ? cutById(id) : null;
     if (!c) { return; }
     function num(el) { var v = parseFloat($(el).value); return isFinite(v) ? lenI(v) : null; }
-    var x0 = num("cut-x0"), y0 = num("cut-y0"), x1 = num("cut-x1"), y1 = num("cut-y1");
+    var x0 = num("cut-x0"), y0 = num("cut-z0"), x1 = num("cut-x1"), y1 = num("cut-z1");
     if (x0 == null || y0 == null || x1 == null || y1 == null) { return; }
     if (Math.hypot(x1 - x0, y1 - y0) < 1e-9) { return; }
-    c.x0 = x0; c.y0 = y0; c.x1 = x1; c.y1 = y1;
-    var cx = num("cut-cx"), cy = num("cut-cy");
-    if (cx != null && cy != null) { c.cx = cx; c.cy = cy; c.cAuto = false; }
+    c.x0 = x0; c.z0 = y0; c.x1 = x1; c.z1 = y1;
+    var cx = num("cut-cx"), cy = num("cut-cz");
+    if (cx != null && cy != null) { c.cx = cx; c.cz = cy; c.cAuto = false; }
     refreshCuts(true);
   }
   $("cut-sel").addEventListener("change", function () {
@@ -7080,14 +7211,14 @@
       rebuild();
     }
   });
-  ["cut-x0", "cut-y0", "cut-x1", "cut-y1", "cut-cx", "cut-cy"].forEach(function (eid) {
+  ["cut-x0", "cut-z0", "cut-x1", "cut-z1", "cut-cx", "cut-cz"].forEach(function (eid) {
     $(eid).addEventListener("change", cutCoordLive);
   });
   $("cut-restore").addEventListener("click", function () {
     var id = selCutId(), c = (id !== null) ? cutById(id) : null;
     if (!c || !c.d0) { return; }
-    c.x0 = c.d0.x0; c.y0 = c.d0.y0; c.x1 = c.d0.x1; c.y1 = c.d0.y1;
-    c.cx = c.d0.cx; c.cy = c.d0.cy; c.cAuto = true;
+    c.x0 = c.d0.x0; c.z0 = (c.d0.z0 != null ? c.d0.z0 : c.d0.y0); c.x1 = c.d0.x1; c.z1 = (c.d0.z1 != null ? c.d0.z1 : c.d0.y1);
+    c.cx = c.d0.cx; c.cz = (c.d0.cz != null ? c.d0.cz : c.d0.cy); c.cAuto = true;
     refreshCuts(false);
   });
   $("cut-mid").addEventListener("click", function () {
@@ -7106,13 +7237,13 @@
     var g = cutGeom(c);
     if (!g) { return; }
     var hr = cutHitRange(r);
-    var mx = c.x0 + g.sx * (hr[0] + hr[1]) / 2, my = c.y0 + g.sy * (hr[0] + hr[1]) / 2;
+    var mx = c.x0 + g.sx * (hr[0] + hr[1]) / 2, my = cutZ0(c) + g.sy * (hr[0] + hr[1]) / 2;
     var found = null;
     (model.areas || []).forEach(function (a) {
       if (found || !a || a.etype !== "shell" || !a.nodes || a.nodes.length !== 4) { return; }
       var pts = a.nodes.map(nodeById).filter(Boolean);
       if (pts.length !== 4) { return; }
-      if (!pointInPoly(mx, my, pts.map(function (n) { return [n.x, n.y]; }))) { return; }
+      if (!pointInPoly(mx, my, pts.map(function (n) { return [n.x, nv(n)]; }))) { return; }
       var gd = (ana.areaGrid || {})[a.id];
       var ri = gd ? rectInfo(gd.P) : null;
       if (!ri) { return; }
@@ -7120,15 +7251,15 @@
     });
     if (!found) { alert("有效段中点不在矩形壳内，无法对齐"); return; }
     var P = found.P, ri = found.ri, q0, q1;
-    if (Math.abs(c.x1 - c.x0) <= Math.abs(c.y1 - c.y0)) {
+    if (Math.abs(c.x1 - c.x0) <= Math.abs(cutZ1(c) - cutZ0(c))) {
       q0 = [P[0][0] + ri.ux * ri.Lu / 2, P[0][1] + ri.uy * ri.Lu / 2];
       q1 = [q0[0] + ri.vx * ri.Lv, q0[1] + ri.vy * ri.Lv];
     } else {
       q0 = [P[0][0] + ri.vx * ri.Lv / 2, P[0][1] + ri.vy * ri.Lv / 2];
       q1 = [q0[0] + ri.ux * ri.Lu, q0[1] + ri.uy * ri.Lu];
     }
-    c.x0 = q0[0]; c.y0 = q0[1]; c.x1 = q1[0]; c.y1 = q1[1];
-    c.cx = (q0[0] + q1[0]) / 2; c.cy = (q0[1] + q1[1]) / 2; c.cAuto = false;
+    c.x0 = q0[0]; c.z0 = q0[1]; c.x1 = q1[0]; c.z1 = q1[1];
+    c.cx = (q0[0] + q1[0]) / 2; c.cz = (q0[1] + q1[1]) / 2; c.cAuto = false;
     refreshCuts(false);
   });
   function syncMagUI() { $("mag").value = D.mag; $("mag2").value = D.mag; $("v-mag").textContent = D.mag; $("v-mag2").textContent = D.mag; }
@@ -7338,7 +7469,7 @@
   }
   // 力单位切换时换算输入框中的力/弯矩/荷载/刚度数值（长度单位不变，故统一 ×k）
   function scaleForceInputs(k) {
-    ["nl-fx", "nl-fy", "nl-fz", "nl-mx", "nl-my", "nl-mz", "ml-q", "ml-P", "ml-q1", "ml-q2", "al-qx", "al-qy", "st-EA", "st-EI", "st-GA", "mt-E"].forEach(function (id) {
+    ["nl-fx", "nl-fy", "nl-fz", "nl-mx", "nl-my", "nl-mz", "ml-q", "ml-P", "ml-q1", "ml-q2", "al-qx", "al-qz", "st-EA", "st-EI", "st-GA", "mt-E"].forEach(function (id) {
       var el = $(id); if (!el) { return; }
       var v = parseFloat(el.value); if (!isFinite(v)) { return; }
       el.value = v * k;
@@ -7419,6 +7550,7 @@
   // 构建当前完整状态快照（与保存文件格式一致）
   function buildSnapshot() {
     return {
+      app: "FrameLab", ver: 2,
       D: {
         bays: D.bays, stories: D.stories, W: D.W, h: D.h, NSUB: D.NSUB, AMESH: D.AMESH,
         mag: D.mag, dscale: D.dscale, loadScale: D.loadScale, view: D.view,
@@ -7436,7 +7568,8 @@
         dispVar: D.dispVar,
         showIds: $("showIds").checked, showLoads: $("showLoads").checked,
         light: D.light, lenUnit: D.lenUnit, forceUnit: D.forceUnit, cloudLo: D.cloudLo, cloudHi: D.cloudHi,
-        dispLo: D.dispLo, dispHi: D.dispHi, station: D.station, cam3: D.cam3 || {}, prot3: D.prot3 || { t: 0, px: 0, py: 0 },
+        dispLo: D.dispLo, dispHi: D.dispHi,         station: D.station, cam3: D.cam3 || {}, prot3: D.prot3 || { t: 0, px: 0, py: 0 },
+        hideLeft: !!D.hideLeft, hideSide: !!D.hideSide,
         designSteel: D.designSteel, designConc: D.designConc, designMode: D.designMode
       },
       model: model, memStiff: memStiff, memMat: memMat, memSec: memSec, memLoads: memLoads,
@@ -7446,12 +7579,49 @@
   }
   function cloneSnap(s) { return JSON.parse(JSON.stringify(s)); }
 
-  // 将快照应用到当前工作状态
+  // 将快照应用到当前工作状态（含 ver<2 老文件迁移：2D 竖向 y→z、uy→uz、rz→ry、fy→fz、mz→my、qy→qz、剖面 y→z）
   function applySnapshot(s) {
     var m = s.model;
     m.nodes = m.nodes || []; m.members = m.members || []; m.areas = m.areas || [];
-    // 兼容老文件：补 z=0，补 6 自由度约束键与 6 分量荷载键
-    m.nodes.forEach(function (n) { if (!isFinite(n.z)) { n.z = 0; } n.bc = n.bc || { ux: false, uy: false, rz: false }; ["ux", "uy", "uz", "rx", "ry", "rz"].forEach(function (k) { if (n.bc[k] == null) { n.bc[k] = false; } }); });
+    var isOld = !m.nodes.some(function (n) { return n && isFinite(n.z); });
+    if (isOld) {
+      m.nodes.forEach(function (n) {
+        if (isFinite(n.y)) { n.z = n.y; }
+        if (!isFinite(n.z)) { n.z = 0; }
+        n.y = 0;
+        n.bc = n.bc || {};
+        if (n.bc.uz == null && n.bc.uy != null) { n.bc.uz = n.bc.uy; n.bc.uy = false; }
+        if (n.bc.ry == null && n.bc.rz != null) { n.bc.ry = n.bc.rz; n.bc.rz = false; }
+      });
+      Object.keys(s.nodeLoads || {}).forEach(function (nl2) {
+        var nl = s.nodeLoads[nl2]; if (!nl) { return; }
+        if (nl.fz == null && nl.fy != null) { nl.fz = nl.fy; nl.fy = 0; }
+        if (nl.my == null && nl.mz != null) { nl.my = nl.mz; nl.mz = 0; }
+      });
+      Object.keys(s.areaLoads || {}).forEach(function (al2) {
+        var ld = s.areaLoads[al2]; if (!ld) { return; }
+        if (ld.qz == null && ld.qy != null) { ld.qz = ld.qy; delete ld.qy; }
+      });
+      (m.cuts || []).forEach(function (c) {
+        if (c.z0 == null && c.y0 != null) { c.z0 = c.y0; delete c.y0; }
+        if (c.z1 == null && c.y1 != null) { c.z1 = c.y1; delete c.y1; }
+        if (c.cz == null && c.cy != null) { c.cz = c.cy; delete c.cy; }
+        if (c.d0) {
+          if (c.d0.z0 == null && c.d0.y0 != null) { c.d0.z0 = c.d0.y0; delete c.d0.y0; }
+          if (c.d0.z1 == null && c.d0.y1 != null) { c.d0.z1 = c.d0.y1; delete c.d0.y1; }
+          if (c.d0.cz == null && c.d0.cy != null) { c.d0.cz = c.d0.cy; delete c.d0.cy; }
+        }
+      });
+      if (s.D) {
+        if (s.D.dispVar === "uy") { s.D.dispVar = "uz"; }
+        if (s.D.cloudVar === "sy") { s.D.cloudVar = "sz"; }
+        if (s.D.cloudVar === "txy") { s.D.cloudVar = "txz"; }
+        if (s.D.cutVar === "sy") { s.D.cutVar = "sz"; }
+        if (s.D.cutVar === "txy") { s.D.cutVar = "txz"; }
+      }
+    }
+    // 兼容补全：6 自由度约束键与 6 分量荷载键
+    m.nodes.forEach(function (n) { if (!isFinite(n.z)) { n.z = 0; } if (!isFinite(n.y)) { n.y = 0; } n.bc = n.bc || { ux: false, uz: false, ry: false }; ["ux", "uy", "uz", "rx", "ry", "rz"].forEach(function (k) { if (n.bc[k] == null) { n.bc[k] = false; } }); });
     Object.keys(s.nodeLoads || {}).forEach(function (k) { var nl = s.nodeLoads[k]; if (nl) { ["fx", "fy", "fz", "mx", "my", "mz"].forEach(function (f) { if (nl[f] == null) { nl[f] = 0; } }); } });
     m.nextNode = m.nextNode != null ? m.nextNode : (m.nodes.reduce(function (a, n) { return Math.max(a, n.id + 1); }, 0));
     m.nextMember = m.nextMember != null ? m.nextMember : (m.members.reduce(function (a, n) { return Math.max(a, n.id + 1); }, 0));
@@ -7474,6 +7644,11 @@
     if (D.dispHi === undefined) { D.dispHi = null; }
     if (!D.view) { D.view = "disp"; }
     if (!D.dispVar) { D.dispVar = "mag"; }
+    if (D.dispVar === "uy" && (D.dim || "2d") !== "3d") { D.dispVar = "uz"; }
+    if (D.cloudVar === "sy") { D.cloudVar = "sz"; }
+    if (D.cloudVar === "txy") { D.cloudVar = "txz"; }
+    if (D.cutVar === "sy") { D.cutVar = "sz"; }
+    if (D.cutVar === "txy") { D.cutVar = "txz"; }
     if (D.nodeTolMm == null) { D.nodeTolMm = 2; }
     if (!D.dim) { D.dim = "2d"; }
     if (D.baysX == null) { D.baysX = D.bays || 1; }
@@ -7484,6 +7659,8 @@
     if (!D.cam3) { D.cam3 = {}; }
     if (!D.prot3) { D.prot3 = { t: 0, px: 0, py: 0 }; }
     ["showShellBeam", "showShellCol", "showShellBeamF", "showShellColF", "showExtrude"].forEach(function (k) { if (D[k] === undefined) { D[k] = false; } });
+    if (D.hideLeft === undefined) { D.hideLeft = false; }
+    if (D.hideSide === undefined) { D.hideSide = false; }
     if (D.cutSnap === undefined) { D.cutSnap = true; }
     if (D.cutVar === undefined) { D.cutVar = "sx"; }
     if (D.showCutPanel === undefined) { D.showCutPanel = true; }
@@ -7515,6 +7692,7 @@
     D.showAxial = false; D.showMoment = true; D.showShear = false; D.showLoadVals = false; D.showForceVals = false; D.showExtreme = false;
     D.showShellBeam = false; D.showShellCol = false; D.showShellBeamF = false; D.showShellColF = false;
     D.showExtrude = false;
+    D.hideLeft = false; D.hideSide = false;
     D.cutSnap = true; D.cutVar = "sx"; D.showCutPanel = true; D.showCuts = true;
     D.showMat = false; D.showSec = false; D.showAreaMesh = true; D.showAreaCloud = true; D.cloudVar = "vm"; D.showAreaShrink = false;
     D.dispVar = "mag";
@@ -7671,12 +7849,12 @@
       var a = addAreaByIds(nodeIds, etype || "plane");
       rebuild(); return a ? a.id : null;
     },
-    cutAdd: function (x0, y0, x1, y1) {
-      var c = addCut(x0, y0, x1, y1);
+    cutAdd: function (x0, z0, x1, z1) {
+      var c = addCut(x0, z0, x1, z1);
       rebuild(); return c ? c.id : null;
     },
     cutDel: function (id) { delCut(+id); rebuild(); },
-    listCuts: function () { return (model.cuts || []).map(function (c) { return { id: c.id, x0: c.x0, y0: c.y0, x1: c.x1, y1: c.y1, cx: c.cx, cy: c.cy }; }); },
+    listCuts: function () { return (model.cuts || []).map(function (c) { return { id: c.id, x0: c.x0, z0: cutZ0(c), x1: c.x1, z1: cutZ1(c), cx: c.cx, cz: cutCZ(c) }; }); },
     cutResult: function (id) { return (ana && ana.cutResults) ? ana.cutResults[id] : null; },
     physicalMeshArea: function (id) {
       var a = areaById(+id); if (!a) { return null; }
@@ -7706,18 +7884,19 @@
       // 用当前 ana.areaElems/areaGrid 重算壳梁壳柱参考线与壳剖面（供外部求解器回填后调用）
       if (!ana) { return null; }
       try { ana.shellCuts = buildShellCuts(model.areas || [], ana.areaGrid || {}, ana.areaElems || []); } catch (e) {}
-      try { ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, ana.all); } catch (e) {}
+      try { ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, planeAll()); } catch (e) {}
       return ana;
     },
     setExternalAna: function (extAna, meta) {
       // 接入外部求解器（如 xara/OpenSees）结果：直接显示，不经过内置 analyze()
       ana = extAna; anaSource = "xara"; anaXaraMeta = meta || null;
       try { ana.shellCuts = buildShellCuts(model.areas || [], ana.areaGrid || {}, ana.areaElems || []); } catch (e) {}
-      try { ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, ana.all); } catch (e) {}
+      try { ana.cutResults = integrateCuts(model.cuts || [], ana.areaElems, planeAll()); } catch (e) {}
       draw(); updatePopup(); updateCutPanel(false);
       return ana;
     },
-    clearExternalAna: function () { anaSource = "builtin"; anaXaraMeta = null; rebuild(); }
+    clearExternalAna: function () { anaSource = "builtin"; anaXaraMeta = null; rebuild(); },
+    openDoc: function (name, snap) { openDocument(name, snap); return true; }
   };
 
   initCloudDrag();
