@@ -10,82 +10,82 @@
   body {
     margin: 0; overflow: hidden;
     font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
-    background: radial-gradient(circle at 20% 0%, #16203c 0%, #080b16 55%, #05070e 100%);
-    color: #dbe4f5; display: flex; flex-direction: column;
+    background: radial-gradient(circle at 20% 0%, #3a415c 0%, #2e3448 55%, #2a3045 100%);
+    color: #f2f3f7; display: flex; flex-direction: column;
   }
   header { padding: 8px 16px 2px; min-height: 54px; display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
   header .brand { flex: 0 0 286px; width: 286px; min-width: 0; }
   header h1 { margin: 0; font-size: 28px; letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .layout { flex: 1 1 auto; min-height: 0; display: flex; gap: 12px; padding: 8px 16px 2px; align-items: stretch; }
-  .panel { background: rgba(18, 25, 45, .82); border: 1px solid rgba(90, 120, 190, .28); border-radius: 12px; box-shadow: 0 10px 28px rgba(0, 0, 0, .45); }
+  .panel { background: rgba(59, 67, 92, .95); border: 1px solid rgba(255, 255, 255, .08); border-radius: 12px; box-shadow: 0 10px 28px rgba(20, 24, 40, .45); }
 
   .controls { width: 286px; flex: 0 0 auto; padding: 11px 13px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
   .controls::-webkit-scrollbar { width: 0; height: 0; display: none; }
-  .controls h2 { margin: 0 0 8px; font-size: 12px; color: #9cb0dc; font-weight: 600; letter-spacing: .5px; }
+  .controls h2 { margin: 0 0 8px; font-size: 12px; color: #a6adc4; font-weight: 600; letter-spacing: .5px; }
   .controls h2:not(:first-child) { margin-top: 6px; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 9px; }
   .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 9px; }
-  .grid3 label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: #a7b3d1; }
+  .grid3 label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: #a6adc4; }
   body.light .grid3 label { color: #41527a; }
-  .grid2 label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: #a7b3d1; }
+  .grid2 label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: #a6adc4; }
   input[type="number"], select {
     width: 100%; padding: 4px 6px; font-size: 11.5px; font-family: inherit;
-    background: rgba(10, 16, 30, .85); border: 1px solid rgba(90, 120, 190, .4);
-    border-radius: 6px; color: #dbe4f5; outline: none; font-variant-numeric: tabular-nums;
+    background: rgba(42, 48, 69, .9); border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 6px; color: #f2f3f7; outline: none; font-variant-numeric: tabular-nums;
   }
-  input[type="number"]:focus, select:focus { border-color: #6ee7ff; }
+  input[type="number"]:focus, select:focus { border-color: #e5b567; }
   .seg { display: flex; gap: 4px; margin-bottom: 9px; }
-  .seg button { flex: 1 1 0; padding: 5px 0; font-size: 10.5px; cursor: pointer; border: 1px solid rgba(90, 120, 190, .4); border-radius: 6px; background: rgba(30, 40, 70, .5); color: #9fb0d6; font-family: inherit; transition: all .15s; }
-  .seg button.active { background: rgba(47, 123, 255, .22); border-color: #6ee7ff; color: #cdefff; }
-  .seg.tools button.active { background: rgba(255, 159, 67, .22); border-color: #ff9f43; color: #ffd9a8; }
-  .slider label { display: flex; justify-content: space-between; font-size: 10.5px; color: #a7b3d1; margin-bottom: 3px; }
-  .slider label b { color: #6ee7ff; font-weight: 600; }
-  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #2f7bff, #23d3c4); outline: none; margin-bottom: 8px; }
-  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #eaf2ff; border: 2px solid #2f7bff; cursor: pointer; }
-  input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: #eaf2ff; border: 2px solid #2f7bff; cursor: pointer; }
-  .btn { width: 100%; padding: 6px; border: 1px solid rgba(110, 231, 255, .4); border-radius: 7px; background: rgba(35, 211, 196, .12); color: #a9f4ec; font-size: 11px; cursor: pointer; transition: background .18s; margin-top: 4px; font-family: inherit; }
-  .btn:hover { background: rgba(35, 211, 196, .24); }
+  .seg button { flex: 1 1 0; padding: 5px 0; font-size: 10.5px; cursor: pointer; border: 1px solid rgba(255, 255, 255, .1); border-radius: 6px; background: rgba(42, 48, 69, .7); color: #a6adc4; font-family: inherit; transition: all .15s; }
+  .seg button.active { background: rgba(229, 181, 103, .18); border-color: #e5b567; color: #ffffff; }
+  .seg.tools button.active { background: rgba(229, 181, 103, .18); border-color: #e5b567; color: #ffffff; }
+  .slider label { display: flex; justify-content: space-between; font-size: 10.5px; color: #a6adc4; margin-bottom: 3px; }
+  .slider label b { color: #f2f3f7; font-weight: 600; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #8a7a5c, #e5b567); outline: none; margin-bottom: 8px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #f2f3f7; border: 2px solid #e5b567; cursor: pointer; }
+  input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: #f2f3f7; border: 2px solid #e5b567; cursor: pointer; }
+  .btn { width: 100%; padding: 6px; border: 1px solid rgba(229, 181, 103, .45); border-radius: 7px; background: rgba(229, 181, 103, .12); color: #f2f3f7; font-size: 11px; cursor: pointer; transition: background .18s; margin-top: 4px; font-family: inherit; }
+  .btn:hover { background: rgba(229, 181, 103, .24); }
   .btn.danger { border-color: rgba(255, 120, 120, .5); background: rgba(255, 90, 90, .14); color: #ffb3b3; }
   .btn.danger:hover { background: rgba(255, 90, 90, .26); }
-  .btn.active { background: rgba(255, 159, 67, .25); border-color: #ff9f43; color: #ffe0bf; }
+  .btn.active { background: rgba(229, 181, 103, .25); border-color: #e5b567; color: #ffffff; }
   .inline2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-  .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #a7b3d1; margin-bottom: 6px; cursor: pointer; }
-  .chk input { accent-color: #2f7bff; }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #a6adc4; margin-bottom: 6px; cursor: pointer; }
+  .chk input { accent-color: #e5b567; }
   #forceOpts, #dispOpts { display: flex; gap: 10px; }
   #forceOpts .fcol, #dispOpts .fcol { display: flex; flex-direction: column; }
   #forceOpts .chk, #dispOpts .chk { margin-bottom: 6px; white-space: nowrap; }
-  .note { font-size: 10px; color: #6e7ba0; line-height: 1.5; margin-top: 6px; border-top: 1px dashed rgba(120, 145, 200, .3); padding-top: 7px; }
-  .collapse-head { width: 100%; display: flex; align-items: center; gap: 6px; margin: 0 0 8px; padding: 5px 6px; font-size: 12px; font-weight: 600; letter-spacing: .5px; color: #9cb0dc; background: rgba(30, 40, 70, .35); border: 1px solid rgba(90, 120, 190, .3); border-radius: 7px; cursor: pointer; font-family: inherit; text-align: left; }
-  .collapse-head:hover { background: rgba(47, 123, 255, .16); color: #cdefff; }
-  .collapse-head .caret { display: inline-block; transition: transform .15s; color: #6ee7ff; }
+  .note { font-size: 10px; color: #8b92ab; line-height: 1.5; margin-top: 6px; border-top: 1px dashed rgba(255, 255, 255, .12); padding-top: 7px; }
+  .collapse-head { width: 100%; display: flex; align-items: center; gap: 6px; margin: 0 0 8px; padding: 5px 6px; font-size: 12px; font-weight: 600; letter-spacing: .5px; color: #c9cedf; background: rgba(69, 76, 102, .6); border: 1px solid rgba(255, 255, 255, .08); border-radius: 7px; cursor: pointer; font-family: inherit; text-align: left; }
+  .collapse-head:hover { background: rgba(229, 181, 103, .16); color: #ffffff; }
+  .collapse-head .caret { display: inline-block; transition: transform .15s; color: #e5b567; }
   .collapse-head.open .caret { transform: rotate(90deg); }
 
   .stage { flex: 1 1 auto; min-width: 0; padding: 8px 8px 4px; display: flex; flex-direction: column; min-height: 0; position: relative; }
   .cvwrap { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 8px; }
   #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border-radius: 9px; cursor: crosshair; }
   /* 2D/3D 切换：锚定在 0 号主窗口（#mainwrap）正中顶部；2D 下主窗口即全幅，与原来一致 */
-  #dimseg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 8; display: flex; gap: 4px; background: rgba(10,16,30,.75); border: 1px solid rgba(90,120,190,.45); border-radius: 16px; padding: 2px; }
-  #dimseg button { min-width: 44px; padding: 3px 12px; font-size: 11px; cursor: pointer; border: none; border-radius: 14px; background: transparent; color: #9fb0d6; font-family: inherit; }
-  #dimseg button.active { background: rgba(47,123,255,.35); color: #fff; }
+  #dimseg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 8; display: flex; gap: 4px; background: rgba(42,48,69,.85); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 2px; }
+  #dimseg button { min-width: 44px; padding: 3px 12px; font-size: 11px; cursor: pointer; border: none; border-radius: 14px; background: transparent; color: #a6adc4; font-family: inherit; }
+  #dimseg button.active { background: rgba(229,181,103,.35); color: #fff; }
   body.light #dimseg { background: rgba(255,255,255,.85); }
   body.light #dimseg button { color: #41527a; }
   body.light #dimseg button.active { background: rgba(47,123,255,.25); color: #1b4fb0; }
   /* 3D 四窗口：左侧 3 小窗 + 右侧 0 号大窗 */
   #leftviews { display: none; flex: 0 0 30%; min-width: 220px; flex-direction: column; gap: 8px; min-height: 0; }
   .cvwrap.multi #leftviews { display: flex; }
-  .miniwrap { position: relative; flex: 1 1 0; min-height: 0; border: 1px solid rgba(90,120,190,.35); border-radius: 9px; overflow: hidden; background: rgba(6,10,20,.35); }
+  .miniwrap { position: relative; flex: 1 1 0; min-height: 0; border: 1px solid rgba(255,255,255,.08); border-radius: 9px; overflow: hidden; background: rgba(42,48,69,.5); }
   .miniwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
-  .miniwrap .wtag { position: absolute; top: 4px; left: 6px; z-index: 2; font-size: 10.5px; padding: 1px 8px; border-radius: 10px; background: rgba(10,16,30,.7); border: 1px solid rgba(110,231,255,.4); color: #a9f4ec; pointer-events: none; white-space: nowrap; max-width: calc(100% - 12px); overflow: hidden; text-overflow: ellipsis; }
+  .miniwrap .wtag { position: absolute; top: 4px; left: 6px; z-index: 2; font-size: 10.5px; padding: 1px 8px; border-radius: 10px; background: rgba(42,48,69,.85); border: 1px solid rgba(229,181,103,.4); color: #f2f3f7; pointer-events: none; white-space: nowrap; max-width: calc(100% - 12px); overflow: hidden; text-overflow: ellipsis; }
   #mainwrap { position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; }
   .cvwrap:not(.multi) #mainwrap { position: absolute; inset: 0; }
-  .cvwrap.multi #mainwrap { border: 1px solid rgba(110,231,255,.4); border-radius: 9px; overflow: hidden; }
+  .cvwrap.multi #mainwrap { border: 1px solid rgba(229,181,103,.4); border-radius: 9px; overflow: hidden; }
   .cvwrap.multi #mainwrap #cv { border-radius: 0; }
   /* 3D 小窗折叠：0号窗口左上角按钮切 no-left，1/2/3号隐藏、0号横向撑满 cvwrap */
   .cvwrap.multi.no-left #leftviews { display: none; }
   #wtag0wrap { position: absolute; top: 4px; left: 6px; z-index: 4; display: none; align-items: center; gap: 4px; max-width: calc(100% - 12px); cursor: pointer; }
-  #wtag0wrap #wtag0 { position: static; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10.5px; padding: 1px 8px; border-radius: 10px; background: rgba(10,16,30,.7); border: 1px solid rgba(110,231,255,.4); color: #a9f4ec; }
-  #btn-collapse-left { flex: 0 0 auto; padding: 1px 8px; font-size: 10.5px; line-height: 1.5; cursor: pointer; border-radius: 10px; border: 1px solid rgba(110,231,255,.5); background: rgba(10,16,30,.8); color: #a9f4ec; font-family: inherit; }
-  #btn-collapse-left:hover { background: rgba(47,123,255,.4); color: #fff; }
+  #wtag0wrap #wtag0 { position: static; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10.5px; padding: 1px 8px; border-radius: 10px; background: rgba(42,48,69,.85); border: 1px solid rgba(229,181,103,.4); color: #f2f3f7; }
+  #btn-collapse-left { flex: 0 0 auto; padding: 1px 8px; font-size: 10.5px; line-height: 1.5; cursor: pointer; border-radius: 10px; border: 1px solid rgba(229,181,103,.5); background: rgba(42,48,69,.9); color: #f2f3f7; font-family: inherit; }
+  #btn-collapse-left:hover { background: rgba(229,181,103,.35); color: #fff; }
   body.light #wtag0wrap #wtag0 { background: rgba(255,255,255,.9); color: #41527a; border-color: rgba(90,120,190,.55); }
   body.light #btn-collapse-left { background: rgba(255,255,255,.92); color: #41527a; border-color: rgba(90,120,190,.55); }
   body.light #btn-collapse-left:hover { background: rgba(47,123,255,.2); color: #1b4fb0; }
@@ -93,48 +93,48 @@
   body.hide-side .layout .controls { display: none; }
   /* 3D 平面/剖面位置：放到底部状态条正中间（3D 下显示，2D 下隐藏），无帮助文本 */
   .statusbar { position: relative; }
-  .sb-planes { position: absolute; left: 50%; transform: translateX(-50%); display: none; gap: 12px; align-items: center; font-size: 10.5px; color: #9fb0d6; white-space: nowrap; }
+  .sb-planes { position: absolute; left: 50%; transform: translateX(-50%); display: none; gap: 12px; align-items: center; font-size: 10.5px; color: #a6adc4; white-space: nowrap; }
   body.mode3d .sb-planes { display: flex; }
   /* 3D 下状态条正中间只放平面/剖面信息，帮助文本隐藏以免重叠；
      此时 flex 伸缩占位消失，坐标需 margin-left:auto 顶到右下角 */
   body.mode3d #status-help { display: none; }
   body.mode3d .sb-coord { margin-left: auto; }
   .sb-planes label { display: flex; align-items: center; gap: 4px; }
-  .sb-planes input { width: 56px; padding: 1px 4px; font-size: 10.5px; background: rgba(10,16,30,.85); border: 1px solid rgba(90,120,190,.4); border-radius: 5px; color: #dbe4f5; font-family: inherit; }
+  .sb-planes input { width: 56px; padding: 1px 4px; font-size: 10.5px; background: rgba(42,48,69,.9); border: 1px solid rgba(255,255,255,.12); border-radius: 5px; color: #f2f3f7; font-family: inherit; }
   body.light .sb-planes input { background: #fff; border-color: rgba(90,120,190,.45); color: #22304c; }
-  #fchart { display: block; width: 100%; height: auto; border-radius: 6px; margin-top: 2px; background: rgba(6, 10, 20, .6); }
+  #fchart { display: block; width: 100%; height: auto; border-radius: 6px; margin-top: 2px; background: rgba(42, 48, 69, .7); }
   .hidden { display: none !important; }
-  .hint { flex: 0 0 auto; font-size: 11px; color: #6e7ba0; margin: 5px 4px 2px; text-align: center; }
+  .hint { flex: 0 0 auto; font-size: 11px; color: #8b92ab; margin: 5px 4px 2px; text-align: center; }
   #mainwrap .modebar { position: absolute; top: 4px; left: 6px; z-index: 4; font-size: 11px; padding: 5px 10px; border-radius: 20px; background: rgba(255, 159, 67, .2); border: 1px solid rgba(255, 159, 67, .6); color: #ffd9a8; display: none; }
   #mainwrap .modebar.show { display: block; }
   /* 3D 下让开左上角的 0 号标识 */
   body.mode3d #mainwrap .modebar { top: 32px; left: 8px; }
   /* 0号切片导航：右侧中部上/下/取点（3D 且 0号为平面/剖面时显示） */
   #slicenav { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); z-index: 5; display: none; flex-direction: column; gap: 6px; }
-  #slicenav button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(110,231,255,.5); background: rgba(10,16,30,.78); color: #a9f4ec; font-size: 12px; line-height: 1; padding: 0; cursor: pointer; font-family: inherit; }
-  #slicenav button:hover { background: rgba(47,123,255,.4); color: #fff; }
-  #slicenav button.on { background: rgba(255,207,51,.32); border-color: #ffcf33; color: #ffe9a8; }
+  #slicenav button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(229,181,103,.5); background: rgba(42,48,69,.9); color: #f2f3f7; font-size: 12px; line-height: 1; padding: 0; cursor: pointer; font-family: inherit; }
+  #slicenav button:hover { background: rgba(229,181,103,.35); color: #fff; }
+  #slicenav button.on { background: rgba(229,181,103,.32); border-color: #e5b567; color: #ffffff; }
   body.light #slicenav button { background: rgba(255,255,255,.92); color: #41527a; border-color: rgba(90,120,190,.55); }
   body.light #slicenav button:hover { background: rgba(47,123,255,.2); color: #1b4fb0; }
   body.light #slicenav button.on { background: rgba(255,207,51,.45); border-color: #d9a400; color: #7a4a00; }
 
-  .popup { position: absolute; top: 14px; right: 18px; width: 262px; z-index: 5; background: rgba(14, 20, 38, .97); border: 1px solid rgba(110, 200, 255, .45); border-radius: 10px; box-shadow: 0 14px 40px rgba(0, 0, 0, .6); padding: 9px 11px 11px; max-height: calc(100% - 40px); overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .popup { position: absolute; top: 14px; right: 18px; width: 262px; z-index: 5; background: rgba(59, 67, 92, .98); border: 1px solid rgba(229, 181, 103, .4); border-radius: 10px; box-shadow: 0 14px 40px rgba(20, 24, 40, .6); padding: 9px 11px 11px; max-height: calc(100% - 40px); overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
   .popup::-webkit-scrollbar { width: 0; height: 0; display: none; }
   .popup.hidden { display: none; }
-  .pp-head { font-size: 12.5px; font-weight: 600; color: #cdefff; margin-bottom: 4px; display: flex; justify-content: space-between; }
-  .pp-head span { cursor: pointer; color: #7f8db3; padding: 0 4px; }
+  .pp-head { font-size: 12.5px; font-weight: 600; color: #ffffff; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .pp-head span { cursor: pointer; color: #8b92ab; padding: 0 4px; }
   .pp-head span:hover { color: #fff; }
-  .pp-sel { font-size: 10.5px; color: #9fb0d6; margin-bottom: 7px; }
+  .pp-sel { font-size: 10.5px; color: #a6adc4; margin-bottom: 7px; }
   .pp-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-  .pp-tabs button { flex: 1 1 0; min-width: 44px; padding: 5px 0; font-size: 10.5px; cursor: pointer; border-radius: 6px; border: 1px solid rgba(90, 120, 190, .45); background: rgba(30, 40, 70, .5); color: #9fb0d6; font-family: inherit; }
-  .pp-tabs button.active { background: rgba(47, 123, 255, .25); border-color: #6ee7ff; color: #cdefff; }
+  .pp-tabs button { flex: 1 1 0; min-width: 44px; padding: 5px 0; font-size: 10.5px; cursor: pointer; border-radius: 6px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(42, 48, 69, .7); color: #a6adc4; font-family: inherit; }
+  .pp-tabs button.active { background: rgba(229, 181, 103, .22); border-color: #e5b567; color: #ffffff; }
   .pp-tabpane.hidden { display: none; }
-  .pp-sec { border-top: 1px solid rgba(90, 120, 190, .25); padding-top: 7px; margin-top: 7px; }
+  .pp-sec { border-top: 1px solid rgba(255, 255, 255, .08); padding-top: 7px; margin-top: 7px; }
   .pp-sec:first-child { border-top: none; margin-top: 0; padding-top: 0; }
-  .pp-title { font-size: 10.5px; color: #7fd7ff; margin-bottom: 5px; font-weight: 600; }
+  .pp-title { font-size: 10.5px; color: #f2f3f7; margin-bottom: 5px; font-weight: 600; }
   .pp-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
   .pp-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
-  .pp-grid2 label, .pp-grid3 label { display: flex; flex-direction: column; gap: 2px; font-size: 9.5px; color: #98a6c8; }
+  .pp-grid2 label, .pp-grid3 label { display: flex; flex-direction: column; gap: 2px; font-size: 9.5px; color: #a6adc4; }
   .pp-grid2 input, .pp-grid3 input, .pp-grid2 select { padding: 3px 5px; font-size: 10.5px; }
   .pp-row { display: flex; gap: 6px; margin-top: 6px; }
   .pp-row .btn { margin-top: 0; }
@@ -142,50 +142,50 @@
 
   /* 右上角工具条（保存 / 打开 / 主题） */
   .toptools { margin-left: auto; align-self: flex-end; margin-bottom: -10px; display: flex; gap: 6px; align-items: center; }
-  .toptools .tb { padding: 4px 11px; font-size: 11px; cursor: pointer; border: 1px solid rgba(110, 231, 255, .45); border-radius: 7px; background: rgba(35, 211, 196, .12); color: #a9f4ec; font-family: inherit; transition: background .16s; }
-  .toptools .tb:hover { background: rgba(35, 211, 196, .26); }
-  .toptools .tb.on { background: rgba(255, 200, 80, .22); border-color: #ffcf33; color: #ffe9a8; }
+  .toptools .tb { padding: 4px 11px; font-size: 11px; cursor: pointer; border: 1px solid rgba(229, 181, 103, .45); border-radius: 7px; background: rgba(229, 181, 103, .12); color: #f2f3f7; font-family: inherit; transition: background .16s; }
+  .toptools .tb:hover { background: rgba(229, 181, 103, .26); }
+  .toptools .tb.on { background: rgba(229, 181, 103, .22); border-color: #e5b567; color: #ffffff; }
 
   /* 多文档标签页（右侧主操作图上方） */
   .doctabs { flex: 1 1 auto; min-width: 0; align-self: flex-end; margin-bottom: -10px; display: flex; align-items: center; gap: 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -ms-overflow-style: none; }
   .doctabs::-webkit-scrollbar { height: 0; display: none; }
-  .doctabs .dt { display: inline-flex; align-items: center; gap: 6px; padding: 3px 7px 3px 11px; font-size: 11px; color: #9fb0d6; background: rgba(30, 40, 70, .5); border: 1px solid rgba(90, 120, 190, .4); border-radius: 7px 7px 0 0; cursor: pointer; white-space: nowrap; font-family: inherit; max-width: 200px; transition: background .15s; }
-  .doctabs .dt:hover { background: rgba(47, 123, 255, .16); }
-  .doctabs .dt.active { color: #cdefff; background: rgba(47, 123, 255, .24); border-color: #6ee7ff; }
+  .doctabs .dt { display: inline-flex; align-items: center; gap: 6px; padding: 3px 7px 3px 11px; font-size: 11px; color: #a6adc4; background: rgba(42, 48, 69, .7); border: 1px solid rgba(255, 255, 255, .1); border-radius: 7px 7px 0 0; cursor: pointer; white-space: nowrap; font-family: inherit; max-width: 200px; transition: background .15s; }
+  .doctabs .dt:hover { background: rgba(229, 181, 103, .14); }
+  .doctabs .dt.active { color: #ffffff; background: rgba(229, 181, 103, .2); border-color: #e5b567; }
   .doctabs .dt .nm { overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
-  .doctabs .dt .x { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 4px; color: #7f8db3; font-size: 12px; line-height: 1; flex: 0 0 auto; }
+  .doctabs .dt .x { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 4px; color: #8b92ab; font-size: 12px; line-height: 1; flex: 0 0 auto; }
   .doctabs .dt .x:hover { background: rgba(255, 90, 90, .3); color: #ffd0d0; }
-  .doctabs .dt-new { flex: 0 0 auto; padding: 2px 9px 3px; font-size: 14px; line-height: 1; color: #a9f4ec; background: rgba(35, 211, 196, .12); border: 1px solid rgba(110, 231, 255, .4); border-radius: 7px; cursor: pointer; font-family: inherit; }
-  .doctabs .dt-new:hover { background: rgba(35, 211, 196, .28); }
+  .doctabs .dt-new { flex: 0 0 auto; padding: 2px 9px 3px; font-size: 14px; line-height: 1; color: #f2f3f7; background: rgba(229, 181, 103, .12); border: 1px solid rgba(229, 181, 103, .4); border-radius: 7px; cursor: pointer; font-family: inherit; }
+  .doctabs .dt-new:hover { background: rgba(229, 181, 103, .28); }
   body.light .doctabs .dt { color: #41527a; background: rgba(226, 232, 248, .85); border-color: rgba(90, 120, 190, .4); }
   body.light .doctabs .dt.active { color: #1b4fb0; background: rgba(47, 123, 255, .18); border-color: #2f7bff; }
   body.light .doctabs .dt .x:hover { background: rgba(220, 70, 70, .25); color: #c0392b; }
   body.light .doctabs .dt-new { color: #0a7a6c; border-color: rgba(20, 150, 140, .5); }
 
   /* 底部状态栏 */
-  .statusbar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 3px 16px 7px; font-size: 11px; color: #8fa6d6; }
-  .statusbar .sb-unit { display: flex; align-items: center; gap: 5px; color: #9fb0d6; white-space: nowrap; }
+  .statusbar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 3px 16px 7px; font-size: 11px; color: #9aa1b9; }
+  .statusbar .sb-unit { display: flex; align-items: center; gap: 5px; color: #a6adc4; white-space: nowrap; }
   .statusbar .sb-unit select { width: auto; padding: 1px 4px; font-size: 10.5px; }
-  .statusbar .sb-help { flex: 1 1 auto; min-width: 0; color: #9fb0d6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .statusbar .sb-coord { flex: 0 0 auto; color: #8ff0d0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .statusbar .sb-help { flex: 1 1 auto; min-width: 0; color: #a6adc4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .statusbar .sb-coord { flex: 0 0 auto; color: #f2f3f7; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
   /* 鼠标悬停数值提示 */
-  #hoverbox { position: absolute; z-index: 7; pointer-events: none; display: none; background: rgba(8, 13, 26, .94); border: 1px solid rgba(110, 231, 255, .5); border-radius: 6px; padding: 4px 8px; font-size: 11px; line-height: 1.5; color: #cdefff; white-space: nowrap; box-shadow: 0 6px 18px rgba(0, 0, 0, .5); }
-  #hoverbox b { color: #8ff0d0; font-weight: 600; }
+  #hoverbox { position: absolute; z-index: 7; pointer-events: none; display: none; background: rgba(59, 67, 92, .97); border: 1px solid rgba(229, 181, 103, .5); border-radius: 6px; padding: 4px 8px; font-size: 11px; line-height: 1.5; color: #f2f3f7; white-space: nowrap; box-shadow: 0 6px 18px rgba(20, 24, 40, .5); }
+  #hoverbox b { color: #ffffff; font-weight: 600; }
 
   /* 云图色标范围条（位移 / 应力共用，锚定在 0 号主窗口底部居中） */
   #cloudbar { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 4px; }
   #cloudbar.hidden { display: none; }
-  #cloudbar .cb-title { font-size: 11px; color: #aebbd8; text-shadow: 0 1px 3px rgba(0, 0, 0, .85); white-space: nowrap; }
+  #cloudbar .cb-title { font-size: 11px; color: #c9cedf; text-shadow: 0 1px 3px rgba(20, 24, 40, .85); white-space: nowrap; }
   #cloudbar .cb-wrap { display: flex; align-items: center; gap: 7px; }
-  #cloudbar .cb-end { font-size: 10.5px; color: #aebbd8; font-variant-numeric: tabular-nums; min-width: 38px; }
+  #cloudbar .cb-end { font-size: 10.5px; color: #c9cedf; font-variant-numeric: tabular-nums; min-width: 38px; }
   #cloudbar .cb-end-lo { text-align: right; }
   #cloudbar .cb-track { position: relative; width: 280px; height: 14px; }
-  #cloudbar #cb-canvas { display: block; width: 100%; height: 100%; border-radius: 3px; border: 1px solid rgba(220, 230, 250, .6); box-sizing: border-box; }
+  #cloudbar #cb-canvas { display: block; width: 100%; height: 100%; border-radius: 3px; border: 1px solid rgba(255, 255, 255, .35); box-sizing: border-box; }
   #cloudbar .cb-grip { position: absolute; top: -4px; width: 14px; height: 22px; margin-left: -7px; cursor: ew-resize; }
-  #cloudbar .cb-grip i { position: absolute; left: 6px; top: 0; width: 2px; height: 22px; background: #fff; border-radius: 1px; box-shadow: 0 0 3px rgba(0, 0, 0, .9); }
-  #cloudbar .cb-fit { padding: 2px 8px; font-size: 10.5px; border-radius: 6px; border: 1px solid rgba(110, 231, 255, .4); background: rgba(35, 211, 196, .12); color: #a9f4ec; cursor: pointer; font-family: inherit; }
-  #cloudbar .cb-fit:hover { background: rgba(35, 211, 196, .28); }
+  #cloudbar .cb-grip i { position: absolute; left: 6px; top: 0; width: 2px; height: 22px; background: #fff; border-radius: 1px; box-shadow: 0 0 3px rgba(20, 24, 40, .9); }
+  #cloudbar .cb-fit { padding: 2px 8px; font-size: 10.5px; border-radius: 6px; border: 1px solid rgba(229, 181, 103, .4); background: rgba(229, 181, 103, .12); color: #f2f3f7; cursor: pointer; font-family: inherit; }
+  #cloudbar .cb-fit:hover { background: rgba(229, 181, 103, .28); }
 
   /* 亮色主题 */
   body.light { background: #eef1f7; color: #26324c; }
@@ -240,37 +240,37 @@
   #gridPanel .btn { margin-top: 0; }
   #designPanel { display: flex; flex-direction: column; gap: 7px; margin-bottom: 9px; }
   #designPanel.hidden { display: none !important; }
-  #designPanel label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: #a7b3d1; }
+  #designPanel label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: #a6adc4; }
   body.light #designPanel label { color: #41527a; }
   #designPanel .seg button { font-size: 10px; padding: 5px 2px; }
-  #designPanel .seg button.active { background: rgba(47, 123, 255, .25); border-color: #6ee7ff; color: #cdefff; }
+  #designPanel .seg button.active { background: rgba(229, 181, 103, .25); border-color: #e5b567; color: #ffffff; }
   body.light #designPanel .seg button.active { background: rgba(47, 123, 255, .18); border-color: #2f7bff; color: #1b4fb0; }
-  #designSummary { font-size: 10.5px; color: #9fd0ff; line-height: 1.6; white-space: pre-wrap; }
+  #designSummary { font-size: 10.5px; color: #f2f3f7; line-height: 1.6; white-space: pre-wrap; }
   body.light #designSummary { color: #1b4fb0; }
   /* 设计信息小窗 */
-  #designInfo { position: absolute; top: 14px; right: 290px; width: 300px; z-index: 6; background: rgba(14, 20, 38, .97); border: 1px solid rgba(255, 200, 80, .55); border-radius: 10px; box-shadow: 0 14px 40px rgba(0,0,0,.6); padding: 9px 11px 11px; max-height: calc(100% - 40px); overflow-y: auto; scrollbar-width: none; }
+  #designInfo { position: absolute; top: 14px; right: 290px; width: 300px; z-index: 6; background: rgba(59, 67, 92, .98); border: 1px solid rgba(229, 181, 103, .5); border-radius: 10px; box-shadow: 0 14px 40px rgba(20,24,40,.6); padding: 9px 11px 11px; max-height: calc(100% - 40px); overflow-y: auto; scrollbar-width: none; }
   #designInfo.hidden { display: none !important; }
   #designInfo::-webkit-scrollbar { width: 0; display: none; }
-  #designInfo pre { white-space: pre-wrap; font-size: 10.5px; line-height: 1.6; color: #cdefff; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; margin: 6px 0; }
+  #designInfo pre { white-space: pre-wrap; font-size: 10.5px; line-height: 1.6; color: #f2f3f7; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; margin: 6px 0; }
   body.light #designInfo { background: rgba(255,255,255,.98); }
   body.light #designInfo pre { color: #1b3a6b; }
   /* 壳剖面沿线应力图 */
-  #cutChart { display: block; width: 100%; height: auto; border-radius: 6px; margin-top: 2px; background: rgba(6, 10, 20, .6); }
+  #cutChart { display: block; width: 100%; height: auto; border-radius: 6px; margin-top: 2px; background: rgba(42, 48, 69, .7); }
   body.light #cutChart { background: rgba(255, 255, 255, .85); }
   /* 分栏计算书 */
   .stage.split { flex-direction: row; }
   .stage.split .cvwrap { flex: 1 1 50%; min-width: 0; }
-  #calcPane { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; background: rgba(10, 15, 30, .92); border: 1px solid rgba(110, 200, 255, .35); border-radius: 9px; margin-right: 8px; overflow: hidden; }
+  #calcPane { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; background: rgba(59, 67, 92, .96); border: 1px solid rgba(229, 181, 103, .3); border-radius: 9px; margin-right: 8px; overflow: hidden; }
   #calcPane.hidden { display: none; }
-  #calcPane .cb-head { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; font-size: 12px; font-weight: 600; color: #cdefff; border-bottom: 1px solid rgba(90,120,190,.3); }
-  #calcPane .cb-head button { padding: 2px 10px; font-size: 11px; cursor: pointer; border-radius: 6px; border: 1px solid rgba(110,231,255,.4); background: rgba(35,211,196,.12); color: #a9f4ec; font-family: inherit; }
-  #calcPane .cb-body { flex: 1 1 auto; overflow-y: auto; padding: 12px 16px; font-size: 12px; line-height: 1.7; color: #dbe4f5; scrollbar-width: none; -ms-overflow-style: none; }
+  #calcPane .cb-head { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; font-size: 12px; font-weight: 600; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,.1); }
+  #calcPane .cb-head button { padding: 2px 10px; font-size: 11px; cursor: pointer; border-radius: 6px; border: 1px solid rgba(229,181,103,.4); background: rgba(229,181,103,.12); color: #f2f3f7; font-family: inherit; }
+  #calcPane .cb-body { flex: 1 1 auto; overflow-y: auto; padding: 12px 16px; font-size: 12px; line-height: 1.7; color: #f2f3f7; scrollbar-width: none; -ms-overflow-style: none; }
   #calcPane .cb-body::-webkit-scrollbar { width: 0; height: 0; display: none; }
   #designInfo { scrollbar-width: none; -ms-overflow-style: none; }
   #designInfo::-webkit-scrollbar { width: 0; height: 0; display: none; }
   #calcPane .cb-body table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: 11.5px; }
-  #calcPane .cb-body th, #calcPane .cb-body td { border: 1px solid rgba(120, 150, 200, .4); padding: 3px 6px; text-align: right; font-variant-numeric: tabular-nums; }
-  #calcPane .cb-body th { text-align: center; background: rgba(47, 123, 255, .12); }
+  #calcPane .cb-body th, #calcPane .cb-body td { border: 1px solid rgba(255, 255, 255, .14); padding: 3px 6px; text-align: right; font-variant-numeric: tabular-nums; }
+  #calcPane .cb-body th { text-align: center; background: rgba(229, 181, 103, .14); }
   body.light #calcPane .cb-body th { background: rgba(47, 123, 255, .1); }
   @media print {
     body > *:not(#printArea) { display: none !important; }
@@ -281,10 +281,10 @@
     #printArea th, #printArea td { border: 1px solid #666; padding: 2px 5px; font-size: 11px; text-align: right; }
   }
   #printArea { display: none; }
-  #calcPane .cb-body h2 { font-size: 15px; color: #7fd7ff; margin: 10px 0 6px; }
-  #calcPane .cb-body h3 { font-size: 13px; color: #8ff0d0; margin: 10px 0 4px; }
-  #calcPane .cb-body code { background: rgba(47,123,255,.15); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; }
-  #calcPane .cb-body pre { background: rgba(6,10,20,.7); border: 1px solid rgba(90,120,190,.3); border-radius: 6px; padding: 8px 10px; overflow-x: auto; }
+  #calcPane .cb-body h2 { font-size: 15px; color: #ffffff; margin: 10px 0 6px; }
+  #calcPane .cb-body h3 { font-size: 13px; color: #f2f3f7; margin: 10px 0 4px; }
+  #calcPane .cb-body code { background: rgba(229,181,103,.15); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; }
+  #calcPane .cb-body pre { background: rgba(42,48,69,.85); border: 1px solid rgba(255,255,255,.1); border-radius: 6px; padding: 8px 10px; overflow-x: auto; }
   body.light #calcPane { background: rgba(255,255,255,.96); }
   body.light #calcPane .cb-head { color: #1b3a6b; }
   body.light #calcPane .cb-body { color: #26324c; }
@@ -375,7 +375,7 @@
               <div class="note" id="xaraWrap" style="margin-top:8px;">
               默认使用内置求解器；点击下面按钮可将模型导出为 xara 格式并调用 OpenSees 求解，结果自动回填显示。
               也可直接读取 OpenSees 模型文件（OpenSeesPy .py / Tcl .tcl）导入为新计算文件。
-              <div id="xara-status" style="font-size:10.5px; color:#9fd0ff; line-height:1.6; margin-top:4px;">正在探测求解服务器…</div>
+              <div id="xara-status" style="font-size:10.5px; color:#f2f3f7; line-height:1.6; margin-top:4px;">正在探测求解服务器…</div>
               <div class="inline2" style="margin-top:6px;">
                 <button class="btn" id="btn-xara-run" type="button">用 OpenSees 分析</button>
                 <button class="btn" id="btn-xara-back" type="button">回到内置求解器</button>
@@ -393,12 +393,12 @@
           </div>
         </div>
         <div class="note" id="geoNote">
-          <b style="color:#9fd0ff">操作：</b>“新增节点”后点击放置；“新增杆件”依次点两节点；“新增平面/壳”依次点 3~4 个节点后点“完成”（或第 4 点自动闭合）。
+          <b style="color:#f2f3f7">操作：</b>“新增节点”后点击放置；“新增杆件”依次点两节点；“新增平面/壳”依次点 3~4 个节点后点“完成”（或第 4 点自动闭合）。
           选择模式左键多选、右键取消。选中后在右上角窗口分「单元 / 细分 / 荷载 / 内力 / 材料 / 截面 / 设计」编辑。细分页对杆件按等分、对面按 nx×ny 分别处理。
-          <br /><b style="color:#9fd0ff">说明：</b>2D 下为平面分析（Timoshenko 梁 + Q4/CST 平面应力/应变）；壳单元按“膜 + 厚度”处理（N=σ·t），不含板弯曲（面外）自由度。顶部 2D/3D 可切换三维建模：3D 下内置求解为 6 自由度/节点空间杆系（轴向+扭转+双向弯曲，梁均布沿竖向、向下取负），共面（XY 等 z / XZ 等 y / YZ 等 x）的面单元均以膜刚度参与计算（含竖向墙，与共边杆件共享节点、变形协调），仅真斜面单元由内置求解跳过（精确分析请用 OpenSees 真 3D 路径，自动切换）。四窗口均支持滚轮缩放、中键/Shift+左键拖动平移、双击复位/互换；3D结构窗在选择模式下左键点空处拖动可绕屏幕中点旋转。
-          <br /><b style="color:#9fd0ff">节点消重：</b>容差内（默认 2mm，「设置」面板可调）同一位置只保留一个节点，新增 / 导入 / 移动复制时自动合并。
-          <br /><b style="color:#9fd0ff">壳梁/壳柱：</b>仅矩形壳单元在母单元中线生成参考线（梁=橙色X向中线，柱=青色Z向中线），全部分细分单元应力沿线积分；几何菜单控制参考线显示，内力菜单将其当框架构件显示 M/V/N 图（受轴力/弯矩/剪力开关控制）。选中面后在「内力」页可查看参考线端-中-端内力。
-          <br /><b style="color:#9fd0ff">拉伸截面：</b>仅 3D 模式显示，勾选后 3D 结构窗内杆件按截面（矩形/圆形/工字形）拉伸成 3D 实体、壳按厚度显示为实体板（SAP2000 风格，含光照明暗与遮挡关系），位移/内力视图下跟随变形显示。
+          <br /><b style="color:#f2f3f7">说明：</b>2D 下为平面分析（Timoshenko 梁 + Q4/CST 平面应力/应变）；壳单元按“膜 + 厚度”处理（N=σ·t），不含板弯曲（面外）自由度。顶部 2D/3D 可切换三维建模：3D 下内置求解为 6 自由度/节点空间杆系（轴向+扭转+双向弯曲，梁均布沿竖向、向下取负），共面（XY 等 z / XZ 等 y / YZ 等 x）的面单元均以膜刚度参与计算（含竖向墙，与共边杆件共享节点、变形协调），仅真斜面单元由内置求解跳过（精确分析请用 OpenSees 真 3D 路径，自动切换）。四窗口均支持滚轮缩放、中键/Shift+左键拖动平移、双击复位/互换；3D结构窗在选择模式下左键点空处拖动可绕屏幕中点旋转。
+          <br /><b style="color:#f2f3f7">节点消重：</b>容差内（默认 2mm，「设置」面板可调）同一位置只保留一个节点，新增 / 导入 / 移动复制时自动合并。
+          <br /><b style="color:#f2f3f7">壳梁/壳柱：</b>仅矩形壳单元在母单元中线生成参考线（梁=橙色X向中线，柱=青色Z向中线），全部分细分单元应力沿线积分；几何菜单控制参考线显示，内力菜单将其当框架构件显示 M/V/N 图（受轴力/弯矩/剪力开关控制）。选中面后在「内力」页可查看参考线端-中-端内力。
+          <br /><b style="color:#f2f3f7">拉伸截面：</b>仅 3D 模式显示，勾选后 3D 结构窗内杆件按截面（矩形/圆形/工字形）拉伸成 3D 实体、壳按厚度显示为实体板（SAP2000 风格，含光照明暗与遮挡关系），位移/内力视图下跟随变形显示。
         </div>
       </div>
 
@@ -505,7 +505,7 @@
           <label>消重容差 (mm)<input type="number" id="in-nodetol" min="0" max="100" step="0.5" value="2" /></label>
           <label>当前重复<button class="btn" id="btn-nodemerge" type="button" style="margin-top:0">立即消重</button></label>
         </div>
-        <div class="pp-sel" id="nodetol-info" style="font-size:10.5px;color:#9fb0d6">同一位置容差内只保留一个节点（默认 2mm）。新增 / 导入 / 移动复制时自动合并。</div>
+        <div class="pp-sel" id="nodetol-info" style="font-size:10.5px;color:#a6adc4">同一位置容差内只保留一个节点（默认 2mm）。新增 / 导入 / 移动复制时自动合并。</div>
         <div class="pp-title" style="font-size:11px;margin-top:8px">插件</div>
         <div class="pp-sel" style="font-size:10.5px;color:#6e7ba0">预留插件入口，后续扩展在此接入。</div>
         <div id="pluginSlot"></div>
@@ -1545,13 +1545,13 @@
 
   /* ================= 主题 / 长度单位 / 数值格式 ================= */
   var THEMES = {
-    dark: { cvbg: "#05070e", ghost: "rgba(150,170,215,0.42)", skel: "#c8d4ee", node: "#ffffff", nodeStroke: "#101a30",
-            text: "#aebbd8", textDim: "#7f8db3", textMid: "#9fb0d6", idText: "#8fa6d6", memId: "#7f97c9", accent: "#7fd7ff",
-            res: "#e2ecfb", outline: "rgba(220,230,250,.6)", mesh: "rgba(230,240,255,0.35)", meshDisp: "rgba(10,16,30,0.55)",
-            mask: "rgba(70,78,96,0.5)", areaP: "rgba(140,255,190,0.16)", areaS: "rgba(120,200,255,0.18)",
-            modelArea: "rgba(226,59,46,0.5)", modelAreaEdge: "rgba(255,120,100,0.75)", modelMem: "#ffcf33",
-            support: "#6ee7ff", chartBg: "rgba(6,10,20,0.6)", chartPanel: "rgba(10,16,30,0.75)", chartGrid: "rgba(150,175,215,0.35)",
-            chartBorder: "rgba(120,150,200,0.3)", stationBg: "rgba(8,13,26,0.88)" },
+    dark: { cvbg: "#2e3448", ghost: "rgba(200,205,220,0.42)", skel: "#e8eaf0", node: "#ffffff", nodeStroke: "#2e3448",
+            text: "#c9cedf", textDim: "#8b92ab", textMid: "#a6adc4", idText: "#9aa1b9", memId: "#8e95ae", accent: "#e5b567",
+            res: "#ffffff", outline: "rgba(255,255,255,.55)", mesh: "rgba(220,225,235,0.28)", meshDisp: "rgba(46,52,72,0.5)",
+            mask: "rgba(90,96,118,0.5)", areaP: "rgba(229,181,103,0.16)", areaS: "rgba(140,170,220,0.18)",
+            modelArea: "rgba(229,181,103,0.45)", modelAreaEdge: "rgba(229,181,103,0.8)", modelMem: "#e5b567",
+            support: "#e5b567", chartBg: "rgba(46,52,72,0.6)", chartPanel: "rgba(59,67,92,0.85)", chartGrid: "rgba(200,205,220,0.25)",
+            chartBorder: "rgba(255,255,255,0.12)", stationBg: "rgba(59,67,92,0.95)" },
     light: { cvbg: "#f4f6fb", ghost: "rgba(90,110,150,0.5)", skel: "#44506a", node: "#ffffff", nodeStroke: "#2a3550",
             text: "#3a4763", textDim: "#66769a", textMid: "#4a5a7c", idText: "#55658a", memId: "#55658a", accent: "#0b7fa8",
             res: "#1f2a44", outline: "rgba(60,80,120,.55)", mesh: "rgba(40,60,100,0.3)", meshDisp: "rgba(20,30,50,0.4)",
@@ -2296,7 +2296,7 @@
       } catch (eGhost3) {}
       // 面编号 P/S（与 2D 同开关 showIds）
       if (D.showIds) {
-        ctx.fillStyle = "#8ff0d0"; ctx.font = (isMain ? "9px" : "8px") + " Segoe UI"; ctx.textAlign = "center";
+        ctx.fillStyle = D.light ? "#1b4fb0" : "#f2f3f7"; ctx.font = (isMain ? "9px" : "8px") + " Segoe UI"; ctx.textAlign = "center";
         (model.areas || []).forEach(function (a) {
           if (hiddenAid3[a.id]) { return; }
           var cx = 0, cy = 0, n = 0, ok = true;
@@ -2775,7 +2775,7 @@
             pts.forEach(function (p) { d += closeOf(p); });
             d /= pts.length;
             var sel = !!(typeof selMembers !== "undefined" && selMembers[m.id]);
-            faces.push({ pts: pts, d: d, fill: sel ? shadeAny("#ffe066", f) : shadeAny(base, f), stroke: sel ? "#ff9f43" : "rgba(20,28,48,0.55)" });
+            faces.push({ pts: pts, d: d, fill: sel ? shadeAny("#f5d08a", f) : shadeAny(base, f), stroke: sel ? "#ff9f43" : "rgba(46,52,72,0.6)" });
           }
           var nA = [-ex[0], -ex[1], -ex[2]], nB = [ex[0], ex[1], ex[2]];
           // 端盖只在杆件首尾画（中间分段接头跳过，避免内部隔墙与接缝闪烁）
@@ -2826,7 +2826,7 @@
           var d = 0, xi;
           for (xi = 0; xi < pts.length; xi++) { d += closeOf(pts[xi]); }
           d /= pts.length;
-          faces.push({ pts: pts, d: d, fill: shadeAny(baseCol, f), stroke: "rgba(20,28,48,0.5)" });
+          faces.push({ pts: pts, d: d, fill: shadeAny(baseCol, f), stroke: "rgba(46,52,72,0.55)" });
         }
         function cellBaseX(vals, sObj, etype) {
           try {
@@ -3090,7 +3090,7 @@
         if (dl < 1e-6) { return; }
         var al = Math.max(14, Math.min(cw, ch) * 0.06) * (D.loadScale || 1);
         arrow3(gs[0], gs[1], gs[0] + dx / dl * al, gs[1] + dy / dl * al, "#7bf7c9");
-        if (D.showLoadVals) { tag(ctx, "q=(" + fO(ld.qx || 0).toFixed(1) + "," + fO(ld.qy || 0).toFixed(1) + ")", gs[0] + 8, gs[1] + 12, ldFont, "#8ff0d0"); }
+        if (D.showLoadVals) { tag(ctx, "q=(" + fO(ld.qx || 0).toFixed(1) + "," + fO(ld.qy || 0).toFixed(1) + ")", gs[0] + 8, gs[1] + 12, ldFont, D.light ? "#7a5100" : "#f2f3f7"); }
       });
     }
     // 节点（选中黄填 + 橙圈；编号 N 四个窗口都显示，与 2D 同开关）
@@ -3099,7 +3099,7 @@
       if (!on && isSlice3) { return; }
       var sel = !!selNodes[n.id];
       ctx.beginPath(); ctx.arc(PX(i), PY(i), on ? 3 : 2, 0, Math.PI * 2);
-      ctx.fillStyle = sel ? "#ffe066" : (on ? "#ffffff" : "rgba(200,212,238,0.5)");
+      ctx.fillStyle = sel ? "#f5d08a" : (on ? "#ffffff" : "rgba(200,212,238,0.5)");
       ctx.fill();
       ctx.strokeStyle = sel ? "#ff9f43" : (on ? TH().support : "rgba(120,140,180,0.4)");
       ctx.lineWidth = sel ? 1.6 : 1;
@@ -3219,7 +3219,7 @@
           if (r) {
             if (r.type === "steel") { txt = "η=" + (r.yjkEta || Number(r.ratio).toFixed(2)); col = r.ok ? "#63e06a" : "#ff5252"; }
             else if (D.designMode === "crack") { txt = "f" + r.defl.toFixed(1) + "/w" + r.crack.toFixed(2); col = r.ok ? "#ffd166" : "#ff5252"; }
-            else if (D.designMode === "real") { txt = (r.asRealTop ? r.asRealTop.text + "/" + r.asRealBot.text : "—"); col = r.ok ? "#7fd7ff" : "#ff5252"; }
+            else if (D.designMode === "real") { txt = (r.asRealTop ? r.asRealTop.text + "/" + r.asRealBot.text : "—"); col = r.ok ? (D.light ? "#1b4fb0" : "#f2f3f7") : "#ff5252"; }
             else if (D.designMode === "info") { txt = r.ok ? "✔M" + m.id : "✘M" + m.id; col = r.ok ? "#63e06a" : "#ff5252"; }
             else { txt = (r.yjkTop || "") + " / " + (r.yjkBot || ""); col = r.ok ? "#63e06a" : "#ff5252"; }
           }
@@ -3238,7 +3238,7 @@
         var fs2 = 10;
         ctx.font = "600 " + fs2 + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         outlineForText(ctx);
-        ctx.fillStyle = D.light ? "#1f3a6b" : "#cfe0ff";
+        ctx.fillStyle = D.light ? "#1f3a6b" : "#ffffff";
         (model.members || []).forEach(function (m) {
           var parts = [];
           var mat = (typeof memMat !== "undefined") ? memMat[m.id] : null;
@@ -3324,7 +3324,7 @@
           var zc = (kind === "secX" || kind === "secY") ? null : (D.planeZ || 0);
           (model.cuts || []).forEach(function (c) {
             var sel = !!(typeof selCuts !== "undefined" && selCuts[c.id]);
-            var col = (D.light ? (sel ? "#1b4fb0" : "#2f7bff") : (sel ? "#ffe066" : "#e08fff"));
+            var col = (D.light ? (sel ? "#1b4fb0" : "#2f7bff") : (sel ? "#f5d08a" : "#e5b567"));
             var pa, pb;
             if (kind === "plan" || kind === "persp") {
               pa = scr3(proj3(kind, c.x0, D.secY0 || 0, cutZ0(c))); pb = scr3(proj3(kind, c.x1, D.secY0 || 0, cutZ1(c)));
@@ -3363,9 +3363,9 @@
               var sAm = scr3(pAm), sBm = scr3(pBm), tt = clamp(xx / (mm.L || 1), 0, 1);
               var pxm = sAm[0] + (sBm[0] - sAm[0]) * tt, pym = sAm[1] + (sBm[1] - sAm[1]) * tt;
               ctx.save();
-              ctx.fillStyle = "#ffe066"; ctx.strokeStyle = "#ff9f43"; ctx.lineWidth = 1.5;
+              ctx.fillStyle = "#f5d08a"; ctx.strokeStyle = "#ff9f43"; ctx.lineWidth = 1.5;
               ctx.beginPath(); ctx.arc(pxm, pym, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-              tag(ctx, "x=" + xx.toFixed(2) + " N=" + fO(vv3.N || 0).toFixed(1) + " V=" + fO(vv3.V || 0).toFixed(1) + " M3=" + momO((vv3.M3 != null ? vv3.M3 : vv3.M) || 0).toFixed(1) + " M2=" + momO((vv3.M2 != null ? vv3.M2 : vv3.My) || 0).toFixed(1), pxm + 8, pym - 10, 9, "#ffe9a8");
+              tag(ctx, "x=" + xx.toFixed(2) + " N=" + fO(vv3.N || 0).toFixed(1) + " V=" + fO(vv3.V || 0).toFixed(1) + " M3=" + momO((vv3.M3 != null ? vv3.M3 : vv3.M) || 0).toFixed(1) + " M2=" + momO((vv3.M2 != null ? vv3.M2 : vv3.My) || 0).toFixed(1), pxm + 8, pym - 10, 9, D.light ? "#7a5100" : "#f2f3f7");
               ctx.restore();
             }
           }
@@ -3453,7 +3453,7 @@
         // 篮筐比结构本身大一圈：每轴向外各扩 12%（SAP2000 式篮筐线框）
         var pdx = (x1 - x0) * 0.12, pdy = (y1 - y0) * 0.12, pdz = (z1 - z0) * 0.12;
         x0 -= pdx; x1 += pdx; y0 -= pdy; y1 += pdy; z0 -= pdz; z1 += pdz;
-        var STROKE = "#ffcf33", FILL = "rgba(255,207,51,0.16)";
+        var STROKE = "#e5b567", FILL = "rgba(255,207,51,0.16)";
         function toScr(u, v) { return [ft.X(u), ft.Y(v)]; }
         function line(u1, v1, u2, v2, label) {
           var p1 = toScr(u1, v1), p2 = toScr(u2, v2);
@@ -3547,7 +3547,7 @@
           _onS = Math.abs(_cc - _pv) <= _ee;
         }
         ctx.save();
-        ctx.strokeStyle = _onS ? "#ffcf33" : "rgba(255,207,51,0.45)";
+        ctx.strokeStyle = _onS ? "#e5b567" : "rgba(255,207,51,0.45)";
         ctx.lineWidth = 1.2;
         if (!_onS) { ctx.setLineDash([4, 3]); }
         ctx.beginPath(); ctx.arc(_hp[0], _hp[1], isMain ? 7 : 6, 0, Math.PI * 2); ctx.stroke();
@@ -4177,7 +4177,7 @@
       if ($("showIds").checked) {
         var cx = 0, cy = 0;
         poly.forEach(function (p) { cx += p[0]; cy += p[1]; }); cx /= poly.length; cy /= poly.length;
-        ctx.fillStyle = "#8ff0d0"; ctx.font = (small - 1) + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
+        ctx.fillStyle = D.light ? "#1b4fb0" : "#f2f3f7"; ctx.font = (small - 1) + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "center";
         ctx.fillText((a.etype === "shell" ? "S" : "P") + a.id, cx, cy);
       }
     });
@@ -4211,7 +4211,7 @@
       var tx = cx + ux * len, ty = cy + uy * len;
       ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tx, ty); ctx.stroke();
       arrowHead(ctx, cx, cy, tx, ty, 10);
-      if (D.showLoadVals) { tag(ctx, "q=(" + roundN(aO(qx), 3) + "," + roundN(aO(qy), 3) + ")", tx + ux * 12, ty + uy * 12, small, "#8ff0d0"); }
+      if (D.showLoadVals) { tag(ctx, "q=(" + roundN(aO(qx), 3) + "," + roundN(aO(qy), 3) + ")", tx + ux * 12, ty + uy * 12, small, D.light ? "#7a5100" : "#f2f3f7"); }
     });
   }
 
@@ -4412,7 +4412,7 @@
     nodes.forEach(function (n) {
       var i = idx[n.id], seld = !!selNodes[n.id];
       ctx.beginPath(); ctx.arc(sx[i], sy[i], seld ? fs * 0.42 : fs * 0.26, 0, Math.PI * 2);
-      ctx.fillStyle = seld ? "#ffe066" : TH().node; ctx.fill();
+      ctx.fillStyle = seld ? "#f5d08a" : TH().node; ctx.fill();
       ctx.strokeStyle = seld ? "#ff9f43" : TH().nodeStroke; ctx.lineWidth = seld ? 2 : 1.2; ctx.stroke();
       if ($("showIds").checked) {
         ctx.fillStyle = TH().idText; ctx.font = (small - 1) + "px Segoe UI, Microsoft YaHei"; ctx.textAlign = "left";
@@ -4474,7 +4474,7 @@
   function drawSupport(ctx, bx, by, bc, wdt) {
     var _uz = (bc.uz != null ? bc.uz : bc.uy), _ry = (bc.ry != null ? bc.ry : bc.rz);
     var tri = bc.ux && _uz && _ry;
-    ctx.fillStyle = D.light ? "rgba(11, 127, 168, 0.16)" : "rgba(110, 231, 255, 0.22)"; ctx.strokeStyle = TH().support; ctx.lineWidth = 1.8;
+    ctx.fillStyle = D.light ? "rgba(11, 127, 168, 0.16)" : "rgba(229, 181, 103, 0.22)"; ctx.strokeStyle = TH().support; ctx.lineWidth = 1.8;
     ctx.beginPath(); ctx.moveTo(bx - wdt, by + wdt); ctx.lineTo(bx, by); ctx.lineTo(bx + wdt, by + wdt); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(bx - wdt * 1.3, by + wdt); ctx.lineTo(bx + wdt * 1.3, by + wdt); ctx.stroke();
     if (!tri) {
@@ -4494,7 +4494,7 @@
   /* 文字锐化：全画布取消阴影/光晕；压在图形上的文字改用无模糊细描边保证可读 */
   function outlineForText(ctx) {
     ctx.lineWidth = 3; ctx.lineJoin = "round";
-    ctx.strokeStyle = D.light ? "rgba(255,255,255,0.85)" : "rgba(5,7,14,0.85)";
+    ctx.strokeStyle = D.light ? "rgba(255,255,255,0.85)" : "rgba(46,52,72,0.85)";
   }
   function tag(ctx, txt, x, y, small, color) {
     ctx.save();
@@ -4612,7 +4612,7 @@
           var xm = ld.type === "udl" ? m.L / 2 : (clamp(ld.c, 0, m.L) + clamp(ld.d, 0, m.L)) / 2;
           var pl = P(xm), vv = memberLoadValue(ld, xm);
           var txt = ld.type === "udl" ? ("q=" + roundN(lO(ld.q), 3)) : ("q=" + roundN(lO(ld.q1), 3) + "→" + roundN(lO(ld.q2), 3));
-          tag(ctx, txt, pl[0] + dx * vv * pxU + dx * 13, pl[1] + dy * vv * pxU + dy * 13, small, "#8ff0d0");
+          tag(ctx, txt, pl[0] + dx * vv * pxU + dx * 13, pl[1] + dy * vv * pxU + dy * 13, small, D.light ? "#7a5100" : "#f2f3f7");
         }
       });
     });
@@ -4643,14 +4643,14 @@
     var x = clamp(D.station, 0, 1) * m.L;
     var ps = memScreenPoint(m, x), px = ps[0], py = ps[1];
     var v = sampleMember(stationM, x);
-    ctx.fillStyle = "#ffe066"; ctx.strokeStyle = "#ff9f43"; ctx.lineWidth = 1.5;
+    ctx.fillStyle = "#f5d08a"; ctx.strokeStyle = "#ff9f43"; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     var txt = "x=" + fmtLen(x, 3) + D.lenUnit + "  N=" + fO(v.N).toFixed(1) + "  V=" + fO(v.V).toFixed(1) + "  M=" + momO(v.M).toFixed(1);
     ctx.font = "11px Segoe UI, Microsoft YaHei";
     var w = ctx.measureText(txt).width;
     ctx.fillStyle = TH().stationBg; ctx.fillRect(px + 8, py - 20, w + 12, 18);
     ctx.strokeStyle = "rgba(255, 224, 102, 0.6)"; ctx.lineWidth = 1; ctx.strokeRect(px + 8, py - 20, w + 12, 18);
-    ctx.fillStyle = D.light ? "#7a5100" : "#ffe9a8"; ctx.textAlign = "left"; ctx.fillText(txt, px + 14, py - 7);
+    ctx.fillStyle = D.light ? "#7a5100" : "#f2f3f7"; ctx.textAlign = "left"; ctx.fillText(txt, px + 14, py - 7);
   }
 
   function drawForceValues(ctx, small) {
@@ -4854,7 +4854,7 @@
   }
 
   /* ================= 壳剖面绘制 =================
-   * 主题色：暗色选中用黄（#ffe066），亮色用蓝（#1b4fb0）保证可见。
+   * 主题色：暗色选中用黄（#f5d08a），亮色用蓝（#1b4fb0）保证可见。
    * 起点/终点只保留线（无实心点，可拖拽手柄为空心小圈）；有意义的
    * 边缘实心点画在绘制线与壳的交点（壳内有效段端部）上。
    * 剖面线跟随变形显示：位移/内力视图按 D.mag 对剖面点做位移插值；
@@ -4862,7 +4862,7 @@
    */
   function cutThemeCol(sel) {
     if (D.light) { return sel ? "#1b4fb0" : "#2f7bff"; }
-    return sel ? "#ffe066" : "#e08fff";
+    return sel ? "#f5d08a" : "#e5b567";
   }
   // 任意未变形点 (x,y) 的位移（已乘放大系数，模型单位 m）：近邻 K 点反距离加权
   function dispAt(x, y) {
@@ -5068,7 +5068,7 @@
     ctx.font = "600 " + fs2 + "px Segoe UI, Microsoft YaHei";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     outlineForText(ctx);
-    ctx.fillStyle = D.light ? "#1f3a6b" : "#cfe0ff";
+    ctx.fillStyle = D.light ? "#1f3a6b" : "#ffffff";
     model.members.forEach(function (m) {
       if (m.L == null) { return; }
       var parts = [];
@@ -5210,7 +5210,7 @@
       }
 
       var LX = sxOf(clamp(stationX, 0, L));
-      var stationCol = D.light ? "#c78a00" : "#ffe066";
+      var stationCol = D.light ? "#c78a00" : "#f5d08a";
       ctx.strokeStyle = stationCol; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(LX, ay0); ctx.lineTo(LX, ay1); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = stationCol; ctx.beginPath(); ctx.arc(LX, syOf(value), 3, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = color; ctx.font = "600 10px Segoe UI, Microsoft YaHei"; ctx.textAlign = "right";
@@ -6357,14 +6357,14 @@
       cv2.nodes.forEach(function (nd) {
         var px = X(nd.x), py = Y(conv(nd.v));
         ctx.beginPath(); ctx.arc(px, py, nd.edge ? 3.6 : 2.6, 0, Math.PI * 2);
-        if (nd.edge) { ctx.fillStyle = D.light ? "#1b4fb0" : "#ffe066"; ctx.fill(); }
-        else { ctx.strokeStyle = D.light ? "#1b4fb0" : "#ffe066"; ctx.lineWidth = 1.4; ctx.stroke(); }
+        if (nd.edge) { ctx.fillStyle = D.light ? "#1b4fb0" : "#f5d08a"; ctx.fill(); }
+        else { ctx.strokeStyle = D.light ? "#1b4fb0" : "#f5d08a"; ctx.lineWidth = 1.4; ctx.stroke(); }
       });
     });
     // 探针滑点（图上可拖）
     var probeX = hr[0] + clamp(D.cutPos == null ? 0.5 : D.cutPos, 0, 1) * span;
     var pv = cutProbeVals(res, comp, probeX, 0);
-    var probeCol = D.light ? "#1b4fb0" : "#ffe066";
+    var probeCol = D.light ? "#1b4fb0" : "#f5d08a";
     var pX = X(clamp(probeX, hr[0], hr[1]));
     ctx.save(); ctx.strokeStyle = probeCol; ctx.setLineDash([3, 3]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(pX, ay0); ctx.lineTo(pX, ay1); ctx.stroke(); ctx.restore();
@@ -6909,14 +6909,14 @@
       // YJK 布局：箍筋G在最上面，上一排配筋紧贴杆件上侧，下一排配筋在杆件下侧
       var OFF_FAR = 27, OFF_NEAR = 13;
       if (D.designMode === "rebar" && r.type === "conc") {
-        line(r.yjkG, OFF_FAR, "#8ff0d0");
+        line(r.yjkG, OFF_FAR, D.light ? "#7a5100" : "#f2f3f7");
         line(r.yjkTop, OFF_NEAR, "#63e06a");
         line(r.yjkBot, -OFF_NEAR, "#63e06a");
       } else if (D.designMode === "real" && r.type === "conc") {
         if (r.kind === "col" && r.colBars) {
           // 柱平法集中标注：角筋 / 四面中筋 / 箍筋集中在杆件中部对齐标注
           var lh = fs + 4, ccx = mid[0] + up.x * 16, ccy = mid[1] - lh;
-          ctx.fillStyle = bad ? "#ff5252" : "#7fd7ff";
+          ctx.fillStyle = bad ? "#ff5252" : (D.light ? "#7a5100" : "#f2f3f7");
           ctx.fillText("角筋" + r.colBars.corner.text, ccx, ccy);
           ctx.fillText("中筋" + r.colBars.side.text, ccx, ccy + lh);
           ctx.fillText(r.stirrup.text, ccx, ccy + lh * 2);
@@ -6924,12 +6924,12 @@
           // 梁：左上 / 中上 / 右上分段实配 + 下部取三截面最大值 + 箍筋（上部筋一律在视觉上侧）
           var tb = r.topBars3 || [];
           var pL = memScreenPoint(m, m.L * 0.07), pM = memScreenPoint(m, m.L * 0.5), pR = memScreenPoint(m, m.L * 0.93);
-          ctx.fillStyle = bad ? "#ff5252" : "#7fd7ff";
+          ctx.fillStyle = bad ? "#ff5252" : (D.light ? "#7a5100" : "#f2f3f7");
           ctx.fillText(tb[0] ? tb[0].text : r.asRealTop.text, pL[0] + up.x * OFF_NEAR, pL[1] + up.y * OFF_NEAR);
           ctx.fillText(tb[1] ? tb[1].text : r.asRealTop.text, pM[0] + up.x * OFF_NEAR, pM[1] + up.y * OFF_NEAR);
           ctx.fillText(tb[2] ? tb[2].text : r.asRealTop.text, pR[0] + up.x * OFF_NEAR, pR[1] + up.y * OFF_NEAR);
           ctx.fillText(r.asRealBot.text, pM[0] - up.x * OFF_NEAR, pM[1] - up.y * OFF_NEAR);
-          ctx.fillStyle = bad ? "#ff5252" : "#8ff0d0";
+          ctx.fillStyle = bad ? "#ff5252" : (D.light ? "#7a5100" : "#f2f3f7");
           ctx.fillText(r.stirrup.text, pM[0] + up.x * OFF_FAR, pM[1] + up.y * OFF_FAR);
         }
       } else {

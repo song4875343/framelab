@@ -116,7 +116,7 @@
 
 ### 单位与主题
 - **单位切换**（底部状态栏）：长度可选 **m / mm**，力可选 **kN / N**。切换后所有输入框、标注、结果与图表单位实时换算（应力随之在 kPa / Pa 间切换，位移以 mm 显示）。
-- **亮 / 暗主题**：右上角一键切换（默认**浅色主题**），模型与全部面板、图表同步换肤。
+- **亮 / 暗主题**：右上角一键切换（默认**浅色主题**），模型与全部面板、图表同步换肤；暗色主题为暖金灰配色（面板 `#3b435c` + 强调色 `#e5b567`）。
 - **状态栏**：显示当前单位、操作提示与鼠标实时坐标。
 
 ### 分析
@@ -186,6 +186,8 @@
 5. 在「显示内容」中切换 **建模图 / 位移云图 / 内力图**，观察变形与内力分布；用量值滑杆、底部色标条与「显示极值位置」细化查看。
 
 6. 需要时在右上角「保存」导出模型 JSON，或「打开」恢复（作为新的计算文件标签）；用标题栏下方的标签页在多个计算文件之间切换（`+` 新建、`×` 关闭、双击重命名）。底部状态栏可切换 **长度 / 力** 单位，右上角可切换 **亮 / 暗主题**。
+
+> **桌面版（可选）**：`neutralino/` 下有 Neutralinojs 打包配置，执行 `neutralino/build_exe.bat` 即可生成 Windows 桌面端（`resources/bin/dist` 由该批处理自动生成，不入库）。
 
 ---
 
@@ -391,6 +393,9 @@ framelab/
 ├── pyproject.toml + uv.lock# 桥接环境声明与锁定（xara/opensees/mkl）
 ├── requirements-xara.txt   # 同版本对照表（uv 安装备用）
 ├── design.js               # 混凝土/钢结构设计后处理模块
+├── neutralino/             # 桌面端打包（仅入库配置与批处理，构建产物不入库）
+│   ├── neutralino.config.json
+│   └── build_exe.bat
 ├── example/                # 示例文件
 │   ├── framelab-*.json              # JSON 模型（框架 / 壳）
 │   ├── openseespy_portal_frame.py   # OpenSeesPy 例：单跨门式刚架
@@ -496,7 +501,8 @@ framelab/
 ## 🛠️ 技术栈
 
 - 原生 **HTML + CSS + JavaScript**，无任何第三方库或构建步骤；
-- Canvas 2D 渲染。
+- Canvas 2D 渲染；
+- 桌面端可选 **Neutralinojs** 打包（`neutralino/build_exe.bat`）。
 
 ---
 
