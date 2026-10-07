@@ -2075,7 +2075,8 @@
       ctx.fillText("空模型（左侧几何 → 网格生成）", cw / 2, ch / 2);
       return;
     }
-    var pts = model.nodes.map(function (n) { return proj3(kind, n.x, n.y, nz(n)); });
+    var basePts = model.nodes.map(function (n) { return proj3(kind, n.x, n.y, nz(n)); });
+    var pts = basePts;
     // 3D 变形显示：按位移视图放大系数叠加 ana 位移（6 自由度 stride 自适应，2D 结果 stride=3）
     try {
       var defAmp3 = (D.view === "model" || D.view === "design") ? 0 : (D.mag || 0);
@@ -2084,12 +2085,16 @@
         pts = model.nodes.map(function (n) {
           var ai = ana.idx[n.id];
           if (ai === undefined) { return proj3(kind, n.x, n.y, nz(n)); }
-          var dx = ana.u[st3 * ai] || 0, dy = ana.u[st3 * ai + 1] || 0, dz = st3 === 6 ? (ana.u[st3 * ai + 2] || 0) : 0;
+          // 2D 结果 stride=3，分量为 (Ux, Uz, Ry)，竖向 Uz 位于模型 Z（X-Z 平面）；3D 结果 stride=6 为 (Ux, Uy, Uz)
+          var dx, dy, dz;
+          if (st3 === 6) { dx = ana.u[st3 * ai] || 0; dy = ana.u[st3 * ai + 1] || 0; dz = ana.u[st3 * ai + 2] || 0; }
+          else { dx = ana.u[st3 * ai] || 0; dy = 0; dz = ana.u[st3 * ai + 1] || 0; }
           return proj3(kind, n.x + dx * defAmp3, n.y + dy * defAmp3, nz(n) + dz * defAmp3);
         });
       }
     } catch (e3) { /* 变形叠加失败则显示原形 */ }
-    var ft = fitTransformCam(pts, cw, ch, cam);
+    // 视图自适应基于“未变形”模型：否则拖动变形放大时，自适应范围随变形变化，导致支座/整体看似漂移（2D 亦用未变形节点，保持一致）
+    var ft = fitTransformCam(basePts, cw, ch, cam);
     // 每窗视图参数（含相机），供缩放/平移/反算共用
     window.__view3d = window.__view3d || {};
     window.__view3d[cvId] = { kind: kind, X0: ft.X0, X1: ft.X1, Y0: ft.Y0, Y1: ft.Y1, bs0: ft.bs0, cw: cw, ch: ch, win: win };
@@ -2131,8 +2136,12 @@
       else { return null; }
       var bz = b[2] || 0;
       if (!amp) { return [b[0], b[1], bz]; }
-      return [b[0] + (ana.u[st3b * gi] || 0) * amp, b[1] + (ana.u[st3b * gi + 1] || 0) * amp,
-              bz + (st3b === 6 ? (ana.u[st3b * gi + 2] || 0) : 0) * amp];
+      // 2D 结果 stride=3：(Ux, Uz, Ry)，竖向 Uz 应叠加到模型 Z（X-Z 平面），此前误加到 Y 导致变形显示方向错误；
+      // 3D 结果 stride=6：(Ux, Uy, Uz) → 分别叠加 X/Y/Z
+      var du2 = ana.u[st3b * gi] || 0;
+      var dv2 = st3b === 6 ? (ana.u[st3b * gi + 1] || 0) : 0;
+      var dw2 = st3b === 6 ? (ana.u[st3b * gi + 2] || 0) : (ana.u[st3b * gi + 1] || 0);
+      return [b[0] + du2 * amp, b[1] + dv2 * amp, bz + dw2 * amp];
     }
     function scr3(p) { var q = proj3(kind, p[0], p[1], p[2]); return [ft.X(q[0]), ft.Y(q[1])]; }
     // 面（淡色）
