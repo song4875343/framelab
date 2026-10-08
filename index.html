@@ -184,7 +184,7 @@
   #cloudbar #cb-canvas { display: block; width: 100%; height: 100%; border-radius: 3px; border: 1px solid rgba(255, 255, 255, .35); box-sizing: border-box; }
   #cloudbar .cb-grip { position: absolute; top: -4px; width: 14px; height: 22px; margin-left: -7px; cursor: ew-resize; }
   #cloudbar .cb-grip i { position: absolute; left: 6px; top: 0; width: 2px; height: 22px; background: #fff; border-radius: 1px; box-shadow: 0 0 3px rgba(20, 24, 40, .9); }
-  #cloudbar .cb-fit { padding: 2px 8px; font-size: 10.5px; border-radius: 6px; border: 1px solid rgba(229, 181, 103, .4); background: rgba(229, 181, 103, .12); color: #f2f3f7; cursor: pointer; font-family: inherit; }
+  #cloudbar .cb-fit { padding: 2px 8px; font-size: 10.5px; border-radius: 6px; border: 1px solid rgba(229, 181, 103, .4); background: rgba(229, 181, 103, .12); color: #f2f3f7; cursor: pointer; font-family: inherit; white-space: nowrap; flex: 0 0 auto; writing-mode: horizontal-tb; }
   #cloudbar .cb-fit:hover { background: rgba(229, 181, 103, .28); }
 
   /* 亮色主题 */
@@ -544,7 +544,7 @@
                 <div class="cb-grip" id="cb-grip-hi" title="拖拽设置上限"><i></i></div>
               </div>
               <span class="cb-end" id="cb-hi-lab">—</span>
-              <button class="cb-fit" id="cb-fit" type="button">自动</button>
+              <button class="cb-fit" id="cb-fit" type="button" title="变形动画（5 秒循环 · 24 帧/秒）">动画</button>
             </div>
           </div>
           <div class="modebar" id="modebar">模式：新增节点（右键或 Esc 退出）</div>
@@ -2079,7 +2079,7 @@
     var pts = basePts;
     // 3D 变形显示：按位移视图放大系数叠加 ana 位移（6 自由度 stride 自适应，2D 结果 stride=3）
     try {
-      var defAmp3 = (D.view === "model" || D.view === "design") ? 0 : (D.mag || 0);
+      var defAmp3 = (D.view === "model" || D.view === "design") ? 0 : effMag();
       if (defAmp3 && ana && ana.u && ana.idx) {
         var st3 = (ana.all && ana.all.length && ana.u.length >= ana.all.length * 6 - 1e-9) ? 6 : 3;
         pts = model.nodes.map(function (n) {
@@ -2108,7 +2108,7 @@
     var hasAna3 = !!(ana && ana.u && ana.idx && ana.all && ana.all.length);
     var st3b = 6;
     try { if (hasAna3) { st3b = (ana.u.length >= ana.all.length * 6 - 1e-9) ? 6 : 3; } } catch (eSt3) {}
-    var defAmpB = (D.view === "model" || D.view === "design") ? 0 : (D.mag || 0);
+    var defAmpB = (D.view === "model" || D.view === "design") ? 0 : effMag();
     var isSlice3 = (kind === "plan" || kind === "secX" || kind === "secY");
     var hiddenAid3 = {};   // 切片外隐藏的面 id（面荷载/子网格同步隐藏）
     function sliceEps3() { try { return Math.max(nodeTol(), 1e-6) + 1e-9; } catch (eS3) { return 1e-6; } }
@@ -2167,11 +2167,15 @@
       ctx.beginPath();
       idxs.forEach(function (ii, k) { if (k === 0) { ctx.moveTo(PX(ii), PY(ii)); } else { ctx.lineTo(PX(ii), PY(ii)); } });
       ctx.closePath();
-      ctx.fillStyle = onPlane ? TH().modelArea : "rgba(120,140,180,0.12)";
-      ctx.fill();
-      ctx.strokeStyle = onPlane ? TH().modelAreaEdge : "rgba(120,140,180,0.35)";
-      ctx.lineWidth = onPlane ? 1.4 : 0.7;
-      ctx.stroke();
+      // 面收缩时：底色取背景色、且不再描母单元外框（与 2D 一致，避免露出砖红/黄色边框）；
+      // 未收缩或未细分的面才绘模型底色 + 外框
+      if (!(D.showAreaShrink && hasAna3)) {
+        ctx.fillStyle = onPlane ? TH().modelArea : "rgba(120,140,180,0.12)";
+        ctx.fill();
+        ctx.strokeStyle = onPlane ? TH().modelAreaEdge : "rgba(120,140,180,0.35)";
+        ctx.lineWidth = onPlane ? 1.4 : 0.7;
+        ctx.stroke();
+      }
       if (selAreas[a.id]) { ctx.fillStyle = "rgba(4,7,16,0.18)"; ctx.fill(); }
     });
     // 面细分网格（与 2D 同逻辑：model 红 / disp 位移云图 / force 应力云图 + 收缩 + 网格开关）
@@ -3283,8 +3287,23 @@
         var showBF = !!D.showShellBeamF, showCF = !!D.showShellColF;
         var cuts3 = (hasAna3 && ana.shellCuts) || [];
         if (cuts3.length && (showB || showC || showBF || showCF)) {
+          function cutOn(c) { return (c.kind === "beam") ? (showB || (D.view === "force" && showBF)) : (showC || (D.view === "force" && showCF)); }
+          // 峰值比例：所有壳梁/壳柱参考线共用同一峰值（含框架），与 2D drawShellCutDiagrams 一致；
+          // 否则各条参考线按自身 maxM 归一化会出现锯齿状弯矩
+          var _scM = 0, _scV = 0, _scN = 0;
+          cuts3.forEach(function (c) {
+            if (!cutOn(c)) { return; }
+            _scM = Math.max(_scM, c.maxM || 0); _scV = Math.max(_scV, c.maxV || 0); _scN = Math.max(_scN, c.maxN || 0);
+          });
+          var _scDim = Math.min(cw, ch);
+          var scPeakM = Math.max(_mMax || 0, _scM, 1e-9);
+          var scPeakV = Math.max(_vMax || 0, _scV, 1e-9);
+          var scPeakN = Math.max(_nMax || 0, _scN, 1e-9);
+          var scDscM = (0.11 * _scDim) / scPeakM * (D.dscale || 1);
+          var scDscV = (0.11 * _scDim) / scPeakV * (D.dscale || 1);
+          var scDscN = (0.11 * _scDim) / scPeakN * (D.dscale || 1);
           cuts3.forEach(function (cut) {
-            var on = (cut.kind === "beam") ? (showB || (D.view === "force" && showBF)) : (showC || (D.view === "force" && showCF));
+            var on = cutOn(cut);
             if (!on) { return; }
             var a = null;
             (model.areas || []).forEach(function (aa) { if (aa.id === cut.aid) { a = aa; } });
@@ -3304,23 +3323,40 @@
             ctx.lineWidth = isMain ? 1.8 : 1.2;
             ctx.beginPath(); ctx.moveTo(e0[0], e0[1]); ctx.lineTo(e1[0], e1[1]); ctx.stroke();
             if (isMain) { tag(ctx, (cut.kind === "beam" ? "壳梁S" : "壳柱S") + cut.aid, (e0[0] + e1[0]) / 2, (e0[1] + e1[1]) / 2 - 8, 9, ctx.strokeStyle); }
-            // 内力视图：沿线画 M 色带（峰值比例与框架共用 _mMax）
+            // 内力视图：沿线画 N/V/M 色带（与 2D drawShellCutDiagrams 同一套逻辑、配色与峰值比例；
+            // 投影退化为点时不画，避免出现错误图形）
             if (D.view === "force" && ((cut.kind === "beam" && showBF) || (cut.kind === "col" && showCF))) {
               var pts = cut.pts || [], n = pts.length;
-              if (n >= 2 && D.showMoment) {
-                var pk = Math.max((_res3 || {}).maxM || 0, cut.maxM || 0, 1e-9);
-                var dsc = (0.11 * Math.min(cw, ch)) / pk * (D.dscale || 1);
-                var ex = e1[0] - e0[0], ey = e1[1] - e0[1], LL = Math.hypot(ex, ey) || 1;
+              var ex = e1[0] - e0[0], ey = e1[1] - e0[1], LL = Math.hypot(ex, ey);
+              if (n >= 2 && LL > 1.5) {
                 var nx = -ey / LL, ny = ex / LL;
-                ctx.beginPath(); ctx.moveTo(e0[0], e0[1]);
-                for (var i = 0; i < n; i++) { ctx.lineTo(e0[0] + ex * i / (n - 1), e0[1] + ey * i / (n - 1)); }
-                for (var j = n - 1; j >= 0; j--) {
-                  var vv2 = pts[j].M || 0;
-                  ctx.lineTo(e0[0] + ex * j / (n - 1) + nx * vv2 * dsc, e0[1] + ey * j / (n - 1) + ny * vv2 * dsc);
+                var bandCut = function (getV, dsc, fill, stroke) {
+                  ctx.beginPath(); ctx.moveTo(e0[0], e0[1]);
+                  for (var i = 0; i < n; i++) { ctx.lineTo(e0[0] + ex * i / (n - 1), e0[1] + ey * i / (n - 1)); }
+                  for (var j = n - 1; j >= 0; j--) {
+                    var vv2 = getV(pts[j]);
+                    ctx.lineTo(e0[0] + ex * j / (n - 1) + nx * vv2 * dsc, e0[1] + ey * j / (n - 1) + ny * vv2 * dsc);
+                  }
+                  ctx.closePath();
+                  ctx.fillStyle = fill; ctx.fill();
+                  ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke();
+                };
+                if (D.showAxial) { bandCut(function (p) { return p.N || 0; }, scDscN, "rgba(130,240,140,0.20)", "#63e06a"); }
+                if (D.showMoment) { bandCut(function (p) { return p.M || 0; }, scDscM, "rgba(255,120,120,0.24)", "#ff8080"); }
+                if (D.showShear) { bandCut(function (p) { return (p.S !== undefined ? p.S : p.V) || 0; }, scDscV, "rgba(80,210,255,0.22)", "#4fd1ff"); }
+                // 内力数值标注（与 2D drawShellCutValues 一致，仅主窗）
+                if (isMain && D.showForceVals) {
+                  var placeVal = function (getV, color, off, label) {
+                    var bi = 0, bv = -1, q;
+                    for (q = 0; q < n; q++) { var av = Math.abs(getV(pts[q])); if (av > bv) { bv = av; bi = q; } }
+                    var t = bi / (n - 1);
+                    tag(ctx, (cut.kind === "beam" ? "壳梁S" : "壳柱S") + cut.aid + label + "=" + fO(bv).toFixed(1),
+                        e0[0] + ex * t + nx * off, e0[1] + ey * t + ny * off, 10, color);
+                  };
+                  if (D.showMoment) { placeVal(function (p) { return p.M || 0; }, "#ff8080", 16, "M"); }
+                  if (D.showShear) { placeVal(function (p) { return (p.S !== undefined ? p.S : p.V) || 0; }, "#4fd1ff", 34, "V"); }
+                  if (D.showAxial) { placeVal(function (p) { return p.N || 0; }, "#63e06a", 52, "N"); }
                 }
-                ctx.closePath();
-                ctx.fillStyle = "rgba(255,120,120,0.24)"; ctx.fill();
-                ctx.strokeStyle = "#ff8080"; ctx.lineWidth = 1; ctx.stroke();
               }
             }
             ctx.restore();
@@ -3414,7 +3450,7 @@
             if (D.showShellBeam) { msg += " · 壳梁(橙)"; }
             if (D.showShellCol) { msg += " · 壳柱(青)"; }
           } else if (D.view === "disp") {
-            msg = dispTitle() + " (mm)";
+            // 位移云图标题已在底部色标条（cb-title）显示，此处不再重复绘制
           } else if (D.view === "force") {
             var nms = [];
             if (D.showAxial) { nms.push("轴力 N"); }
@@ -4015,6 +4051,38 @@
   var gSX = null, gSY = null;   // 变形后各分析节点的屏幕坐标（供标注/荷载随变形移动）
   var DCV = [];                 // 位移视图当前分量各分析节点值（mm）：mag=总位移；2D 时 u[1] 即竖向 Uz
   var DISP_NAMES = { mag: "位移", ux: "Ux", uy: "Uy", uz: "Uz" };
+  // 变形动画：24 帧/秒。一个总循环 = 变形加载 5 秒（0→1）+ 峰值停顿 1 秒，然后立即复原到 0 再继续
+  var anim = { on: false, k: 1, raf: null, last: 0, frame: 0 };
+  var ANIM_PERIOD = 5, ANIM_FPS = 24, ANIM_FRAMES = ANIM_PERIOD * ANIM_FPS;
+  var ANIM_HOLD = ANIM_FPS;   // 峰值停顿 1 秒（24 帧）
+  function effMag() { return (D.mag || 0) * (anim.on ? anim.k : 1); }
+  function animTick(ts) {
+    if (!anim.on) { return; }
+    if (!anim.last) { anim.last = ts; }
+    if (ts - anim.last >= 1000 / ANIM_FPS) {
+      anim.last = ts;
+      var idx = anim.frame % (ANIM_FRAMES + ANIM_HOLD);
+      anim.k = idx < ANIM_FRAMES ? idx / (ANIM_FRAMES - 1) : 1;   // 0→1 加载，随后停在峰值，帧尾立即复原到 0
+      anim.frame++;
+      draw();
+    }
+    anim.raf = requestAnimationFrame(animTick);
+  }
+  function startAnim() {
+    if (anim.on) { return; }
+    anim.on = true; anim.last = 0; anim.k = 0; anim.frame = 0;
+    var b = $("cb-fit"); if (b) { b.textContent = "停止"; }
+    anim.raf = requestAnimationFrame(animTick);
+  }
+  function stopAnim() {
+    if (!anim.on) { return; }
+    anim.on = false; anim.k = 1;
+    if (anim.raf) { cancelAnimationFrame(anim.raf); }
+    anim.raf = null;
+    var b = $("cb-fit"); if (b) { b.textContent = "动画"; }
+    draw();
+  }
+  function toggleAnim() { if (anim.on) { stopAnim(); } else { startAnim(); } }
   function dofStride() { return (ana && ana.all && ana.all.length && ana.u && ana.u.length >= ana.all.length * 6 - 1e-9) ? 6 : 3; }
   /* 2D 画布平面坐标：X-Z 统一。ana.all 恒为平面二元组 [x,z]（3D 时 all3 另存三元组）；
    * 位移按 stride 取：ux=u[st*i]，uz=u[st*i+(st==6?2:1)] */
@@ -4077,7 +4145,10 @@
   // 云图着色：低于下限取最深蓝、高于上限取最深红（jet 自动截断），范围内按 jet 映射
   function cloudColor(v) {
     if (!CB.show) { return rgb(jet(0)); }
-    return rgb(jet((v - CB.lo) / (CB.hi - CB.lo)));
+    // 动画中按“虚拟位移/内力”（当前帧变形量占最大变形量的比例 k）缩放云图数值，
+    // 色标范围 CB.lo/CB.hi 保持满量程不变，从而呈现由蓝到红的动态加载效果
+    var vv = anim.on ? v * anim.k : v;
+    return rgb(jet((vv - CB.lo) / (CB.hi - CB.lo)));
   }
   function toX(x) { return T.ox + x * T.scale; }
   function toZ(z) { return T.oy - z * T.scale; }
@@ -4225,6 +4296,13 @@
   }
 
   function draw() {
+    // 几何 / 设计视图无变形动画：进入时自动停止
+    if (anim && anim.on && (D.view === "model" || D.view === "design")) {
+      anim.on = false; anim.k = 1;
+      if (anim.raf) { cancelAnimationFrame(anim.raf); }
+      anim.raf = null;
+      var _ab = $("cb-fit"); if (_ab) { _ab.textContent = "动画"; }
+    }
     if ((D.dim || "2d") === "3d") {
       try {
         // 3D 位移云图数据（供底部色标条）：stride 自适应 3/6
@@ -4281,7 +4359,7 @@
     T.ox = cw / 2 + (bx - cw / 2) * zz + D.px;
     T.oy = ch / 2 + (by - ch / 2) * zz + D.py;
 
-    var amp = (view === "model" || view === "design") ? 0 : D.mag;
+    var amp = (view === "model" || view === "design") ? 0 : effMag();
     var _st = (all.length && u.length >= all.length * 6 - 1e-9) ? 6 : 3;
     var dxn = all.map(function (p, i) { return p[0] + (u[_st * i] || 0) * amp; });
     var dyn = all.map(function (p, i) { return p[1] + (u[_st * i + (_st === 6 ? 2 : 1)] || 0) * amp; });
@@ -4875,7 +4953,7 @@
   }
   // 任意未变形点 (x,y) 的位移（已乘放大系数，模型单位 m）：近邻 K 点反距离加权
   function dispAt(x, y) {
-    var amp = (D.view === "model" || D.view === "design") ? 0 : (D.mag == null ? 1 : D.mag);
+    var amp = (D.view === "model" || D.view === "design") ? 0 : effMag();
     if (!ana || !ana.all || !ana.u || !amp) { return [0, 0]; }
     var all = ana.all, u = ana.u, n = all.length, i;
     var _st = (n && u.length >= n * 6 - 1e-9) ? 6 : 3;
@@ -5334,10 +5412,7 @@
     }
     bind($("cb-grip-hi"), true);
     bind($("cb-grip-lo"), false);
-    $("cb-fit").addEventListener("click", function () {
-      if (CB.kind === "disp") { D.dispLo = null; D.dispHi = null; } else { D.cloudLo = null; D.cloudHi = null; }
-      draw();
-    });
+    $("cb-fit").addEventListener("click", function () { toggleAnim(); });
   }
 
   /* ================= 鼠标悬停：坐标 + 云图数值 ================= */

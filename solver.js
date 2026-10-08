@@ -1317,10 +1317,12 @@
       }
     });
 
-    // 剖面切割/壳梁柱参考线仅处理 XY 平面单元（竖向墙在 2D 投影退化，保持原有行为）
-    var xyAreas3 = (model.areas || []).filter(function (a) { var g = areaGrid[a.id]; return !g || !g.plane || g.plane === "xy"; });
+    // 剖面切割仅处理 XY 平面单元（保持原有行为）；壳梁/壳柱参考线覆盖全部共面单元（XY/XZ/YZ），
+    // 使竖向墙在 3D 下与 2D 一致地输出壳梁/壳柱内力（退化投影由绘制端跳过，不画垃圾图）
     var xyElems3 = areaElems.filter(function (e) { return !e.plane || e.plane === "xy"; });
-    var shellCuts = buildShellCuts(xyAreas3, areaGrid, xyElems3);
+    var shellAreas3 = (model.areas || []).filter(function (a) { var g = areaGrid[a.id]; return g && g.plane; });
+    var shellElems3 = areaElems.filter(function (e) { return e.plane; });
+    var shellCuts = buildShellCuts(shellAreas3, areaGrid, shellElems3);
     var cutResults = integrateCuts(model.cuts || [], xyElems3, all.map(function (p) { return [p[0], p[1]]; }));
 
     var maxDisp = 0;
